@@ -1,0 +1,45 @@
+﻿### **Dungeon Escape**
+
+
+Projekt **"Dungeon Escape"** je 2D dungeon-crawling hra, která se zaměřuje na prozkoumávání podzemí, boj s nepřáteli a překonávání pastí. Hráč se ocitá v temném podzemí, kde každý level představuje samostatný labyrint plný nebezpečí a záhad. Cílem hry je najít klíč pro otevření brány na další úroveň, čímž hráč postupuje hlouběji do dungeonu. Na konci každého levelu čeká mini-boss, který poskytuje klíč k dalšímu postupu. Hra se zaměřuje na jednoduchost a zábavnost, s důrazem na interakci s prostředím a zlepšení postavy skrze sběr předmětů a vybavení.
+
+
+### Podrobný popis funkcionalit
+
+
+#### Průběh a cíl hry:
+Hra je rozdělena do několika úrovní, přičemž každá úroveň má vlastní místnosti s překážkami, nepřáteli a hádankami. Cílem každé úrovně je najít a použít klíč, který otevře východ do další úrovně. Na konci každé úrovně čeká na hráče mini-boss, jehož porážka je nezbytná pro získání klíče a postup na další úroveň. Celkový cíl hry je prozkoumat podzemí, porazit nepřátele a vyřešit hádanky, aby se dostal hráč až k finálnímu bossovi.
+
+
+#### Vlastnosti postavy:
+Postava má několik základních vlastností, které ovlivňují její výkon v boji a schopnost přežít:
+- **Zdraví:** Postava začíná s určitým množstvím zdraví (např. 100) a toto zdraví se může snížit při kontaktu s nepřáteli nebo pastmi. Zdraví lze obnovit pomocí lektvarů nebo jídla.
+- **Pohyb a útok:** Postava se pohybuje pomocí kláves **WASD** a útočí pomocí klávesy **Space**. Může sbírat a používat zbraně, které zvyšují její útočné schopnosti.
+- **Inventář:** Postava má omezený inventář pro zbraně, brnění, lektvary a jídlo. Tento inventář je třeba spravovat, aby hráč měl vždy po ruce správné předměty k boji nebo přežití.
+
+
+#### Popis předmětů ve hře:
+- **Zbraně:** Mějte různé typy zbraní (meče, luky), které zvyšují útočné schopnosti postavy a umožňují efektivnější boj s nepřáteli.
+- **Brnění:** Brnění poskytuje ochranu, která snižuje poškození přijaté od nepřátel. Může to být kožené nebo železné brnění s různou úrovní ochrany.
+- **Lektvary a jídlo:** Lektvary slouží k obnovení zdraví, zatímco jídlo může hráči poskytnout dočasné bonusy, jako je zvýšená rychlost nebo regenerace zdraví. Tyto předměty lze použít přímo z inventáře.
+- **Klíče:** Klíče jsou klíčové pro postup do další úrovně. Vypadávají z minibossů nebo jsou součástí interakce s prostředím.
+
+
+#### Ovládání:
+- **WASD:** Pohyb postavy v herním prostředí.
+- **Space:** Útok (pokud má postava zbraň).
+- **E:** Interakce (otevření truhel, sbírání předmětů).
+- **I:** Otevření inventáře, kde si hráč může prohlédnout svůj arzenál, brnění a použité předměty.
+
+
+#### Načítání a ukládání:
+- **Načítání:** Na začátku hry je načtena úvodní úroveň, která obsahuje všechny herní objekty, pasti a nepřátele. Každá úroveň bude generována na základě předem připravených map.
+- **Ukládání:** Hra umožňuje hráči uložit stav postavy a její inventář na konci každé úrovně, takže může pokračovat v dalším hraní. Ukládání bude realizováno pomocí souborů, které budou uchovávat všechny důležité informace o hře (zdraví, inventář, postup v úrovních).
+
+
+#### Další funkcionality:
+- **Interakce s prostředím:** Hráč může používat předměty na interakci s prostředím (např. použít klíč na otevření dveří, zničit truhlu pomocí meče).
+- **Mini-bossové a bossové:** Každý level má na konci minibosse, jehož porážka přináší klíč pro přechod na další úroveň. Na konci hry se objeví hlavní boss, který představuje vrchol celé hry.
+
+
+ní inventáře pro správu předmětů.
