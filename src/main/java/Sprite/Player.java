@@ -94,6 +94,7 @@ public class Player extends Entity {
             case "right":
                 image = (spriteNum == 1) ? right1 : right2;
                 break;
+
         }
         g2d.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
     }
