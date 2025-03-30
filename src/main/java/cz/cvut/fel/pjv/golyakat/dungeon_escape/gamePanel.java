@@ -7,11 +7,11 @@ import java.awt.*;
 public class gamePanel extends JPanel implements Runnable {
     //  screen settings
     final int originalTileSize = 16; //map tiles and players
-    final int scale = 3;
+    final int scale = 2;
 
     public final int tileSize = originalTileSize * scale;
-    final int maxScreenCol = 20;
-    final int maxScreenRow = 14;
+    final int maxScreenCol = 30;
+    final int maxScreenRow = 20;
     final int screenWidth = tileSize * maxScreenCol;
     final int screenHeight = tileSize * maxScreenRow;
 
@@ -74,4 +74,5 @@ public class gamePanel extends JPanel implements Runnable {
         player.draw(g2d);
         g2d.dispose();
     }
+
 }
