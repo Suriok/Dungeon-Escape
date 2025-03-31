@@ -1,6 +1,8 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
 import Sprite.Player;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -10,14 +12,15 @@ public class gamePanel extends JPanel implements Runnable {
     final int scale = 2;
 
     public final int tileSize = originalTileSize * scale;
-    final int maxScreenCol = 30;
-    final int maxScreenRow = 20;
-    final int screenWidth = tileSize * maxScreenCol;
-    final int screenHeight = tileSize * maxScreenRow;
+    public final int maxScreenCol = 30;
+    public final int maxScreenRow = 20;
+    public final int screenWidth = tileSize * maxScreenCol;
+    public final int screenHeight = tileSize * maxScreenRow;
 
     //FPS
     int FPS = 60;
 
+    TileManger tileH = new TileManger(this);
     KeyHandler keyH = new KeyHandler();
     Thread gameThread; //Keep program running without stop
     Player player = new Player(this,keyH);
@@ -71,8 +74,11 @@ public class gamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+        //Draw tiles
+        tileH.draw(g2d);
+        // Draw player
         player.draw(g2d);
+        
         g2d.dispose();
     }
-
 }

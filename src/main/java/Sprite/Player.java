@@ -16,7 +16,8 @@ public class Player extends Entity {
     // Animation variables
     public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
     public String direction;
-
+    public int spriteCounter = 0;
+    public int spriteNum = 1;
 
     public Player(gamePanel gp, KeyHandler keyH) {
         this.gp = gp;
@@ -65,17 +66,16 @@ public class Player extends Entity {
                 x += speed;
             }
 
-            spriteCounter++; //Counter for changing frames
-            if (spriteCounter > 15) {
+            spriteCounter++;
+            if(spriteCounter > 15) {
                 if(spriteNum == 1){
-                    spriteNum =2;
+                    spriteNum = 2;
                 } else if (spriteNum == 2) {
-                    spriteNum =1;
+                    spriteNum = 1;
                 }
                 spriteCounter = 0;
             }
         }
-
     }
 
     public void draw(Graphics2D g2d){
@@ -115,6 +115,8 @@ public class Player extends Entity {
                 break;
 
         }
-        g2d.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
+        if (image != null) {
+            g2d.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
+        }
     }
 }
