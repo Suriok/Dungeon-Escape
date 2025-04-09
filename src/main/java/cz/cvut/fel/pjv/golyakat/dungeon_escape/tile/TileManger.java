@@ -19,10 +19,10 @@ public class TileManger {
         this.gp = gp;
 
         tiles = new Tile[10];
-        mapTileNum = new int[gp.maxScreenRow][gp.maxScreenCol];
+        mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
 
         getTileImage();
-        loadMap();
+        loadMap("/cz/cvut/fel/pjv/golyakat/dungeon_escape/maps/level1.txt");
     }
 
     public void getTileImage() {
@@ -62,7 +62,7 @@ public class TileManger {
     }
 
     // Class that load the map(Scan the map.txt)
-    public void loadMap(){
+    public void loadMap(String s){
         try {
             InputStream is = getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/maps/level1.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -90,22 +90,25 @@ public class TileManger {
     }
 
     public void draw(Graphics2D g2) {
-        int col = 0;
-        int row = 0;
-        int x = 0;
-        int y = 0;
+        int worldCol = 0;
+        int worldRow = 0;
 
-        while(row < gp.maxScreenRow && col < gp.maxScreenCol) {
-            int tileNum = mapTileNum[row][col];
-            g2.drawImage(tiles[tileNum].image, x, y, gp.tileSize, gp.tileSize, null);
-            col++;
-            x += gp.tileSize;
+        while(worldRow < gp.maxWorldRow && worldCol < gp.maxWorldRow) {
+            int tileNum = mapTileNum[worldRow][worldCol];
 
-            if(col == gp.maxScreenCol) {
-                col = 0;
-                x = 0;
-                row++;
-                y += gp.tileSize;
+            int worldX = worldCol * gp.tileSize;
+            int worldY = worldRow * gp.tileSize;
+            int screenX = worldX - gp.player.worldX + gp.player.screenX;
+            int screenY = worldY - gp.player.worldY + gp.player.screenY;
+
+            g2.drawImage(tiles[tileNum].image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+            worldCol++;
+
+
+            if(worldCol == gp.maxWorldCol) {
+                worldCol = 0;
+                worldRow++;
+
             }
         }
     }
