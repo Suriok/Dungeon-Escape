@@ -16,20 +16,20 @@ public class KeyHandler implements KeyListener {
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
 
-        // Sprite go up
+        // cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go up
         if (code == KeyEvent.VK_W) {
             upPressed = true;
         }
 
-        // Sprite go down
+        // cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go down
         if (code == KeyEvent.VK_S) {
             downPressed = true;
         }
-        //Sprite go to the left
+        //cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go to the left
         if(code == KeyEvent.VK_A) {
             leftPressed = true;
         }
-        //Sprite go to the right
+        //cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go to the right
         if(code == KeyEvent.VK_D) {
             rightPressed = true;
         }
@@ -40,20 +40,20 @@ public class KeyHandler implements KeyListener {
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();
 
-        // Sprite go up
+        // cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go up
         if (code == KeyEvent.VK_W) {
             upPressed = false;
         }
 
-        // Sprite go down
+        // cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go down
         if (code == KeyEvent.VK_S) {
             downPressed = false;
         }
-        //Sprite go to the left
+        //cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go to the left
         if(code == KeyEvent.VK_A) {
             leftPressed = false;
         }
-        //Sprite go to the right
+        //cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go to the right
         if(code == KeyEvent.VK_D) {
             rightPressed = false;
         }

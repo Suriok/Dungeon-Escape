@@ -1,6 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
-import Sprite.Player;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Player;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
 
 import javax.swing.*;
@@ -9,17 +9,17 @@ import java.awt.*;
 public class gamePanel extends JPanel implements Runnable {
     //  screen settings
     final int originalTileSize = 16; //map tiles and players
-    final int scale = 2;
+    final int scale = 3;
 
     public final int tileSize = originalTileSize * scale;
-    public final int maxScreenCol = 30;
-    public final int maxScreenRow = 20;
+    public final int maxScreenCol = 20;
+    public final int maxScreenRow = 10;
     public final int screenWidth = tileSize * maxScreenCol;
     public final int screenHeight = tileSize * maxScreenRow;
 
     //World settings
-    public final int maxWorldCol = 50;
-    public final int maxWorldRow = 50;
+    public final int maxWorldCol = 60;  // Match map width
+    public final int maxWorldRow = 60;  // Match map height
     public final int worldWidth = tileSize * maxWorldCol;
     public final int worldHeight = tileSize * maxWorldRow;
 

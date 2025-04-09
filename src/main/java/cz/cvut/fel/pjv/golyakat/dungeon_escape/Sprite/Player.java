@@ -1,4 +1,4 @@
-package Sprite;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.KeyHandler;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
@@ -36,8 +36,8 @@ public class Player extends Entity {
 
     // Player defaulte position
     public void setDefaulteValues(){
-        worldX = gp.tileSize * 2;
-        worldY = gp.tileSize * 8;
+        worldX = gp.tileSize * 15;
+        worldY = gp.tileSize * 17;
         speed = 4;
         direction = "down";
     }

@@ -64,19 +64,19 @@ public class TileManger {
     // Class that load the map(Scan the map.txt)
     public void loadMap(String s){
         try {
-            InputStream is = getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/maps/level1.txt");
+            InputStream is = getClass().getResourceAsStream(s);
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
             int col = 0;
             int row = 0;
 
-            while(row < gp.maxScreenRow) {
+            while(row < gp.maxWorldRow) {
                 String line = br.readLine();
                 if(line == null) break;  // Stop if we reach end of file
 
                 String numbers[] = line.split(" "); // Split the line into numbers
-                
-                for(col = 0; col < gp.maxScreenCol && col < numbers.length; col++) {
+
+                for(col = 0; col < gp.maxWorldCol && col < numbers.length; col++) {
                     int num = Integer.parseInt(numbers[col]);
                     mapTileNum[row][col] = num;
                 }
@@ -93,7 +93,7 @@ public class TileManger {
         int worldCol = 0;
         int worldRow = 0;
 
-        while(worldRow < gp.maxWorldRow && worldCol < gp.maxWorldRow) {
+        while(worldRow < gp.maxWorldRow && worldCol < gp.maxWorldCol) {
             int tileNum = mapTileNum[worldRow][worldCol];
 
             int worldX = worldCol * gp.tileSize;

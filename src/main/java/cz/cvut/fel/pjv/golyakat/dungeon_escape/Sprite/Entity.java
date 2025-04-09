@@ -1,4 +1,4 @@
-package Sprite;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite;
 
 import java.awt.image.BufferedImage;
 
