@@ -9,44 +9,52 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
 
+// Třída hráče — rozšiřuje Entity a přidává logiku ovládání hráče
 public class Player extends Entity {
-    gamePanel gp;
-    KeyHandler keyH;
+    gamePanel gp; // Odkaz na herní panel
+    KeyHandler keyH; // Ovladač klávesnice
 
-    public final int screenX;
+    public final int screenX; // Pozice hráče na obrazovce (střed kamery)
     public final int screenY;
 
-    // Animation variables
+    // Obrázky pro animaci pohybu hráče
     public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
-    public String direction;
-    public int spriteCounter = 0;
-    public int spriteNum = 1;
 
+    public String direction; // Aktuální směr pohybu
+    public int spriteCounter = 0; // Počítadlo pro změnu snímku animace
+    public int spriteNum = 1; // Číslo snímku animace (1 nebo 2)
+
+    // Konstruktor hráče
     public Player(gamePanel gp, KeyHandler keyH) {
+        super(gp);
         this.gp = gp;
         this.keyH = keyH;
 
-        //Camera motion
-        screenX = gp.screenWidth/2;
-        screenY = gp.screenHeight/2;
+        // Nastavení pozice hráče na obrazovce do středu
+        screenX = gp.screenWidth / 2;
+        screenY = gp.screenHeight / 2;
 
-        // Adjust solid area to be smaller and more precise
-        solidArea = new Rectangle(12, 12, gp.tileSize - 24, gp.tileSize - 24); //Collision area, this part of the sprite can not go through walls
+        // Nastavení hitboxu (kolizní oblasti) hráče
+        solidArea = new Rectangle(12, 12, gp.tileSize - 24, gp.tileSize - 24);
 
-        setDefaulteValues();
-        getPlayerImage();
+        setDefaulteValues(); // Výchozí hodnoty (pozice, rychlost atd.)
+        getPlayerImage(); // Načtení animací hráče
     }
 
-    // Player default position
-    public void setDefaulteValues(){
-        worldX = gp.tileSize * 15;
-        worldY = gp.tileSize * 22;
-        speed = 4;
-        direction = "down";
+    // Nastaví výchozí hodnoty hráče
+    public void setDefaulteValues() {
+        worldX = gp.tileSize * 15; // Výchozí X pozice ve světě
+        worldY = gp.tileSize * 22; // Výchozí Y pozice ve světě
+        speed = 4; // Rychlost pohybu hráče
+        direction = "down"; // Výchozí směr
+
+        maxLife = 4; // Maximální život hráče
+        life = maxLife; // Aktuální život hráče
     }
 
-    public void getPlayerImage(){
-        try{
+    // Načítá obrázky hráče pro animaci pohybu
+    public void getPlayerImage() {
+        try {
             up1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_up_1.png")));
             up2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_up_2.png")));
             down1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_down_1.png")));
@@ -55,20 +63,21 @@ public class Player extends Entity {
             right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_right_2.png")));
             left1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_left_1.png")));
             left2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_left_2.png")));
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    // Aktualizace stavu hráče každý snímek
     public void update() {
-        // if key pressed
+        // Pokud je stisknutá nějaká pohybová klávesa
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
 
-            // Save old position
+            // Uložíme starou pozici, abychom mohli vrátit v případě kolize
             int oldX = worldX;
             int oldY = worldY;
 
-            // Chechk direction of pressed key
+            // Nastavíme směr a posuneme hráče
             if (keyH.upPressed) {
                 direction = "up";
                 worldY -= speed;
@@ -83,67 +92,48 @@ public class Player extends Entity {
                 worldX += speed;
             }
 
-            // 4) Check if we can go throuh this block
+            // Kontrola kolizí s prostředím
             gp.collisionChecker.checkTiles(this);
             if (collisionOn) {
-                // If not change position to old
+                // Pokud došlo ke kolizi, vrátíme se na původní pozici
                 worldX = oldX;
                 worldY = oldY;
             }
 
-            // Animation Counter
+            // Počítadlo animace pohybu
             spriteCounter++;
-            if(spriteCounter > 15) {
-                if(spriteNum == 1){
-                    spriteNum = 2;
-                } else {
-                    spriteNum = 1;
-                }
+            if (spriteCounter > 15) {
+                spriteNum = (spriteNum == 1) ? 2 : 1;
                 spriteCounter = 0;
             }
         }
     }
 
+    // Metoda pro vykreslení hráče
+    @Override
+    public void draw(Graphics2D g2d) {
+        BufferedImage imageToDraw = null;
 
-    public void draw(Graphics2D g2d){
-        BufferedImage image = null;
-        switch(direction){
+        // Vybereme správný snímek animace podle směru a aktuálního snímku
+        switch (direction) {
             case "up":
-                if(spriteNum == 1){
-                    image = up1;
-                }
-                if(spriteNum == 2){
-                    image = up2;
-                }
+                imageToDraw = (spriteNum == 1) ? up1 : up2;
                 break;
             case "down":
-                if(spriteNum == 1){
-                    image = down1;
-                }
-                if(spriteNum == 2){
-                    image = down2;
-                }
+                imageToDraw = (spriteNum == 1) ? down1 : down2;
                 break;
             case "left":
-                if(spriteNum == 1){
-                    image = left1;
-                }
-                if(spriteNum == 2){
-                    image = left2;
-                }
+                imageToDraw = (spriteNum == 1) ? left1 : left2;
                 break;
             case "right":
-                if(spriteNum == 1){
-                    image = right1;
-                }
-                if(spriteNum == 2){
-                    image = right2;
-                }
+                imageToDraw = (spriteNum == 1) ? right1 : right2;
                 break;
+        }
 
-        }
-        if (image != null) {
-            g2d.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
-        }
+        // Nastavíme image, aby ji GameObject.draw mohl použít
+        this.image = imageToDraw;
+
+        // Voláme metodu draw ze základní třídy GameObject
+        super.draw(g2d, gp);
     }
 }

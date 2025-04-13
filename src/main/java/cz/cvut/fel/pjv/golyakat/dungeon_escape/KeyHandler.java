@@ -1,62 +1,59 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
-import javafx.scene.input.KeyCode;
-
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+// KeyHandler zpracovává vstupy z klávesnice
 public class KeyHandler implements KeyListener {
+
+    // Stav kláves: true = klávesa je stisknutá, false = uvolněná
     public boolean upPressed, downPressed, leftPressed, rightPressed;
 
-
+    // Tento event nepoužíváme (reaguje na jednotlivé znaky)
     @Override
-    public void keyTyped(KeyEvent e) {} // Do not use
+    public void keyTyped(KeyEvent e) {}
 
+    // Událost: klávesa byla stisknuta
     @Override
     public void keyPressed(KeyEvent e) {
-        int code = e.getKeyCode();
+        int code = e.getKeyCode(); // Kód klávesy
 
-        // cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go up
-        if (code == KeyEvent.VK_W) {
-            upPressed = true;
+        // Podle stisknuté klávesy nastavíme odpovídající boolean na true
+        switch(code) {
+            case KeyEvent.VK_W:
+                upPressed = true;
+                break;
+            case KeyEvent.VK_S:
+                downPressed = true;
+                break;
+            case KeyEvent.VK_A:
+                leftPressed = true;
+                break;
+            case KeyEvent.VK_D:
+                rightPressed = true;
+                break;
         }
-
-        // cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go down
-        if (code == KeyEvent.VK_S) {
-            downPressed = true;
-        }
-        //cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go to the left
-        if(code == KeyEvent.VK_A) {
-            leftPressed = true;
-        }
-        //cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go to the right
-        if(code == KeyEvent.VK_D) {
-            rightPressed = true;
-        }
-
     }
 
+    // Událost: klávesa byla uvolněna
     @Override
     public void keyReleased(KeyEvent e) {
-        int code = e.getKeyCode();
+        int code = e.getKeyCode(); // Kód klávesy
 
-        // cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go up
-        if (code == KeyEvent.VK_W) {
-            upPressed = false;
+        // Podle uvolněné klávesy nastavíme odpovídající boolean na false
+        switch(code) {
+            case KeyEvent.VK_W:
+                upPressed = false;
+                break;
+            case KeyEvent.VK_S:
+                downPressed = false;
+                break;
+            case KeyEvent.VK_A:
+                leftPressed = false;
+                break;
+            case KeyEvent.VK_D:
+                rightPressed = false;
+                break;
         }
-
-        // cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go down
-        if (code == KeyEvent.VK_S) {
-            downPressed = false;
-        }
-        //cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go to the left
-        if(code == KeyEvent.VK_A) {
-            leftPressed = false;
-        }
-        //cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite go to the right
-        if(code == KeyEvent.VK_D) {
-            rightPressed = false;
-        }
-
     }
 }
