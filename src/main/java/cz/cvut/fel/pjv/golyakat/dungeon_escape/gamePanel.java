@@ -2,6 +2,7 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Player;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.HealthBar;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
 
 import javax.swing.*;
@@ -32,7 +33,7 @@ public class gamePanel extends JPanel implements Runnable {
     public Collision collisionChecker = new Collision(this);
     public AssetSetter assetSetter = new AssetSetter(this);
     public GameObject obj[] = new GameObject[10]; // Can display up to 10 objects
-
+    public HealthBar healthBar;
 
     // GamePanel Constructor
     public gamePanel() {
@@ -41,6 +42,7 @@ public class gamePanel extends JPanel implements Runnable {
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
+        healthBar = new HealthBar(this);
     }
 
     public void setUpObjects() {
@@ -82,6 +84,7 @@ public class gamePanel extends JPanel implements Runnable {
 
     public void update(){
         player.update();
+        healthBar.update(player.life);
     }
 
     public void paintComponent(Graphics g) {
@@ -99,6 +102,9 @@ public class gamePanel extends JPanel implements Runnable {
 
         // Draw player
         player.draw(g2d);
+        
+        // Draw health bar last so it's on top
+        healthBar.draw(g2d);
         
         g2d.dispose();
     }
