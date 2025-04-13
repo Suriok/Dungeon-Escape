@@ -30,14 +30,17 @@ public class Player extends Entity {
         screenX = gp.screenWidth/2;
         screenY = gp.screenHeight/2;
 
+        // Adjust solid area to be smaller and more precise
+        solidArea = new Rectangle(12, 12, gp.tileSize - 24, gp.tileSize - 24); //Collision area, this part of the sprite can not go through walls
+
         setDefaulteValues();
         getPlayerImage();
     }
 
-    // Player defaulte position
+    // Player default position
     public void setDefaulteValues(){
         worldX = gp.tileSize * 15;
-        worldY = gp.tileSize * 17;
+        worldY = gp.tileSize * 22;
         speed = 4;
         direction = "down";
     }
@@ -57,10 +60,16 @@ public class Player extends Entity {
         }
     }
 
-    public void update(){
-        // Form moving sprite
-        if (keyH.upPressed || keyH.downPressed|| keyH.leftPressed || keyH.rightPressed){
-            if(keyH.upPressed){
+    public void update() {
+        // if key pressed
+        if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
+
+            // Save old position
+            int oldX = worldX;
+            int oldY = worldY;
+
+            // Chechk direction of pressed key
+            if (keyH.upPressed) {
                 direction = "up";
                 worldY -= speed;
             } else if (keyH.downPressed) {
@@ -69,22 +78,32 @@ public class Player extends Entity {
             } else if (keyH.leftPressed) {
                 direction = "left";
                 worldX -= speed;
-            } else {
+            } else if (keyH.rightPressed) {
                 direction = "right";
                 worldX += speed;
             }
 
+            // 4) Check if we can go throuh this block
+            gp.collisionChecker.checkTiles(this);
+            if (collisionOn) {
+                // If not change position to old
+                worldX = oldX;
+                worldY = oldY;
+            }
+
+            // Animation Counter
             spriteCounter++;
             if(spriteCounter > 15) {
                 if(spriteNum == 1){
                     spriteNum = 2;
-                } else if (spriteNum == 2) {
+                } else {
                     spriteNum = 1;
                 }
                 spriteCounter = 0;
             }
         }
     }
+
 
     public void draw(Graphics2D g2d){
         BufferedImage image = null;
