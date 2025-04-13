@@ -9,6 +9,7 @@
     <version>1.0-SNAPSHOT</version>
     <name>Dungeon_Escape</name>
 
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.2</junit.version>
@@ -61,7 +62,8 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                cz.cvut.fel.pjv.golyakat.dungeon_escape/cz.cvut.fel.pjv.golyakat.dungeon_escape.HelloApplication
+
+                                cz.cvut.fel.pjv.golyakat.dungeonescape/cz.cvut.fel.pjv.golyakat.dungeonescape.DungeonEscape
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
