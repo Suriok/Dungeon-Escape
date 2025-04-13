@@ -1,6 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Player;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
 
 import javax.swing.*;
@@ -20,8 +21,6 @@ public class gamePanel extends JPanel implements Runnable {
     //World settings
     public final int maxWorldCol = 60;  // Match map width
     public final int maxWorldRow = 60;  // Match map height
-    public final int worldWidth = tileSize * maxWorldCol;
-    public final int worldHeight = tileSize * maxWorldRow;
 
     //FPS
     int FPS = 60;
@@ -31,6 +30,9 @@ public class gamePanel extends JPanel implements Runnable {
     Thread gameThread; //Keep program running without stop
     public Player player = new Player(this,keyH);
     public Collision collisionChecker = new Collision(this);
+    public AssetSetter assetSetter = new AssetSetter(this);
+    public GameObject obj[] = new GameObject[10]; // Can display up to 10 objects
+
 
     // GamePanel Constructor
     public gamePanel() {
@@ -39,6 +41,10 @@ public class gamePanel extends JPanel implements Runnable {
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
+    }
+
+    public void setUpObjects() {
+        assetSetter.setObg();
     }
 
     public void startGameThread() {
@@ -83,6 +89,14 @@ public class gamePanel extends JPanel implements Runnable {
         Graphics2D g2d = (Graphics2D) g;
         //Draw tiles
         tileH.draw(g2d);
+
+        // Draw object
+        for(int i = 0; i < obj.length; i++) {
+            if(obj[i] != null) {
+                obj[i].draw(g2d, this);
+            }
+        }
+
         // Draw player
         player.draw(g2d);
         
