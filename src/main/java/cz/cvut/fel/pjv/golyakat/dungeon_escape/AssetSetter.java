@@ -1,6 +1,8 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Slime;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Zombie;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Skeleton;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
@@ -50,29 +52,23 @@ public class AssetSetter {
 
     // Umístění monster na mapu
     public void setMonster() {
-        // Získáme všechny procházející oblasti mapy
         List<List<Point>> availableRegions = new ArrayList<>(gp.tileH.walkableRegions);
 
         if (availableRegions.isEmpty()) {
-            System.out.println("No regions available for slime spawning.");
+            System.out.println("No regions available for monster spawning.");
             return;
         }
 
-        // Výchozí pozice hráče
-        int playerCol = 15; // worldX = gp.tileSize * 15
-        int playerRow = 22; // worldY = gp.tileSize * 22
+        int playerCol = 15;
+        int playerRow = 22;
+        int monstersToSpawn = 15;
+        List<Point> spawnedPositions = new ArrayList<>();
 
-        // Kolik slime chceme spawnout
-        int slimesToSpawn = 6;
-        List<Point> spawnedPositions = new ArrayList<>(); // Uchovává pozice již spawnutých slime
-
-        for (int i = 0; i < slimesToSpawn; i++) {
-            // Vybereme region (pokud máme méně regionů než slime, začneme od začátku seznamu)
+        for (int i = 0; i < monstersToSpawn; i++) {
             List<Point> region = availableRegions.get(i % availableRegions.size());
 
-            // Pokud je region prázdný, přeskočíme
             if (region.isEmpty()) {
-                System.out.println("Region " + (i % availableRegions.size()) + " is empty, skipping slime spawn.");
+                System.out.println("Region " + (i % availableRegions.size()) + " is empty, skipping monster spawn.");
                 continue;
             }
 
@@ -80,13 +76,11 @@ public class AssetSetter {
             int maxAttempts = 50;
             Point spawnPoint = null;
 
-            // Pokusíme se najít vhodné místo pro spawn
             while (attempts < maxAttempts) {
                 spawnPoint = region.get(random.nextInt(region.size()));
                 int col = spawnPoint.y;
                 int row = spawnPoint.x;
 
-                // Zkontrolujeme vzdálenost od hráče
                 int distToPlayerX = Math.abs(col - playerCol);
                 int distToPlayerY = Math.abs(row - playerRow);
                 if (distToPlayerX < 10 && distToPlayerY < 10) {
@@ -95,37 +89,49 @@ public class AssetSetter {
                     continue;
                 }
 
-                // Zkontrolujeme vzdálenost od ostatních slime
                 boolean tooClose = false;
                 for (Point existing : spawnedPositions) {
                     int distX = Math.abs(existing.y - col);
                     int distY = Math.abs(existing.x - row);
-                    if (distX < 5 && distY < 5) { // Minimální vzdálenost mezi slime je 5 tile
+                    if (distX < 5 && distY < 5) {
                         tooClose = true;
                         break;
                     }
                 }
 
                 if (!tooClose) {
-                    break; // Našli jsme vhodné místo
+                    break;
                 }
 
                 attempts++;
                 spawnPoint = null;
             }
 
-            // Pokud jsme našli vhodné místo, spawnujeme slima
             if (spawnPoint != null) {
                 int col = spawnPoint.y;
                 int row = spawnPoint.x;
-                gp.monster[i] = new Monster_Slime(gp);
+                
+                // Randomly choose between Slime, Zombie, and Skeleton
+                int monsterType = random.nextInt(3);
+                switch (monsterType) {
+                    case 0:
+                        gp.monster[i] = new Monster_Slime(gp);
+                        break;
+                    case 1:
+                        gp.monster[i] = new Monster_Zombie(gp);
+                        break;
+                    case 2:
+                        gp.monster[i] = new Monster_Skeleton(gp);
+                        break;
+                }
+                
                 gp.monster[i].worldX = col * gp.tileSize;
                 gp.monster[i].worldY = row * gp.tileSize;
                 spawnedPositions.add(new Point(row, col));
 
-                System.out.println("Spawned slime " + i + " at col: " + col + ", row: " + row);
+                System.out.println("Spawned " + gp.monster[i].name + " " + i + " at col: " + col + ", row: " + row);
             } else {
-                System.out.println("Failed to spawn slime " + i + " after " + maxAttempts + " attempts (too close to player or other slimes).");
+                System.out.println("Failed to spawn monster " + i + " after " + maxAttempts + " attempts.");
             }
         }
     }
