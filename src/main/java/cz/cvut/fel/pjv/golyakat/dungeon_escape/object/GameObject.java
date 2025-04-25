@@ -17,7 +17,7 @@ public class GameObject {
     public Rectangle solidArea;
     public int solidAreaDefaultX = 0;
     public int solidAreaDefaultY = 0;
-    
+
     public GameObject() {
         // Default collision area
         solidArea = new Rectangle(0, 0, 48, 48); // Default size of 48x48 pixels
