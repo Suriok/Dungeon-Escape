@@ -46,6 +46,10 @@ public class gamePanel extends JPanel implements Runnable {
     public int gameState;
     public final int playerState = 1;
 
+    // UI message for door interaction
+    public String doorMessage = "";
+    public int doorMessageCounter = 0;
+
     // === Konstruktor gamePanel ===
     public gamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight)); // Nastavení velikosti okna
@@ -109,6 +113,14 @@ public class gamePanel extends JPanel implements Runnable {
                 }
             }
         }
+
+        // Update door message visibility
+        if (doorMessageCounter > 0) {
+            doorMessageCounter--;
+            if (doorMessageCounter <= 0) {
+                doorMessage = "";
+            }
+        }
     }
 
     // Vykreslování všech prvků na obrazovku
@@ -138,6 +150,15 @@ public class gamePanel extends JPanel implements Runnable {
 
         // 5. Vykreslení health baru (na konec, aby byl vždy navrchu)
         healthBar.draw(g2d);
+
+        // 6. Vykreslení UI zprávy pro dveře
+        if (!doorMessage.isEmpty()) {
+            g2d.setFont(new Font("Arial", Font.PLAIN, 20));
+            g2d.setColor(Color.WHITE);
+            int messageX = tileSize;
+            int messageY = tileSize * 11;
+            g2d.drawString(doorMessage, messageX, messageY);
+        }
 
         g2d.dispose(); // Uvolnění prostředků
     }

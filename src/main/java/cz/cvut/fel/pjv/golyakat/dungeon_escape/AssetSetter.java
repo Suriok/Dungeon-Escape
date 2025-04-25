@@ -30,24 +30,30 @@ public class AssetSetter {
         gp.obj[0] = new Object_Small_Chest();
         gp.obj[0].worldX = 15 * gp.tileSize;
         gp.obj[0].worldY = 21 * gp.tileSize;
+        gp.obj[0].Collision = true; // Ensure chest is solid
+        System.out.println("Placed chest at: " + gp.obj[0].worldX/gp.tileSize + ", " + gp.obj[0].worldY/gp.tileSize);
 
-        // Dveře (Side)
-        gp.obj[2] = new Object_DoorSide();
-        gp.obj[2].worldX = 20 * gp.tileSize;
-        gp.obj[2].worldY = 22 * gp.tileSize;
+        // Side door
+        gp.obj[1] = new Object_DoorSide();
+        gp.obj[1].worldX = 20 * gp.tileSize;
+        gp.obj[1].worldY = 22 * gp.tileSize;
+        System.out.println("Placed side door at: " + gp.obj[1].worldX/gp.tileSize + ", " + gp.obj[1].worldY/gp.tileSize);
 
-        // Dveře (Front) — umisťujeme několik dveří na různé pozice
+        // Front doors
+        gp.obj[2] = new Object_DoorFront();
+        gp.obj[2].worldX = 32 * gp.tileSize;
+        gp.obj[2].worldY = 24 * gp.tileSize;
+        System.out.println("Placed front door 1 at: " + gp.obj[2].worldX/gp.tileSize + ", " + gp.obj[2].worldY/gp.tileSize);
+
         gp.obj[3] = new Object_DoorFront();
-        gp.obj[3].worldX = 32 * gp.tileSize;
-        gp.obj[3].worldY = 24 * gp.tileSize;
+        gp.obj[3].worldX = 28 * gp.tileSize;
+        gp.obj[3].worldY = 20 * gp.tileSize;
+        System.out.println("Placed front door 2 at: " + gp.obj[3].worldX/gp.tileSize + ", " + gp.obj[3].worldY/gp.tileSize);
 
         gp.obj[4] = new Object_DoorFront();
-        gp.obj[4].worldX = 28 * gp.tileSize;
+        gp.obj[4].worldX = 38 * gp.tileSize;
         gp.obj[4].worldY = 20 * gp.tileSize;
-
-        gp.obj[5] = new Object_DoorFront();
-        gp.obj[5].worldX = 38 * gp.tileSize;
-        gp.obj[5].worldY = 20 * gp.tileSize;
+        System.out.println("Placed front door 3 at: " + gp.obj[4].worldX/gp.tileSize + ", " + gp.obj[4].worldY/gp.tileSize);
     }
 
     // Umístění monster na mapu
@@ -110,7 +116,7 @@ public class AssetSetter {
             if (spawnPoint != null) {
                 int col = spawnPoint.y;
                 int row = spawnPoint.x;
-                
+
                 // Randomly choose between Slime, Zombie, and Skeleton
                 int monsterType = random.nextInt(3);
                 switch (monsterType) {
@@ -124,7 +130,7 @@ public class AssetSetter {
                         gp.monster[i] = new Monster_Skeleton(gp);
                         break;
                 }
-                
+
                 gp.monster[i].worldX = col * gp.tileSize;
                 gp.monster[i].worldY = row * gp.tileSize;
                 spawnedPositions.add(new Point(row, col));
