@@ -6,7 +6,6 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Skeleton;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_key;
 
 import java.awt.*;
 import java.util.ArrayList;
