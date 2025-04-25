@@ -45,10 +45,4 @@ public class Entity extends GameObject {
         // Voláme metodu draw ze základní třídy GameObject
         super.draw(g2d, gp);
     }
-
-    // Pomocná metoda setup pro načítání obrázků — zde pouze návrh, implementace v potomcích
-    public BufferedImage setup(String imagePath) {
-        // Placeholder — reálná implementace bude v konkrétních třídách (např. Player nebo Monster)
-        return null;
-    }
 }
