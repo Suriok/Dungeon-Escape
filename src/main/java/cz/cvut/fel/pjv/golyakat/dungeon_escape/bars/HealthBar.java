@@ -1,6 +1,8 @@
-package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.bars;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;

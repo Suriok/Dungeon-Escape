@@ -7,7 +7,7 @@ import java.awt.event.KeyListener;
 public class KeyHandler implements KeyListener {
 
     // Stav kláves: true = klávesa je stisknutá, false = uvolněná
-    public boolean upPressed, downPressed, leftPressed, rightPressed, ePressed;
+    public boolean upPressed, downPressed, leftPressed, rightPressed, ePressed, fPressed;
 
     // Tento event nepoužíváme (reaguje na jednotlivé znaky)
     @Override
@@ -18,24 +18,23 @@ public class KeyHandler implements KeyListener {
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode(); // Kód klávesy
 
-        // Podle stisknuté klávesy nastavíme odpovídající boolean na true
-        switch(code) {
-            case KeyEvent.VK_W:
-                upPressed = true;
-                break;
-            case KeyEvent.VK_S:
-                downPressed = true;
-                break;
-            case KeyEvent.VK_A:
-                leftPressed = true;
-                break;
-            case KeyEvent.VK_D:
-                rightPressed = true;
-                break;
-            case KeyEvent.VK_E:
-                ePressed = true;
-                System.out.println("E key pressed - attempting to interact");
-                break;
+        if (code == KeyEvent.VK_W) {
+            upPressed = true;
+        }
+        if (code == KeyEvent.VK_S) {
+            downPressed = true;
+        }
+        if (code == KeyEvent.VK_A) {
+            leftPressed = true;
+        }
+        if (code == KeyEvent.VK_D) {
+            rightPressed = true;
+        }
+        if (code == KeyEvent.VK_E) {
+            ePressed = true;
+        }
+        if (code == KeyEvent.VK_F) {
+            fPressed = true;
         }
     }
 
@@ -60,6 +59,9 @@ public class KeyHandler implements KeyListener {
                 break;
             case KeyEvent.VK_E:
                 ePressed = false;
+                break;
+            case KeyEvent.VK_F:
+                fPressed = false;
                 break;
         }
     }

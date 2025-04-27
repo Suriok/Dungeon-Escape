@@ -5,41 +5,31 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Zombie;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Skeleton;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_key;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-// Třída AssetSetter slouží k nastavení objektů a nepřátel ve hře
 public class AssetSetter {
-    gamePanel gp; // Odkaz na hlavní herní panel
-    Random random; // Generátor náhodných čísel
+    gamePanel gp;
+    Random random;
 
-    // Konstruktor
     public AssetSetter(gamePanel gp) {
         this.gp = gp;
         this.random = new Random();
     }
 
-    // Umístění objektů na mapu
     public void setObg() {
-        // Malá truhla
-        gp.obj[0] = new Object_Small_Chest();
-        gp.obj[0].worldX = 15 * gp.tileSize;
-        gp.obj[0].worldY = 21 * gp.tileSize;
-        gp.obj[0].Collision = true; // Ensure chest is solid
-        System.out.println("Placed chest at: " + gp.obj[0].worldX/gp.tileSize + ", " + gp.obj[0].worldY/gp.tileSize);
+        // Убрали создание сундука с id=0, так как он уже создан в setUpObjects
 
-        // Side door
+        // Боковая дверь
         gp.obj[1] = new Object_DoorSide();
         gp.obj[1].worldX = 20 * gp.tileSize;
         gp.obj[1].worldY = 22 * gp.tileSize;
         System.out.println("Placed side door at: " + gp.obj[1].worldX/gp.tileSize + ", " + gp.obj[1].worldY/gp.tileSize);
 
-        // Front doors
+        // Передние двери
         gp.obj[2] = new Object_DoorFront();
         gp.obj[2].worldX = 32 * gp.tileSize;
         gp.obj[2].worldY = 24 * gp.tileSize;
@@ -56,7 +46,6 @@ public class AssetSetter {
         System.out.println("Placed front door 3 at: " + gp.obj[4].worldX/gp.tileSize + ", " + gp.obj[4].worldY/gp.tileSize);
     }
 
-    // Umístění monster na mapu
     public void setMonster() {
         List<List<Point>> availableRegions = new ArrayList<>(gp.tileH.walkableRegions);
 
@@ -117,7 +106,6 @@ public class AssetSetter {
                 int col = spawnPoint.y;
                 int row = spawnPoint.x;
 
-                // Randomly choose between Slime, Zombie, and Skeleton
                 int monsterType = random.nextInt(3);
                 switch (monsterType) {
                     case 0:

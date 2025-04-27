@@ -10,22 +10,25 @@ import java.util.Objects;
 import java.util.Random;
 
 public class Monster_Skeleton extends Entity {
-    private gamePanel gp; // Odkaz na herní panel
-    public int actionLockCounter = 0; // Počítadlo pro změnu směru pohybu
+    private gamePanel gp;
+    public int actionLockCounter = 0;
+    private static final int DETECTION_RANGE = 5 * 48; // 5 tiles (assuming tileSize = 48)
+    private static final int ATTACK_RANGE = 48; // 1 tile
+    private static final int ATTACK_COOLDOWN = 60; // 1 second at 60 FPS
+    private int attackCounter = 0;
+    private static final int ATTACK_DAMAGE = 1;
 
-    // Konstruktor příšery Slime
     public Monster_Skeleton(gamePanel gp) {
         super(gp);
         this.gp = gp;
 
-        name = "Skeleton"; // Název příšery
-        speed = 2; // Rychlost pohybu
-        maxLife = 6; // Maximální životy
-        life = maxLife; // Aktuální životy
+        name = "Skeleton";
+        speed = 2;
+        maxLife = 6;
+        life = maxLife;
 
-        direction = "down"; // Výchozí směr
+        direction = "down";
 
-        // Nastavení kolizní oblasti (hitbox)
         solidArea = new Rectangle();
         solidArea.x = 3;
         solidArea.y = 10;
@@ -34,65 +37,75 @@ public class Monster_Skeleton extends Entity {
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
 
-        // Načtení obrázků pro animace příšery
         getImage();
     }
 
-    // Metoda pro načtení obrázků příšery
     public void getImage() {
         try {
-            // Načítáme jednotlivé snímky animace pro různé směry
             up1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_up1.png")));
             up2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_up2.png")));
-            down1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_down1.png ")));
+            down1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_down1.png")));
             down2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_down2.png")));
             left1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_right1.png")));
             left2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_right2.png")));
             right1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_left1.png")));
             right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_left2.png")));
         } catch (Exception e) {
-            System.err.println("Error loading zombie sprites: " + e.getMessage());
+            System.err.println("Error loading skeleton sprites: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // Logika pro nastavení směru pohybu příšery
     public void setAction() {
         actionLockCounter++;
 
-        // Každých 120 cyklů (~2 sekundy při 60 FPS) změníme směr
-        if (actionLockCounter >= 120) {
-            Random random = new Random();
-            int i = random.nextInt(100) + 1;
+        // Calculate distance to player
+        int dx = gp.player.worldX - worldX;
+        int dy = gp.player.worldY - worldY;
+        double distance = Math.sqrt(dx * dx + dy * dy);
 
-            // Náhodně vybereme nový směr
-            if (i <= 25) {
-                direction = "up";
-            } else if (i <= 50) {
-                direction = "down";
-            } else if (i <= 75) {
-                direction = "left";
+        if (distance <= DETECTION_RANGE && !isDead) {
+            // Move toward player
+            if (Math.abs(dx) > Math.abs(dy)) {
+                direction = dx > 0 ? "right" : "left";
             } else {
-                direction = "right";
+                direction = dy > 0 ? "down" : "up";
             }
-            actionLockCounter = 0;
+        } else {
+            // Random movement if player is out of range
+            if (actionLockCounter >= 120) {
+                Random random = new Random();
+                int i = random.nextInt(100) + 1;
+                if (i <= 25) {
+                    direction = "up";
+                } else if (i <= 50) {
+                    direction = "down";
+                } else if (i <= 75) {
+                    direction = "left";
+                } else {
+                    direction = "right";
+                }
+                actionLockCounter = 0;
+            }
         }
     }
 
-    // Aktualizace stavu příšery každý snímek
     public void update() {
-        setAction(); // Nastavení směru
+        if (isDead) {
+            super.update(); // Handle fade-out
+            return;
+        }
 
-        // Kontrola, aby direction nebylo null
+        setAction();
+
         if (direction == null) {
             direction = "down";
         }
 
-        // Uložíme si starou pozici
         int oldX = worldX;
         int oldY = worldY;
 
-        // Pohyb příšery podle směru
+        // Move toward player or randomly
         switch (direction) {
             case "up":
                 worldY -= speed;
@@ -106,39 +119,57 @@ public class Monster_Skeleton extends Entity {
             case "right":
                 worldX += speed;
                 break;
-            default:
-                break;
         }
 
-        // Kontrola kolize s dlaždicemi
+        // Check collision with tiles
         collisionOn = false;
         gp.collisionChecker.checkTiles(this);
         if (collisionOn) {
-            // Pokud došlo ke kolizi, vrátíme se na původní pozici
             worldX = oldX;
             worldY = oldY;
-            // Okamžitě vybereme nový směr
             actionLockCounter = 120;
         }
 
-        // Animace příšery (střídání snímků)
+        // Check for player collision and attack
+        attackCounter++;
+        int dx = gp.player.worldX - worldX;
+        int dy = gp.player.worldY - worldY;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
+            gp.player.life -= ATTACK_DAMAGE;
+            if (gp.player.life < 0) {
+                gp.player.life = 0;
+            }
+            attackCounter = 0;
+            System.out.println(name + " attacked player! Player HP: " + gp.player.life);
+        }
+
+        // Animation
         spriteCounter++;
         if (spriteCounter > 15) {
             spriteNum = (spriteNum == 1) ? 2 : 1;
             spriteCounter = 0;
         }
+
+        // Check if dead
+        if (life <= 0) {
+            isDead = true;
+            fadeAlpha = 1.0f;
+            fadeCounter = 0;
+        }
     }
 
-    // Metoda pro vykreslení příšery na obrazovku
     @Override
     public void draw(Graphics2D g2d) {
-        // Zajištění, že direction není null
+        if (isDead && fadeAlpha <= 0) {
+            return; // Skip drawing if fully faded
+        }
+
         if (direction == null) {
             direction = "down";
         }
 
         BufferedImage imageToDraw = null;
-        // Výběr správného obrázku podle směru a fáze animace
         switch (direction) {
             case "up":
                 imageToDraw = (spriteNum == 1) ? up1 : up2;
@@ -153,14 +184,16 @@ public class Monster_Skeleton extends Entity {
                 imageToDraw = (spriteNum == 1) ? right1 : right2;
                 break;
             default:
-                imageToDraw = down1; // Výchozí obrázek
+                imageToDraw = down1;
                 break;
         }
 
-        // Nastavíme obrázek, aby ho metoda draw správně vykreslila
         this.image = imageToDraw;
 
-        // Voláme rodičovskou metodu draw pro vykreslení příšery
-        super.draw(g2d, gp);
+        // Draw the monster with fade effect
+        if (!isDead) {
+            super.draw(g2d); // Normal drawing
+        }
+        // Health bar and fade effect are handled by MonsterUi
     }
 }

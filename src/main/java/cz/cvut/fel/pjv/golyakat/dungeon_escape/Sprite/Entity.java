@@ -6,43 +6,43 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-// Abstraktní třída Entity — základní třída pro všechny pohyblivé entity ve hře (např. hráč, příšery)
 public class Entity extends GameObject {
-    gamePanel gp; // Odkaz na herní panel
+    gamePanel gp;
 
-    public int speed; // Rychlost pohybu entity
-
-    // Obrázky pro různé směry a fáze animace (pohybu)
+    public int speed;
     public BufferedImage up1, up2, down1, down2, right1, right2, left1, left2;
-
-    public String direction = "down"; // Výchozí směr entity
-
-    // Počítadla pro animaci sprite
+    public String direction = "down";
     public int spriteCounter = 0;
-    public int spriteNum = 1; // Určuje, který obrázek animace se má použít
+    public int spriteNum = 1;
+    public Rectangle solidArea;
+    public int solidAreaDefaultX, solidAreaDefaultY;
+    public boolean collisionOn = false;
+    public int maxLife;
+    public int life;
 
-    public Rectangle solidArea; // Hitbox entity pro detekci kolizí
-    public int solidAreaDefaultX, solidAreaDefaultY; // Výchozí pozice hitboxu
-    public boolean collisionOn = false; // Flag, zda entita narazila do překážky
+    // Fields for fade effect and death state
+    public boolean isDead = false;
+    public float fadeAlpha = 1.0f; // Opacity for fade effect (1.0 = fully visible, 0.0 = fully transparent)
+    public int fadeCounter = 0;
+    public static final int FADE_DURATION = 60; // Frames to fade out (e.g., 1 second at 60 FPS)
 
-    // Stav entity (společné pro hráče i monstra)
-    public int maxLife; // Maximální život entity
-    public int life; // Aktuální život entity
-
-    // Konstruktor entity
     public Entity(gamePanel gp) {
         this.gp = gp;
-        solidArea = new Rectangle(); // Inicializace kolizní oblasti (hitboxu)
+        solidArea = new Rectangle();
     }
 
-    // Metoda pro aktualizaci entity (bude přepsána v potomcích — hráč, příšery atd.)
     public void update() {
-        // Základní metoda bez obsahu — potomci si ji implementují podle potřeby
+        // Handle fade-out when dead
+        if (isDead && fadeAlpha > 0) {
+            fadeCounter++;
+            fadeAlpha = 1.0f - ((float) fadeCounter / FADE_DURATION);
+            if (fadeAlpha < 0) {
+                fadeAlpha = 0;
+            }
+        }
     }
 
-    // Metoda pro vykreslení entity na obrazovku
     public void draw(Graphics2D g2d) {
-        // Voláme metodu draw ze základní třídy GameObject
         super.draw(g2d, gp);
     }
 }

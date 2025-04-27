@@ -2,164 +2,212 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Player;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.ChestUI;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.PlayerUI;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.MonsterUI;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.DefensBar;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.HealthBar;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.HealthBar;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.HashMap;
+import java.util.Map;
 
-// Hlavní panel hry, kde se odehrává veškeré vykreslování a logika herní smyčky
 public class gamePanel extends JPanel implements Runnable {
+    final int originalTileSize = 16;
+    final int scale = 3;
 
-    // === Nastavení obrazovky ===
-    final int originalTileSize = 16; // Originální velikost dlaždice (např. 16x16 pixelů)
-    final int scale = 3; // Násobení velikosti pro lepší viditelnost
+    public final int tileSize = originalTileSize * scale;
+    public final int maxScreenCol = 20;
+    public final int maxScreenRow = 12;
+    public final int screenWidth = tileSize * maxScreenCol;
+    public final int screenHeight = tileSize * maxScreenRow;
 
-    public final int tileSize = originalTileSize * scale; // Výsledná velikost tile
-    public final int maxScreenCol = 20; // Počet dlaždic na šířku obrazovky
-    public final int maxScreenRow = 12; // Počet dlaždic na výšku obrazovky
-    public final int screenWidth = tileSize * maxScreenCol; // Celková šířka obrazovky
-    public final int screenHeight = tileSize * maxScreenRow; // Celková výška obrazovky
+    public final int maxWorldCol = 60;
+    public final int maxWorldRow = 60;
 
-    // === Nastavení světa ===
-    public final int maxWorldCol = 60;  // Počet sloupců ve světě (mapa)
-    public final int maxWorldRow = 60;  // Počet řádků ve světě (mapa)
+    int FPS = 60;
 
-    // === FPS nastavení ===
-    int FPS = 60; // Počet snímků za sekundu
+    TileManger tileH = new TileManger(this);
+    public KeyHandler keyH = new KeyHandler();
+    Thread gameThread;
+    public Collision collisionChecker = new Collision(this);
+    public AssetSetter assetSetter = new AssetSetter(this);
 
-    // === Herní komponenty ===
-    TileManger tileH = new TileManger(this); // Správa dlaždic
-    KeyHandler keyH = new KeyHandler(); // Ovládání klávesnice
-    Thread gameThread; // Herní vlákno
-    public Collision collisionChecker = new Collision(this); // Kontrola kolizí
-    public AssetSetter assetSetter = new AssetSetter(this); // Nastavení herních objektů
+    public Player player = new Player(this, keyH);
+    public GameObject obj[] = new GameObject[10];
+    public HealthBar healthBar;
+    public DefensBar defensBar;
+    public Entity monster[] = new Entity[20];
+    public MonsterUI monsterUi; // Added MonsterUi instance
 
-    // Entity a objekty
-    public Player player = new Player(this, keyH); // Hráč
-    public GameObject obj[] = new GameObject[10]; // Herní objekty (truhly, dveře atd.)
-    public HealthBar healthBar; // Ukazatel zdraví hráče
-    public Entity monster[] = new Entity[20]; // Pole monster
-
-    // Stav hry
     public int gameState;
     public final int playerState = 1;
 
-    // UI message for door interaction
     public String doorMessage = "";
     public int doorMessageCounter = 0;
+    public String chestMessage = "";
+    public int chestMessageCounter = 0;
 
-    // === Konstruktor gamePanel ===
+    public ChestUI chestUI;
+    public PlayerUI playerUI;
+    public ChestInventoryManager chestInventoryManager;
+
     public gamePanel() {
-        this.setPreferredSize(new Dimension(screenWidth, screenHeight)); // Nastavení velikosti okna
-        this.setBackground(Color.BLACK); // Barva pozadí
-        this.setDoubleBuffered(true); // Zlepšení vykreslování
-        this.addKeyListener(keyH); // Přidání posluchače klávesnice
-        this.setFocusable(true); // Panel může přijímat klávesnici
+        this.setPreferredSize(new Dimension(screenWidth, screenHeight));
+        this.setBackground(Color.BLACK);
+        this.setDoubleBuffered(true);
+        this.addKeyListener(keyH);
+        this.setFocusable(true);
 
-        healthBar = new HealthBar(this); // Inicializace health baru
-        gameState = playerState; // Nastavíme výchozí stav hry
+        chestInventoryManager = new ChestInventoryManager();
+        healthBar = new HealthBar(this);
+        defensBar = new DefensBar(this);
+        chestUI = new ChestUI(this);
+        playerUI = new PlayerUI(this);
+        monsterUi = new MonsterUI(this); // Initialize MonsterUi
+        gameState = playerState;
+
+        // Добавляем слушатель закрытия окна
+        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        if (frame != null) {
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    chestInventoryManager.resetChestData(); // Очищаем chest_inventory.xml
+                    System.out.println("Reset chest inventory XML on window close.");
+                }
+            });
+        }
     }
 
-    // Nastaví všechny objekty ve hře (truhly, dveře, monstra atd.)
     public void setUpObjects() {
+        // Сундук с id = 0: кожаные штаны и кожаный шлем
+        Map<String, Integer> chest0Armor = new HashMap<>();
+        chest0Armor.put("leather_pants", 1);
+        chest0Armor.put("leather_helmet", 1);
+        obj[0] = new Object_Small_Chest(this, 0, chest0Armor);
+        obj[0].worldX = 15 * tileSize;
+        obj[0].worldY = 21 * tileSize;
+
         assetSetter.setObg();
         assetSetter.setMonster();
     }
 
-    // Spuštění herního vlákna
     public void startGameThread() {
-        gameThread = new Thread(this); // Vytvoříme nové vlákno s gamePanelem
-        gameThread.start(); // Spustíme vlákno
+        gameThread = new Thread(this);
+        gameThread.start();
     }
 
-    // Herní smyčka
     @Override
     public void run() {
-        double drawInterval = (double) 1000000000 / FPS; // Interval mezi snímky v nanosekundách
+        double drawInterval = (double) 1000000000 / FPS;
         double nextDrawTime = System.nanoTime() + drawInterval;
 
         while (gameThread != null) {
-            update(); // Aktualizace stavu hry
-            repaint(); // Vykreslení hry
+            update();
+            repaint();
 
             try {
                 double remainingTime = nextDrawTime - System.nanoTime();
-                remainingTime = remainingTime / 1000000; // Převedeme na milisekundy
+                remainingTime = remainingTime / 1000000;
 
                 if (remainingTime < 0) {
                     remainingTime = 0;
                 }
 
-                Thread.sleep((long) remainingTime); // Pauza mezi snímky
-                nextDrawTime += drawInterval; // Nastavíme čas pro další snímek
-
+                Thread.sleep((long) remainingTime);
+                nextDrawTime += drawInterval;
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    // Aktualizace všech herních objektů
     public void update() {
-        player.update(); // Aktualizace hráče
-        healthBar.update(player.life); // Aktualizace health baru
+        player.update();
+        healthBar.update(player.life);
+        defensBar.update(player.getTotalDefense());
 
         if (gameState == playerState) {
             for (int i = 0; i < monster.length; i++) {
                 if (monster[i] != null) {
-                    monster[i].update(); // Aktualizace každého monstra
+                    monster[i].update();
+                    // Remove fully faded monsters
+                    if (monster[i].isDead && monster[i].fadeAlpha <= 0) {
+                        monster[i] = null;
+                    }
                 }
             }
         }
 
-        // Update door message visibility
         if (doorMessageCounter > 0) {
             doorMessageCounter--;
             if (doorMessageCounter <= 0) {
                 doorMessage = "";
             }
         }
+        if (chestMessageCounter > 0) {
+            chestMessageCounter--;
+            if (chestMessageCounter <= 0) {
+                chestMessage = "";
+            }
+        }
     }
 
-    // Vykreslování všech prvků na obrazovku
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        // 1. Vykreslení mapy
         tileH.draw(g2d);
 
-        // 2. Vykreslení herních objektů (např. truhla, dveře)
         for (int i = 0; i < obj.length; i++) {
             if (obj[i] != null) {
                 obj[i].draw(g2d, this);
             }
         }
 
-        // 3. Vykreslení monster
+        // Draw monsters and their UI
         for (int i = 0; i < monster.length; i++) {
             if (monster[i] != null) {
-                monster[i].draw(g2d);
+                monsterUi.draw(g2d, monster[i]); // Draw health bar and handle fade
+                if (!monster[i].isDead || monster[i].fadeAlpha > 0) {
+                    monster[i].draw(g2d); // Draw monster sprite
+                }
             }
         }
 
-        // 4. Vykreslení hráče
         player.draw(g2d);
 
-        // 5. Vykreslení health baru (na konec, aby byl vždy navrchu)
         healthBar.draw(g2d);
+        defensBar.draw(g2d);
 
-        // 6. Vykreslení UI zprávy pro dveře
-        if (!doorMessage.isEmpty()) {
-            g2d.setFont(new Font("Arial", Font.PLAIN, 20));
-            g2d.setColor(Color.WHITE);
-            int messageX = tileSize;
-            int messageY = tileSize * 11;
-            g2d.drawString(doorMessage, messageX, messageY);
+        chestUI.draw(g2d);
+
+        playerUI.draw(g2d);
+
+        g2d.setFont(new Font("Arial", Font.PLAIN, 20));
+        g2d.setColor(Color.WHITE);
+
+        int baseMessageY = screenHeight - 70;
+
+        if (!chestMessage.isEmpty()) {
+            int chestMessageY = baseMessageY;
+            int chestMessageX = screenWidth - g2d.getFontMetrics().stringWidth(chestMessage) - tileSize + 30;
+            g2d.drawString(chestMessage, chestMessageX, chestMessageY);
         }
 
-        g2d.dispose(); // Uvolnění prostředků
+        if (!doorMessage.isEmpty()) {
+            int doorMessageY = baseMessageY - (chestMessage.isEmpty() ? 0 : 30);
+            int doorMessageX = screenWidth - g2d.getFontMetrics().stringWidth(doorMessage) - tileSize;
+            g2d.drawString(doorMessage, doorMessageX, doorMessageY);
+        }
+
+        g2d.dispose();
     }
 }
