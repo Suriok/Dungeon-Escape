@@ -1,0 +1,5 @@
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.armour;
+
+public interface Armor {
+    float getDefensAmount();
+}

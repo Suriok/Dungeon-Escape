@@ -7,7 +7,7 @@ import java.awt.event.KeyListener;
 public class KeyHandler implements KeyListener {
 
     // Stav kláves: true = klávesa je stisknutá, false = uvolněná
-    public boolean upPressed, downPressed, leftPressed, rightPressed, ePressed;
+    public boolean upPressed, downPressed, leftPressed, rightPressed, ePressed, fPressed;
 
     // Tento event nepoužíváme (reaguje na jednotlivé znaky)
     @Override
@@ -33,6 +33,9 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_E) {
             ePressed = true;
         }
+        if (code == KeyEvent.VK_F) {
+            fPressed = true;
+        }
     }
 
     // Událost: klávesa byla uvolněna
@@ -56,6 +59,9 @@ public class KeyHandler implements KeyListener {
                 break;
             case KeyEvent.VK_E:
                 ePressed = false;
+                break;
+            case KeyEvent.VK_F:
+                fPressed = false;
                 break;
         }
     }

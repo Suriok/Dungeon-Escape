@@ -85,7 +85,7 @@ public class Collision {
 
         for (int i = 0; i < gp.obj.length; i++) {
             if (gp.obj[i] != null) {
-                // Получаем текущую область игрока
+                // Получаем текущую область сущности
                 entity.solidArea.x = entity.worldX + entity.solidArea.x;
                 entity.solidArea.y = entity.worldY + entity.solidArea.y;
 
@@ -151,34 +151,35 @@ public class Collision {
         return index;
     }
 
-    // Новый метод для проверки взаимодействия (без учета направления движения)
     public int checkObjectForInteraction(Entity entity, boolean player) {
         int index = 999;
 
         for (int i = 0; i < gp.obj.length; i++) {
             if (gp.obj[i] != null) {
-                // Создаем расширенную область вокруг игрока для проверки взаимодействия
-                Rectangle interactionArea = new Rectangle(
-                        entity.worldX - gp.tileSize / 2, // Расширяем на пол-тайла влево
-                        entity.worldY - gp.tileSize / 2, // Расширяем на пол-тайла вверх
-                        entity.solidArea.width + gp.tileSize, // Увеличиваем ширину
-                        entity.solidArea.height + gp.tileSize // Увеличиваем высоту
-                );
+                // Получаем текущую область сущности
+                entity.solidArea.x = entity.worldX + entity.solidArea.x;
+                entity.solidArea.y = entity.worldY + entity.solidArea.y;
 
-                // Получаем область объекта
-                Rectangle objectArea = new Rectangle(
-                        gp.obj[i].worldX + gp.obj[i].solidArea.x,
-                        gp.obj[i].worldY + gp.obj[i].solidArea.y,
-                        gp.obj[i].solidArea.width,
-                        gp.obj[i].solidArea.height
-                );
+                // Расширяем область объекта для взаимодействия
+                gp.obj[i].solidArea.x = gp.obj[i].worldX + gp.obj[i].solidArea.x - gp.tileSize;
+                gp.obj[i].solidArea.y = gp.obj[i].worldY + gp.obj[i].solidArea.y - gp.tileSize;
+                gp.obj[i].solidArea.width += 2 * gp.tileSize;
+                gp.obj[i].solidArea.height += 2 * gp.tileSize;
 
                 // Проверяем пересечение
-                if (interactionArea.intersects(objectArea)) {
+                if (entity.solidArea.intersects(gp.obj[i].solidArea)) {
                     if (player) {
                         index = i;
                     }
                 }
+
+                // Сбрасываем области
+                entity.solidArea.x = entity.solidAreaDefaultX;
+                entity.solidArea.y = entity.solidAreaDefaultY;
+                gp.obj[i].solidArea.x = gp.obj[i].solidAreaDefaultX;
+                gp.obj[i].solidArea.y = gp.obj[i].solidAreaDefaultY;
+                gp.obj[i].solidArea.width = gp.tileSize; // Возвращаем исходный размер
+                gp.obj[i].solidArea.height = gp.tileSize;
             }
         }
         return index;
@@ -187,14 +188,12 @@ public class Collision {
     public void handleObjectInteraction(Entity entity, int objectIndex) {
         if (objectIndex != 999 && gp.obj[objectIndex] != null) {
             String objName = gp.obj[objectIndex].name;
-            if (objName.equals("DoorFront") || objName.equals("DoorSide")) {
-                if (gp.obj[objectIndex] instanceof Object_DoorFront) {
-                    ((Object_DoorFront) gp.obj[objectIndex]).interact();
-                    System.out.println("Interacting with front door");
-                } else if (gp.obj[objectIndex] instanceof Object_DoorSide) {
-                    ((Object_DoorSide) gp.obj[objectIndex]).interact();
-                    System.out.println("Interacting with side door");
-                }
+            if (objName.equals("DoorFront") && !((Object_DoorFront) gp.obj[objectIndex]).isOpen()) {
+                ((Object_DoorFront) gp.obj[objectIndex]).interact();
+                System.out.println("Interacting with front door");
+            } else if (objName.equals("DoorSide") && !((Object_DoorSide) gp.obj[objectIndex]).isOpen()) {
+                ((Object_DoorSide) gp.obj[objectIndex]).interact();
+                System.out.println("Interacting with side door");
             } else if (objName.equals("small_chest")) {
                 Object_Small_Chest chest = (Object_Small_Chest) gp.obj[objectIndex];
                 gp.chestUI.openChest(chest);
