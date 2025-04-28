@@ -28,6 +28,7 @@ public class Collision {
         String direction = (entity.direction != null) ? entity.direction : "down";
         entity.collisionOn = false;
 
+        // Check tile collisions
         switch (direction) {
             case "up":
                 int nextTopRow = (entityTopWorldY - entity.speed) / gp.tileSize;
@@ -77,6 +78,11 @@ public class Collision {
                     }
                 }
                 break;
+        }
+
+        // Check object collisions for non-player entities (e.g., monsters)
+        if (!entity.getClass().getSimpleName().equals("Player")) {
+            checkObject(entity, false);
         }
     }
 

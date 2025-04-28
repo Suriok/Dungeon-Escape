@@ -14,10 +14,10 @@ public class Monster_Slime extends Entity {
     private gamePanel gp; // Odkaz na herní panel
     public int actionLockCounter = 0;
     private static final int DETECTION_RANGE = 5 * 48; // 5 tiles (assuming tileSize = 48)
-    private static final int ATTACK_RANGE = 48; // 1 tile
+    private static final int ATTACK_RANGE = 32; // 1 tile
     private static final int ATTACK_COOLDOWN = 60; // 1 second at 60 FPS
     private int attackCounter = 0;
-    private static final int ATTACK_DAMAGE = 1;
+    private static final int ATTACK_DAMAGE = 3;
 
     // Konstruktor příšery Slime
     public Monster_Slime(gamePanel gp) {
@@ -26,7 +26,7 @@ public class Monster_Slime extends Entity {
 
         name = "Slime"; // Název příšery
         speed = 1; // Rychlost pohybu
-        maxLife = 4; // Maximální životy
+        maxLife = 2; // Maximální životy
         life = maxLife; // Aktuální životy
 
         direction = "down"; // Výchozí směr
@@ -128,7 +128,7 @@ public class Monster_Slime extends Entity {
                 break;
         }
 
-        // Check collision with tiles
+        // Check collision with tiles and objects
         collisionOn = false;
         gp.collisionChecker.checkTiles(this);
         if (collisionOn) {
@@ -143,10 +143,7 @@ public class Monster_Slime extends Entity {
         int dy = gp.player.worldY - worldY;
         double distance = Math.sqrt(dx * dx + dy * dy);
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
-            gp.player.life -= ATTACK_DAMAGE;
-            if (gp.player.life < 0) {
-                gp.player.life = 0;
-            }
+            gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
             System.out.println(name + " attacked player! Player HP: " + gp.player.life);
         }

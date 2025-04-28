@@ -3,12 +3,14 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Apple;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Blubbery;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_HealthePotion;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Key; // Add import for Item_Key
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_pants;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_helmet;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_boots;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_pants;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_helmet;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Iron_sword;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -72,6 +74,10 @@ public class ChestInventoryManager {
             }
             return item;
         }
+
+        public void setItem(GameObject item) {
+            this.item = item;
+        }
     }
 
     private static GameObject createItemFromName(String name) {
@@ -93,6 +99,10 @@ public class ChestInventoryManager {
                 return new iron_pants();
             case "iron_helmet":
                 return new iron_helmet();
+            case "iron_sword":
+                return new Iron_sword(2, 2); // Указываем attack=2
+            case "Key": // Add case for Key
+                return new Item_Key();
             default:
                 System.err.println("Unknown item name: " + name);
                 return null;
@@ -103,7 +113,7 @@ public class ChestInventoryManager {
         List<ItemData> items = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : defaultItems.entrySet()) {
             ItemData itemData = new ItemData(entry.getKey(), entry.getValue());
-            if (itemData.getItem() != null) { // Добавляем только если предмет создан успешно
+            if (itemData.getItem() != null) {
                 items.add(itemData);
             }
         }
@@ -139,7 +149,6 @@ public class ChestInventoryManager {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void loadChestData() {
         System.out.println("Starting fresh, no previous chest data loaded.");
     }

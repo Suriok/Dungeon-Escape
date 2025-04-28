@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Goblin;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Slime;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Zombie;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Skeleton;
@@ -44,6 +45,17 @@ public class AssetSetter {
         gp.obj[4].worldX = 38 * gp.tileSize;
         gp.obj[4].worldY = 20 * gp.tileSize;
         System.out.println("Placed front door 3 at: " + gp.obj[4].worldX/gp.tileSize + ", " + gp.obj[4].worldY/gp.tileSize);
+
+        gp.obj[5] = new Object_DoorFront();
+        gp.obj[5].worldX = 41 * gp.tileSize;
+        gp.obj[5].worldY = 10 * gp.tileSize;
+        System.out.println("Placed front door 1 at: " + gp.obj[5].worldX/gp.tileSize + ", " + gp.obj[2].worldY/gp.tileSize);
+
+        gp.obj[6] = new Object_DoorSide();
+        gp.obj[6].worldX = 31 * gp.tileSize;
+        gp.obj[6].worldY = 7 * gp.tileSize;
+        ((Object_DoorSide) gp.obj[6]).requiresKey = true; // This door requires a key
+        System.out.println("Placed side door (requires key) at: " + gp.obj[6].worldX/gp.tileSize + ", " + gp.obj[1].worldY/gp.tileSize);
     }
 
     public void setMonster() {
@@ -56,10 +68,18 @@ public class AssetSetter {
 
         int playerCol = 15;
         int playerRow = 22;
-        int monstersToSpawn = 15;
+        int monstersToSpawn = 14; // Reduced by 1 to make room for the boss
         List<Point> spawnedPositions = new ArrayList<>();
 
-        for (int i = 0; i < monstersToSpawn; i++) {
+        // Spawn the Boss_Goblin at fixed position (x:35, y:8)
+        gp.monster[0] = new Boss_Goblin(gp);
+        gp.monster[0].worldX = 35 * gp.tileSize;
+        gp.monster[0].worldY = 8 * gp.tileSize;
+        spawnedPositions.add(new Point(8, 35));
+        System.out.println("Spawned Boss Goblin at col: 35, row: 8");
+
+        // Spawn other monsters
+        for (int i = 1; i < monstersToSpawn; i++) {
             List<Point> region = availableRegions.get(i % availableRegions.size());
 
             if (region.isEmpty()) {
