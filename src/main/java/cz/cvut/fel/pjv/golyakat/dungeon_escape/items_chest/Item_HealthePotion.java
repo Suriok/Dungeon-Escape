@@ -10,7 +10,7 @@ public class Item_HealthePotion extends GameObject {
 
     public Item_HealthePotion() {
         name = "potion";
-        healAmount = 0.5f;
+        healAmount = 2;
         try {
             image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/healing.png")));
         } catch (Exception e) {

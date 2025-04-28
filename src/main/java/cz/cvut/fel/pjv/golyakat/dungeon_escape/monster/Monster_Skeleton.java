@@ -16,7 +16,7 @@ public class Monster_Skeleton extends Entity {
     private static final int ATTACK_RANGE = 32; // 1 tile
     private static final int ATTACK_COOLDOWN = 60; // 1 second at 60 FPS
     private int attackCounter = 0;
-    private static final int ATTACK_DAMAGE = 4;
+    private static final int ATTACK_DAMAGE = 5;
 
     public Monster_Skeleton(gamePanel gp) {
         super(gp);

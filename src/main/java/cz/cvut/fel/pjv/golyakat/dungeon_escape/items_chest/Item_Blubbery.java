@@ -10,7 +10,7 @@ public class Item_Blubbery extends GameObject {
 
     public Item_Blubbery() {
         name = "blubbery";
-        healAmount = 0.5f;
+        healAmount = 1f;
         try {
             image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/bluberry.png")));
         } catch (Exception e) {
