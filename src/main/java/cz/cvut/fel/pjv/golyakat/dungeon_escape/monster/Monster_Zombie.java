@@ -16,7 +16,7 @@ public class Monster_Zombie extends Entity {
     private static final int ATTACK_RANGE = 32; // 1 tile
     private static final int ATTACK_COOLDOWN = 60; // 1 second at 60 FPS
     private int attackCounter = 4;
-    private static final int ATTACK_DAMAGE = 1;
+    private static final int ATTACK_DAMAGE = 5;
 
     // Konstruktor příšery Slime
     public Monster_Zombie(gamePanel gp) {

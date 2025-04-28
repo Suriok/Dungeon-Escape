@@ -59,6 +59,8 @@ public class gamePanel extends JPanel implements Runnable {
     public int doorHintMessageCounter = 0;
     public String chestMessage = "";
     public int chestMessageCounter = 0;
+    public String healingHintMessage = "";
+    public int healingHintMessageCounter = 0;
 
     public ChestUI chestUI;
     public PlayerUI playerUI;
@@ -149,8 +151,19 @@ public class gamePanel extends JPanel implements Runnable {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (draggedItem != null) {
+                    // Check if dropped on the player sprite to use healing items
+                    Rectangle playerBounds = new Rectangle(player.screenX, player.screenY, tileSize, tileSize);
+                    if (playerBounds.contains(e.getPoint()) &&
+                            (draggedItem.getName().equals("Apple") ||
+                                    draggedItem.getName().equals("blubbery") ||
+                                    draggedItem.getName().equals("potion"))) {
+                        player.consumeHealingItem(draggedItem);
+                        // Remove the item from inventory
+                        player.removeItem(draggedItemIndex);
+                        System.out.println("Player used " + draggedItem.getName() + " to restore HP.");
+                    }
                     // Check if dropped on the key-locked door (gp.obj[6])
-                    if (draggedItem.getName().equals("Key") && obj[6] != null && obj[6] instanceof Object_DoorSide) {
+                    else if (draggedItem.getName().equals("Key") && obj[6] != null && obj[6] instanceof Object_DoorSide) {
                         Object_DoorSide door = (Object_DoorSide) obj[6];
                         if (door.requiresKey && !door.isOpen()) {
                             int doorScreenX = obj[6].worldX - player.worldX + player.screenX;
@@ -159,14 +172,7 @@ public class gamePanel extends JPanel implements Runnable {
                             if (doorBounds.contains(e.getPoint())) {
                                 door.unlock();
                                 // Remove the key from inventory
-                                ChestInventoryManager.ItemData itemToRemove = player.getInventory().stream()
-                                        .filter(item -> item.getName().equals(draggedItem.getName()))
-                                        .findFirst()
-                                        .orElse(null);
-                                if (itemToRemove != null) {
-                                    int index = player.getInventory().indexOf(itemToRemove);
-                                    player.removeItem(index);
-                                }
+                                player.removeItem(draggedItemIndex);
                                 // Clear doorHintMessage to avoid overlap
                                 doorHintMessage = "";
                                 doorHintMessageCounter = 0;
@@ -287,6 +293,16 @@ public class gamePanel extends JPanel implements Runnable {
             doorHintMessage = "";
         }
 
+        // Check if player has healing items and update healingHintMessage
+        boolean hasHealingItem = player.getInventory().stream().anyMatch(item ->
+                item.getName().equals("Apple") || item.getName().equals("blubbery") || item.getName().equals("potion"));
+        if (hasHealingItem) {
+            healingHintMessage = "Drag Apple, Blubbery, or Potion onto the player to restore HP";
+            healingHintMessageCounter = 80;
+        } else if (healingHintMessageCounter <= 0) {
+            healingHintMessage = "";
+        }
+
         if (gameState == playerState) {
             for (int i = 0; i < monster.length; i++) {
                 if (monster[i] != null) {
@@ -316,6 +332,12 @@ public class gamePanel extends JPanel implements Runnable {
             chestMessageCounter--;
             if (chestMessageCounter <= 0) {
                 chestMessage = "";
+            }
+        }
+        if (healingHintMessageCounter > 0) {
+            healingHintMessageCounter--;
+            if (healingHintMessageCounter <= 0 && !hasHealingItem) {
+                healingHintMessage = "";
             }
         }
     }
@@ -364,16 +386,10 @@ public class gamePanel extends JPanel implements Runnable {
         }
 
         // --- Message Display Section ---
-        // Set the font and color for all messages
-        // You can change the font family, style (e.g., Font.BOLD), and size here
         g2d.setFont(new Font("Arial", Font.PLAIN, 20));
-        // You can change the text color here (e.g., Color.YELLOW, new Color(255, 0, 0))
         g2d.setColor(Color.WHITE);
 
-        // Define the base position for the top-right corner
-        // Change this value to adjust the vertical starting position (smaller = closer to top)
         int baseMessageY = 30;
-        // Change this value to adjust the horizontal margin from the right edge
         int rightMargin = tileSize;
 
         // Draw chest message
@@ -383,12 +399,26 @@ public class gamePanel extends JPanel implements Runnable {
             g2d.drawString(chestMessage, chestMessageX, chestMessageY);
         }
 
+        // Draw door message
+        if (!doorMessage.isEmpty()) {
+            int doorMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30);
+            int doorMessageX = screenWidth - g2d.getFontMetrics().stringWidth(doorMessage) - rightMargin;
+            g2d.drawString(doorMessage, doorMessageX, doorMessageY);
+        }
 
-        // Draw door hint message (e.g., "Press E to open the door")
+        // Draw door hint message
         if (!doorHintMessage.isEmpty()) {
             int doorHintMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30) + (doorMessage.isEmpty() ? 0 : 30);
             int doorHintMessageX = screenWidth - g2d.getFontMetrics().stringWidth(doorHintMessage) - rightMargin;
             g2d.drawString(doorHintMessage, doorHintMessageX, doorHintMessageY);
+        }
+
+        // Draw healing hint message
+        if (!healingHintMessage.isEmpty()) {
+            int healingHintMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30) +
+                    (doorMessage.isEmpty() ? 0 : 30) + (doorHintMessage.isEmpty() ? 0 : 30);
+            int healingHintMessageX = screenWidth - g2d.getFontMetrics().stringWidth(healingHintMessage) - rightMargin;
+            g2d.drawString(healingHintMessage, healingHintMessageX, healingHintMessageY);
         }
         // --- End of Message Display Section ---
 

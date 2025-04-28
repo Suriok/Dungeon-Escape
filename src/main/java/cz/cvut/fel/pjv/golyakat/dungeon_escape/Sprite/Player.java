@@ -321,6 +321,31 @@ public class Player extends Entity {
         }
     }
 
+    public void consumeHealingItem(ChestInventoryManager.ItemData item) {
+        float healAmountFloat = 0;
+        switch (item.getName()) {
+            case "Apple":
+                healAmountFloat = ((Item_Apple) item.getItem()).getHealAmount();
+                break;
+            case "blubbery":
+                healAmountFloat = ((Item_Blubbery) item.getItem()).getHealAmount();
+                break;
+            case "potion":
+                healAmountFloat = ((Item_HealthePotion) item.getItem()).getHealAmount();
+                break;
+            default:
+                System.out.println("Item " + item.getName() + " is not a healing item.");
+                return;
+        }
+        int healAmount = (int) Math.round(healAmountFloat);
+        int newLife = life + healAmount;
+        if (newLife > maxLife) {
+            newLife = maxLife;
+        }
+        life = newLife;
+        System.out.println("Player consumed " + item.getName() + ", restored " + healAmount + " HP. Current HP: " + life);
+    }
+
     @Override
     public void draw(Graphics2D g2d) {
         BufferedImage imageToDraw = null;
