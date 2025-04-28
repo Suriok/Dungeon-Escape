@@ -6,10 +6,13 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Apple;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Blubbery;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_HealthePotion;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Key;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Weapon;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -32,8 +35,17 @@ public class Player extends Entity {
     public int spriteCounter = 0;
     public int spriteNum = 1;
 
+    // Attack animation state
+    private boolean isAttacking = false;
+    private int attackAnimationCounter = 0;
+    private static final int ATTACK_ANIMATION_DURATION = 20; // Duration of attack animation (in frames)
+
     private List<ChestInventoryManager.ItemData> inventory;
-    private GameObject[] equippedArmor; // Массив для надетой брони: [шлем, нагрудник, штаны, ботинки]
+    private GameObject[] equippedArmor;
+    private GameObject equippedWeapon;
+    private static final int ATTACK_RANGE = 96; // 2 tiles
+    private static final int ATTACK_COOLDOWN = 30; // 0.5 seconds at 60 FPS
+    private int attackCounter = 0;
 
     public Player(gamePanel gp, KeyHandler keyH) {
         super(gp);
@@ -48,7 +60,8 @@ public class Player extends Entity {
         solidArea = new Rectangle(8, 16, gp.tileSize - 24, gp.tileSize - 24);
 
         inventory = new ArrayList<>();
-        equippedArmor = new GameObject[4]; // Инициализация массива для брони (4 слота)
+        equippedArmor = new GameObject[4];
+        equippedWeapon = null;
 
         setDefaulteValues();
         getPlayerImage();
@@ -60,12 +73,13 @@ public class Player extends Entity {
         speed = 4;
         direction = "down";
 
-        maxLife = 4;
+        maxLife = 8;
         life = maxLife;
     }
 
     public void getPlayerImage() {
         try {
+            // Load movement sprites
             up1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_up_1.png")));
             up2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_up_2.png")));
             down1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_down_1.png")));
@@ -127,14 +141,37 @@ public class Player extends Entity {
             }
         }
 
+        attackCounter++;
+
+        // Update attack animation
+        if (isAttacking) {
+            attackAnimationCounter++;
+            if (attackAnimationCounter >= ATTACK_ANIMATION_DURATION) {
+                isAttacking = false;
+                attackAnimationCounter = 0;
+            }
+        }
+
         interactionIndex = gp.collisionChecker.checkObjectForInteraction(this, true);
         if (interactionIndex != 999 && gp.obj[interactionIndex] != null) {
             String objName = gp.obj[interactionIndex].name;
-            if (objName.equals("DoorFront") && !((Object_DoorFront) gp.obj[interactionIndex]).isOpen() ||
-                    objName.equals("DoorSide") && !((Object_DoorSide) gp.obj[interactionIndex]).isOpen()) {
+            if (objName.equals("DoorFront") && !((Object_DoorFront) gp.obj[interactionIndex]).isOpen()) {
                 gp.doorMessage = "Press E to open door";
                 gp.doorMessageCounter = 120;
                 System.out.println("Near door: " + objName + " at index " + interactionIndex);
+            } else if (objName.equals("DoorSide") && !((Object_DoorSide) gp.obj[interactionIndex]).isOpen()) {
+                Object_DoorSide door = (Object_DoorSide) gp.obj[interactionIndex];
+                if (door.requiresKey) {
+                    gp.doorMessage = "This door requires a key to open.";
+                    gp.doorHintMessage = "Drag the key from your inventory onto the door to unlock it.";
+                    gp.doorMessageCounter = 120;
+                    gp.doorHintMessageCounter = 120;
+                    System.out.println("Near door that requires a key: " + objName + " at index " + interactionIndex);
+                } else {
+                    gp.doorMessage = "Press E to open door";
+                    gp.doorMessageCounter = 120;
+                    System.out.println("Near door: " + objName + " at index " + interactionIndex);
+                }
             } else if (objName.equals("small_chest")) {
                 if (((Object_Small_Chest) gp.obj[interactionIndex]).isShowingInventory()) {
                     gp.chestMessage = "Press E to close the chest";
@@ -147,7 +184,28 @@ public class Player extends Entity {
 
         if (keyH.ePressed && interactionIndex != 999 && gp.obj[interactionIndex] != null) {
             System.out.println("Attempting to interact with object at index: " + interactionIndex + " (" + gp.obj[interactionIndex].name + ")");
-            gp.collisionChecker.handleObjectInteraction(this, interactionIndex);
+            // Handle DoorSide that requires a key as a fallback for testing
+            if (gp.obj[interactionIndex].name.equals("DoorSide")) {
+                Object_DoorSide door = (Object_DoorSide) gp.obj[interactionIndex];
+                if (door.requiresKey && !door.isOpen()) {
+                    // Check if the player has a key
+                    ChestInventoryManager.ItemData keyItem = inventory.stream()
+                            .filter(item -> item.getName().equals("Key"))
+                            .findFirst()
+                            .orElse(null);
+                    if (keyItem != null) {
+                        door.unlock();
+                        inventory.remove(keyItem);
+                        System.out.println("Player used the key to unlock the door at index: " + interactionIndex);
+                    } else {
+                        System.out.println("Player attempted to open a key-locked door but has no key.");
+                    }
+                } else {
+                    gp.collisionChecker.handleObjectInteraction(this, interactionIndex);
+                }
+            } else {
+                gp.collisionChecker.handleObjectInteraction(this, interactionIndex);
+            }
             keyH.ePressed = false;
         } else if (keyH.ePressed) {
             System.out.println("E pressed but no interactable object found (index: " + interactionIndex + ")");
@@ -180,6 +238,62 @@ public class Player extends Entity {
         }
     }
 
+    public void attack() {
+        if (equippedWeapon == null) {
+            System.out.println("Player attempted to attack, but no weapon is equipped.");
+            return;
+        }
+
+        // Start attack animation
+        isAttacking = true;
+        attackAnimationCounter = 0;
+
+        int attackDamage = 1;
+        if (equippedWeapon instanceof Weapon) {
+            attackDamage = ((Weapon) equippedWeapon).getAttack();
+        }
+
+        Entity target = null;
+        double minDistance = Double.MAX_VALUE;
+        for (Entity monster : gp.monster) {
+            if (monster != null && !monster.isDead) {
+                int dx = monster.worldX - worldX;
+                int dy = monster.worldY - worldY;
+                double distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance <= ATTACK_RANGE && distance < minDistance) {
+                    minDistance = distance;
+                    target = monster;
+                }
+            }
+        }
+
+        if (target != null) {
+            target.life -= attackDamage;
+            if (target.life < 0) {
+                target.life = 0;
+            }
+            System.out.println("Player attacked " + target.name + " for " + attackDamage + " damage. Monster HP: " + target.life);
+        } else {
+            System.out.println("Player attacked, but no monsters in range.");
+        }
+    }
+
+    public void receiveDamage(int damage) {
+        System.out.println("DEBUG: Current equipped armor:");
+        for (int i = 0; i < equippedArmor.length; i++) {
+            System.out.println("DEBUG: Slot " + i + ": " + (equippedArmor[i] != null ? equippedArmor[i].name : "empty"));
+        }
+        float totalDefense = getTotalDefense();
+        int reducedDamage = Math.max(0, damage - (int) totalDefense);
+        life -= reducedDamage;
+        if (life < 0) {
+            life = 0;
+        }
+        System.out.println("DEBUG: Total defense calculated as " + totalDefense);
+        System.out.println("Player received " + damage + " damage without armor.");
+        System.out.println("With armor (" + totalDefense + " defense), damage reduced to " + reducedDamage + ". Current HP: " + life);
+    }
+
     public void pickUpObject(int i) {
     }
 
@@ -192,10 +306,26 @@ public class Player extends Entity {
         return inventory;
     }
 
+    public void removeItem(int index) {
+        if (index >= 0 && index < inventory.size()) {
+            ChestInventoryManager.ItemData item = inventory.get(index);
+            if (item.getQuantity() > 1) {
+                item.setQuantity(item.getQuantity() - 1);
+                System.out.println("Reduced quantity of " + item.getName() + " to " + item.getQuantity());
+            } else {
+                inventory.remove(index);
+                System.out.println("Removed " + item.getName() + " from player inventory. Total items: " + inventory.size());
+            }
+        } else {
+            System.err.println("Invalid inventory index for removal: " + index);
+        }
+    }
+
     @Override
     public void draw(Graphics2D g2d) {
         BufferedImage imageToDraw = null;
 
+        // Normal movement animation
         switch (direction) {
             case "up":
                 imageToDraw = (spriteNum == 1) ? up1 : up2;
@@ -213,17 +343,80 @@ public class Player extends Entity {
 
         this.image = imageToDraw;
         super.draw(g2d, gp);
+
+        // Draw attack animation (wave effect)
+        if (isAttacking && equippedWeapon != null) {
+            drawWaveEffect(g2d);
+        }
     }
 
-    // Методы для управления бронёй
+    private void drawWaveEffect(Graphics2D g2d) {
+        // Calculate the progress of the animation (0.0 to 1.0)
+        float animationProgress = (float) attackAnimationCounter / ATTACK_ANIMATION_DURATION;
+
+        // Set the color and stroke for the wave effect
+        g2d.setColor(new Color(255, 255, 255, (int) (255 * (1.0f - animationProgress)))); // Fade out over time
+        g2d.setStroke(new BasicStroke(3));
+
+        // Base position of the wave (center of the player)
+        int waveWidth = gp.tileSize; // Width of the wave
+        int waveHeight = gp.tileSize / 2; // Height of the wave
+        int waveStartX = screenX + gp.tileSize / 2;
+        int waveStartY = screenY + gp.tileSize / 2;
+
+        // Adjust wave position and orientation based on direction
+        int[] xPoints = new int[5]; // Points for the wave polyline
+        int[] yPoints = new int[5];
+        int waveOffset = (int) (animationProgress * gp.tileSize); // Move the wave over the animation duration
+
+        switch (direction) {
+            case "up":
+                // Wave starts at the player and moves upward
+                for (int i = 0; i < 5; i++) {
+                    xPoints[i] = waveStartX - waveWidth / 2 + (i * waveWidth / 4);
+                    yPoints[i] = waveStartY - waveOffset + (int) (Math.sin(i * Math.PI / 4) * waveHeight); // Sine wave for curve
+                }
+                break;
+            case "down":
+                // Wave starts at the player and moves downward
+                for (int i = 0; i < 5; i++) {
+                    xPoints[i] = waveStartX - waveWidth / 2 + (i * waveWidth / 4);
+                    yPoints[i] = waveStartY + waveOffset - (int) (Math.sin(i * Math.PI / 4) * waveHeight); // Sine wave for curve
+                }
+                break;
+            case "left":
+                // Wave starts at the player and moves leftward
+                for (int i = 0; i < 5; i++) {
+                    yPoints[i] = waveStartY - waveWidth / 2 + (i * waveWidth / 4);
+                    xPoints[i] = waveStartX - waveOffset + (int) (Math.sin(i * Math.PI / 4) * waveHeight); // Sine wave for curve
+                }
+                break;
+            case "right":
+                // Wave starts at the player and moves rightward
+                for (int i = 0; i < 5; i++) {
+                    yPoints[i] = waveStartY - waveWidth / 2 + (i * waveWidth / 4);
+                    xPoints[i] = waveStartX + waveOffset - (int) (Math.sin(i * Math.PI / 4) * waveHeight); // Sine wave for curve
+                }
+                break;
+        }
+
+        // Draw the wave as a polyline
+        g2d.drawPolyline(xPoints, yPoints, 5);
+
+        // Reset stroke
+        g2d.setStroke(new BasicStroke(1));
+    }
+
     public void equipArmor(GameObject armor, int slot) {
         if (slot >= 0 && slot < equippedArmor.length) {
             equippedArmor[slot] = armor;
+            System.out.println("Equipped armor: " + armor.name + " in slot " + slot);
         }
     }
 
     public void unequipArmor(int slot) {
         if (slot >= 0 && slot < equippedArmor.length) {
+            System.out.println("Unequipped armor from slot " + slot);
             equippedArmor[slot] = null;
         }
     }
@@ -234,16 +427,50 @@ public class Player extends Entity {
 
     public float getTotalDefense() {
         float totalDefense = 0;
-        for (GameObject armor : equippedArmor) {
-            if (armor != null) {
-                try {
-                    java.lang.reflect.Method getDefensAmount = armor.getClass().getMethod("getDefensAmount");
-                    totalDefense += (float) getDefensAmount.invoke(armor);
-                } catch (Exception e) {
-                    e.printStackTrace();
+        for (int i = 0; i < equippedArmor.length; i++) {
+            if (equippedArmor[i] instanceof Armor) {
+                float defense = ((Armor) equippedArmor[i]).getDefensAmount();
+                totalDefense += defense;
+                System.out.println("DEBUG: Armor in slot " + i + " (" + equippedArmor[i].name + ") provides " + defense + " defense");
+            } else if (equippedArmor[i] != null) {
+                System.out.println("DEBUG: Item in slot " + i + " (" + equippedArmor[i].name + ") is not an Armor");
+            }
+        }
+        System.out.println("DEBUG: Total defense = " + totalDefense);
+        return totalDefense;
+    }
+
+    public void equipWeapon(GameObject weapon) {
+        this.equippedWeapon = weapon;
+        System.out.println("Equipped weapon: " + weapon.name);
+    }
+
+    public void unequipWeapon() {
+        System.out.println("Unequipped weapon");
+        this.equippedWeapon = null;
+    }
+
+    public GameObject getEquippedWeapon() {
+        return equippedWeapon;
+    }
+
+    // Method to handle drag-and-drop of the key onto the door
+    public void useKeyOnDoor(int doorIndex) {
+        if (doorIndex != 999 && gp.obj[doorIndex] != null && gp.obj[doorIndex].name.equals("DoorSide")) {
+            Object_DoorSide door = (Object_DoorSide) gp.obj[doorIndex];
+            if (door.requiresKey && !door.isOpen()) {
+                ChestInventoryManager.ItemData keyItem = inventory.stream()
+                        .filter(item -> item.getName().equals("Key"))
+                        .findFirst()
+                        .orElse(null);
+                if (keyItem != null) {
+                    door.unlock();
+                    inventory.remove(keyItem);
+                    System.out.println("Player used the key to unlock the door at index: " + doorIndex);
+                } else {
+                    System.out.println("Player attempted to use a key on the door but has no key in inventory.");
                 }
             }
         }
-        return totalDefense;
     }
 }

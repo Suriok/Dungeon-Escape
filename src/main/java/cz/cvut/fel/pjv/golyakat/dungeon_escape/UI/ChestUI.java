@@ -33,6 +33,7 @@ public class ChestUI {
                         draggedItem = activeChest.getItems().get(i);
                         draggedX = e.getX();
                         draggedY = e.getY();
+                        System.out.println("DEBUG: Picked up item: " + draggedItem.getName());
                         break;
                     }
                 }
@@ -43,9 +44,13 @@ public class ChestUI {
                 if (draggedItem != null) {
                     Rectangle playerInvBounds = gp.playerUI.getPlayerInventoryBounds();
                     Rectangle[] armorSlotBounds = gp.playerUI.getArmorSlotBounds();
+                    Rectangle weaponSlotBounds = gp.playerUI.getWeaponSlotBounds();
 
                     boolean isArmor = gp.playerUI.isArmor(draggedItem);
                     int armorSlotIndex = gp.playerUI.getArmorSlotIndex(draggedItem);
+                    boolean isWeapon = gp.playerUI.isWeapon(draggedItem);
+
+                    System.out.println("DEBUG: Dropped item: " + draggedItem.getName() + ", isArmor=" + isArmor + ", armorSlotIndex=" + armorSlotIndex + ", isWeapon=" + isWeapon);
 
                     if (isArmor && armorSlotIndex >= 0) {
                         Rectangle targetSlotBounds = armorSlotBounds[armorSlotIndex];
@@ -54,15 +59,26 @@ public class ChestUI {
                             if (equippedArmor[armorSlotIndex] != null) {
                                 activeChest.getItems().add(new ChestInventoryManager.ItemData(
                                         equippedArmor[armorSlotIndex].name, 1));
+                                System.out.println("DEBUG: Swapped armor, added " + equippedArmor[armorSlotIndex].name + " back to chest");
                             }
                             gp.player.equipArmor(draggedItem.getItem(), armorSlotIndex);
                             activeChest.removeItem(draggedItem);
+                            System.out.println("DEBUG: Equipped " + draggedItem.getName() + " to slot " + armorSlotIndex);
                         }
-                    } else {
-                        if (playerInvBounds != null && playerInvBounds.contains(e.getPoint())) {
-                            gp.player.addItem(draggedItem);
-                            activeChest.removeItem(draggedItem);
+                    } else if (isWeapon && weaponSlotBounds != null && weaponSlotBounds.contains(e.getPoint())) {
+                        GameObject equippedWeapon = gp.player.getEquippedWeapon();
+                        if (equippedWeapon != null) {
+                            activeChest.getItems().add(new ChestInventoryManager.ItemData(
+                                    equippedWeapon.name, 1));
+                            System.out.println("DEBUG: Swapped weapon, added " + equippedWeapon.name + " back to chest");
                         }
+                        gp.player.equipWeapon(draggedItem.getItem());
+                        activeChest.removeItem(draggedItem);
+                        System.out.println("DEBUG: Equipped weapon: " + draggedItem.getName());
+                    } else if (playerInvBounds != null && playerInvBounds.contains(e.getPoint())) {
+                        gp.player.addItem(draggedItem);
+                        activeChest.removeItem(draggedItem);
+                        System.out.println("DEBUG: Moved " + draggedItem.getName() + " to player inventory");
                     }
 
                     draggedItem = null;

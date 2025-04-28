@@ -13,10 +13,10 @@ public class Monster_Skeleton extends Entity {
     private gamePanel gp;
     public int actionLockCounter = 0;
     private static final int DETECTION_RANGE = 5 * 48; // 5 tiles (assuming tileSize = 48)
-    private static final int ATTACK_RANGE = 48; // 1 tile
+    private static final int ATTACK_RANGE = 32; // 1 tile
     private static final int ATTACK_COOLDOWN = 60; // 1 second at 60 FPS
     private int attackCounter = 0;
-    private static final int ATTACK_DAMAGE = 1;
+    private static final int ATTACK_DAMAGE = 4;
 
     public Monster_Skeleton(gamePanel gp) {
         super(gp);
@@ -24,7 +24,7 @@ public class Monster_Skeleton extends Entity {
 
         name = "Skeleton";
         speed = 2;
-        maxLife = 6;
+        maxLife = 4;
         life = maxLife;
 
         direction = "down";
@@ -121,7 +121,7 @@ public class Monster_Skeleton extends Entity {
                 break;
         }
 
-        // Check collision with tiles
+        // Check collision with tiles and objects
         collisionOn = false;
         gp.collisionChecker.checkTiles(this);
         if (collisionOn) {
@@ -136,10 +136,7 @@ public class Monster_Skeleton extends Entity {
         int dy = gp.player.worldY - worldY;
         double distance = Math.sqrt(dx * dx + dy * dy);
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
-            gp.player.life -= ATTACK_DAMAGE;
-            if (gp.player.life < 0) {
-                gp.player.life = 0;
-            }
+            gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
             System.out.println(name + " attacked player! Player HP: " + gp.player.life);
         }

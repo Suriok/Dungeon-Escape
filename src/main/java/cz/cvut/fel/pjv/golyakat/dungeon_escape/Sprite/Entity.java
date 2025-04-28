@@ -22,9 +22,15 @@ public class Entity extends GameObject {
 
     // Fields for fade effect and death state
     public boolean isDead = false;
-    public float fadeAlpha = 1.0f; // Opacity for fade effect (1.0 = fully visible, 0.0 = fully transparent)
+    public float fadeAlpha = 1.0f;
     public int fadeCounter = 0;
-    public static final int FADE_DURATION = 60; // Frames to fade out (e.g., 1 second at 60 FPS)
+    public static final int FADE_DURATION = 60;
+
+    // Fields for monster attack
+    protected int attackDamage = 1; // Базовый урон монстра
+    protected int attackRange = 48; // 1 тайл
+    protected int attackCooldown = 60; // 1 секунда при 60 FPS
+    protected int attackCounter = 0;
 
     public Entity(gamePanel gp) {
         this.gp = gp;
@@ -32,6 +38,20 @@ public class Entity extends GameObject {
     }
 
     public void update() {
+        if (!isDead) {
+            attackCounter++;
+            // Проверяем, может ли монстр атаковать игрока
+            if (attackCounter >= attackCooldown) {
+                double distance = Math.sqrt(Math.pow(gp.player.worldX - worldX, 2) + Math.pow(gp.player.worldY - worldY, 2));
+                if (distance <= attackRange) {
+                    attack();
+                    attackCounter = 0;
+                }
+            }
+
+            // Здесь может быть логика движения монстра, если она есть
+        }
+
         // Handle fade-out when dead
         if (isDead && fadeAlpha > 0) {
             fadeCounter++;
@@ -40,6 +60,12 @@ public class Entity extends GameObject {
                 fadeAlpha = 0;
             }
         }
+    }
+
+    public void attack() {
+        // Монстр атакует игрока через receiveDamage
+        System.out.println("DEBUG: " + name + " is attacking player with " + attackDamage + " damage.");
+        gp.player.receiveDamage(attackDamage);
     }
 
     public void draw(Graphics2D g2d) {

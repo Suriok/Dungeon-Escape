@@ -13,9 +13,9 @@ public class Monster_Zombie extends Entity {
     private gamePanel gp; // Odkaz na herní panel
     public int actionLockCounter = 0;
     private static final int DETECTION_RANGE = 5 * 48; // 5 tiles (assuming tileSize = 48)
-    private static final int ATTACK_RANGE = 48; // 1 tile
+    private static final int ATTACK_RANGE = 32; // 1 tile
     private static final int ATTACK_COOLDOWN = 60; // 1 second at 60 FPS
-    private int attackCounter = 0;
+    private int attackCounter = 4;
     private static final int ATTACK_DAMAGE = 1;
 
     // Konstruktor příšery Slime
@@ -25,7 +25,7 @@ public class Monster_Zombie extends Entity {
 
         name = "Zombie"; // Název příšery
         speed = 2; // Rychlost pohybu
-        maxLife = 6; // Maximální životy
+        maxLife = 5; // Maximální životy
         life = maxLife; // Aktuální životy
 
         direction = "down"; // Výchozí směr
@@ -128,7 +128,7 @@ public class Monster_Zombie extends Entity {
                 break;
         }
 
-        // Check collision with tiles
+        // Check collision with tiles and objects
         collisionOn = false;
         gp.collisionChecker.checkTiles(this);
         if (collisionOn) {
@@ -143,10 +143,7 @@ public class Monster_Zombie extends Entity {
         int dy = gp.player.worldY - worldY;
         double distance = Math.sqrt(dx * dx + dy * dy);
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
-            gp.player.life -= ATTACK_DAMAGE;
-            if (gp.player.life < 0) {
-                gp.player.life = 0;
-            }
+            gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
             System.out.println(name + " attacked player! Player HP: " + gp.player.life);
         }
@@ -203,5 +200,4 @@ public class Monster_Zombie extends Entity {
         }
         // Health bar and fade effect are handled by MonsterUi
     }
-
 }

@@ -3,21 +3,15 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-// KeyHandler zpracovává vstupy z klávesnice
 public class KeyHandler implements KeyListener {
-
-    // Stav kláves: true = klávesa je stisknutá, false = uvolněná
     public boolean upPressed, downPressed, leftPressed, rightPressed, ePressed, fPressed;
 
-    // Tento event nepoužíváme (reaguje na jednotlivé znaky)
     @Override
     public void keyTyped(KeyEvent e) {}
 
-    // Událost: klávesa byla stisknuta
     @Override
     public void keyPressed(KeyEvent e) {
-        int code = e.getKeyCode(); // Kód klávesy
-
+        int code = e.getKeyCode();
         if (code == KeyEvent.VK_W) {
             upPressed = true;
         }
@@ -38,12 +32,9 @@ public class KeyHandler implements KeyListener {
         }
     }
 
-    // Událost: klávesa byla uvolněna
     @Override
     public void keyReleased(KeyEvent e) {
-        int code = e.getKeyCode(); // Kód klávesy
-
-        // Podle uvolněné klávesy nastavíme odpovídající boolean na false
+        int code = e.getKeyCode();
         switch(code) {
             case KeyEvent.VK_W:
                 upPressed = false;

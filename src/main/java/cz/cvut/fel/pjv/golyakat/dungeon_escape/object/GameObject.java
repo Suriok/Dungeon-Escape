@@ -1,34 +1,40 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
-// Třída reprezentující herní objekt (např. truhla, klíč, překážka atd.)
-public class GameObject {
-    // Obrázky pro objekt, může jich být více pro různé animace nebo stavy objektu
-    public BufferedImage image, image2, image3, image4, image5;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
-    public String name; // Název objektu (např. "Truhla", "Klíč")
-    public boolean Collision = false; // Určuje, zda má objekt kolizní vlastnosti (hráč do něj nemůže projít)
-    public int worldX, worldY; // Souřadnice objektu ve světě
-    
-    // Collision area
-    public Rectangle solidArea;
+public abstract class GameObject {
+    public BufferedImage image, image2, image3, image4, image5;
+    public String name;
+    public boolean Collision = false;
+    public int worldX, worldY;
+    public Rectangle solidArea = new Rectangle(0, 0, 48, 48);
     public int solidAreaDefaultX = 0;
     public int solidAreaDefaultY = 0;
 
-    public GameObject() {
-        // Default collision area
-        solidArea = new Rectangle(0, 0, 48, 48); // Default size of 48x48 pixels
-    }
-
-    // Metoda pro vykreslení objektu na obrazovku
-    public void draw(Graphics g2, gamePanel gp) {
-        // Vypočítáme pozici na obrazovce podle pozice hráče
+    public void draw(Graphics2D g2d, gamePanel gp) {
         int screenX = worldX - gp.player.worldX + gp.player.screenX;
         int screenY = worldY - gp.player.worldY + gp.player.screenY;
-        // Vykreslení hlavního obrázku objektu na vypočítanou pozici s velikostí jednoho dlaždice
-        g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+
+        // Debug logging
+        System.out.println("Drawing " + name + " at worldX: " + worldX + ", worldY: " + worldY +
+                ", screenX: " + screenX + ", screenY: " + screenY + ", image: " + (image != null ? "loaded" : "null"));
+
+        if (screenX + gp.tileSize > 0 && screenX < gp.screenWidth &&
+                screenY + gp.tileSize > 0 && screenY < gp.screenHeight) {
+            if (image != null) {
+                g2d.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+            } else {
+                System.err.println("Cannot draw " + name + ": image is null");
+            }
+        } else {
+            System.out.println(name + " is out of screen bounds");
+        }
+    }
+
+    public void interact() {
+        // To be implemented by subclasses
     }
 }

@@ -8,11 +8,15 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.MonsterUI;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.DefensBar;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.HealthBar;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
@@ -44,19 +48,29 @@ public class gamePanel extends JPanel implements Runnable {
     public HealthBar healthBar;
     public DefensBar defensBar;
     public Entity monster[] = new Entity[20];
-    public MonsterUI monsterUi; // Added MonsterUi instance
+    public MonsterUI monsterUi;
 
     public int gameState;
     public final int playerState = 1;
 
     public String doorMessage = "";
     public int doorMessageCounter = 0;
+    public String doorHintMessage = "";
+    public int doorHintMessageCounter = 0;
     public String chestMessage = "";
     public int chestMessageCounter = 0;
 
     public ChestUI chestUI;
     public PlayerUI playerUI;
     public ChestInventoryManager chestInventoryManager;
+
+    private int attackCounter = 0;
+    private static final int ATTACK_COOLDOWN = 30;
+
+    // Drag-and-drop variables
+    private ChestInventoryManager.ItemData draggedItem = null;
+    private int draggedItemIndex = -1;
+    private int dragOffsetX, dragOffsetY;
 
     public gamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -70,16 +84,122 @@ public class gamePanel extends JPanel implements Runnable {
         defensBar = new DefensBar(this);
         chestUI = new ChestUI(this);
         playerUI = new PlayerUI(this);
-        monsterUi = new MonsterUI(this); // Initialize MonsterUi
+        monsterUi = new MonsterUI(this);
         gameState = playerState;
 
-        // Добавляем слушатель закрытия окна
+        // Mouse listener for attack and starting drag
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                System.out.println("Mouse pressed: Button=" + e.getButton() + ", ChestUI showing=" + chestUI.isShowingInventory());
+                if (e.getButton() == MouseEvent.BUTTON3) { // Right-click to attack
+                    if (!chestUI.isShowingInventory()) {
+                        System.out.println("Attempting to attack. Attack counter: " + attackCounter);
+                        if (attackCounter >= ATTACK_COOLDOWN) {
+                            player.attack();
+                            attackCounter = 0;
+                            System.out.println("Attack executed.");
+                        } else {
+                            System.out.println("Attack on cooldown. Need " + ATTACK_COOLDOWN + " frames, current: " + attackCounter);
+                        }
+                    } else {
+                        System.out.println("Cannot attack: Chest inventory is open.");
+                    }
+                } else if (e.getButton() == MouseEvent.BUTTON1) { // Left-click to start dragging
+                    if (!chestUI.isShowingInventory()) {
+                        Rectangle inventoryBounds = playerUI.getPlayerInventoryBounds();
+                        if (inventoryBounds != null && inventoryBounds.contains(e.getPoint())) {
+                            int gridCols = 8;
+                            int cellWidth = inventoryBounds.width / gridCols;
+                            int cellHeight = inventoryBounds.height;
+                            int offsetX = inventoryBounds.x + 30;
+                            int offsetY = inventoryBounds.y - 3;
+                            int itemSize = Math.min(cellWidth, cellHeight);
+
+                            int col = (e.getX() - offsetX) / cellWidth;
+                            int row = (e.getY() - offsetY) / cellHeight;
+                            int index = row * gridCols + col;
+
+                            // Expand inventory for drag logic
+                            java.util.List<ChestInventoryManager.ItemData> expandedItems = new java.util.ArrayList<>();
+                            for (ChestInventoryManager.ItemData item : player.getInventory()) {
+                                int quantity = item.getQuantity();
+                                for (int i = 0; i < quantity; i++) {
+                                    expandedItems.add(new ChestInventoryManager.ItemData(item.getName(), 1));
+                                }
+                            }
+
+                            if (index >= 0 && index < expandedItems.size()) {
+                                draggedItem = expandedItems.get(index);
+                                draggedItemIndex = player.getInventory().indexOf(
+                                        player.getInventory().stream()
+                                                .filter(item -> item.getName().equals(draggedItem.getName()))
+                                                .findFirst()
+                                                .orElse(null)
+                                );
+                                dragOffsetX = e.getX() - (offsetX + col * cellWidth + (cellWidth - itemSize) / 2);
+                                dragOffsetY = e.getY() - (offsetY + row * cellHeight + (cellHeight - itemSize) / 2);
+                                System.out.println("Started dragging item: " + draggedItem.getName() + " at index: " + draggedItemIndex);
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (draggedItem != null) {
+                    // Check if dropped on the key-locked door (gp.obj[6])
+                    if (draggedItem.getName().equals("Key") && obj[6] != null && obj[6] instanceof Object_DoorSide) {
+                        Object_DoorSide door = (Object_DoorSide) obj[6];
+                        if (door.requiresKey && !door.isOpen()) {
+                            int doorScreenX = obj[6].worldX - player.worldX + player.screenX;
+                            int doorScreenY = obj[6].worldY - player.worldY + player.screenY;
+                            Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
+                            if (doorBounds.contains(e.getPoint())) {
+                                door.unlock();
+                                // Remove the key from inventory
+                                ChestInventoryManager.ItemData itemToRemove = player.getInventory().stream()
+                                        .filter(item -> item.getName().equals(draggedItem.getName()))
+                                        .findFirst()
+                                        .orElse(null);
+                                if (itemToRemove != null) {
+                                    int index = player.getInventory().indexOf(itemToRemove);
+                                    player.removeItem(index);
+                                }
+                                // Clear doorHintMessage to avoid overlap
+                                doorHintMessage = "";
+                                doorHintMessageCounter = 0;
+                                // Set doorMessage to indicate the door is unlocked
+                                doorMessage = "Door unlocked!";
+                                doorMessageCounter = 120;
+                                System.out.println("Player used the key to unlock the door at index: 6");
+                            }
+                        }
+                    }
+                    draggedItem = null;
+                    draggedItemIndex = -1;
+                    repaint();
+                }
+            }
+        });
+
+        // Mouse motion listener for dragging
+        this.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (draggedItem != null) {
+                    repaint();
+                }
+            }
+        });
+
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
         if (frame != null) {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    chestInventoryManager.resetChestData(); // Очищаем chest_inventory.xml
+                    chestInventoryManager.resetChestData();
                     System.out.println("Reset chest inventory XML on window close.");
                 }
             });
@@ -87,11 +207,11 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     public void setUpObjects() {
-        // Сундук с id = 0: кожаные штаны и кожаный шлем
-        Map<String, Integer> chest0Armor = new HashMap<>();
-        chest0Armor.put("leather_pants", 1);
-        chest0Armor.put("leather_helmet", 1);
-        obj[0] = new Object_Small_Chest(this, 0, chest0Armor);
+        Map<String, Integer> chest0Items = new HashMap<>();
+        chest0Items.put("leather_pants", 1);
+        chest0Items.put("leather_helmet", 1);
+        chest0Items.put("iron_sword", 1);
+        obj[0] = new Object_Small_Chest(this, 0, chest0Items);
         obj[0].worldX = 15 * tileSize;
         obj[0].worldY = 21 * tileSize;
 
@@ -134,11 +254,43 @@ public class gamePanel extends JPanel implements Runnable {
         healthBar.update(player.life);
         defensBar.update(player.getTotalDefense());
 
+        // Check proximity to doors and update doorHintMessage
+        boolean nearDoor = false;
+        for (int i = 0; i < obj.length; i++) {
+            if (obj[i] instanceof Object_DoorSide) {
+                Object_DoorSide door = (Object_DoorSide) obj[i];
+                if (door != null) {
+                    int dx = Math.abs(player.worldX - door.worldX);
+                    int dy = Math.abs(player.worldY - door.worldY);
+                    int distance = (int) Math.sqrt(dx * dx + dy * dy);
+                    int interactDistance = tileSize * 2; // Within 2 tiles
+
+                    if (distance <= interactDistance) {
+                        nearDoor = true;
+                        if (door.isOpen()) {
+                            doorHintMessage = "Door opened!";
+                            doorHintMessageCounter = 80;
+                        } else if (door.requiresKey) {
+                            doorHintMessage = "This door requires a key to open.";
+                            doorHintMessageCounter = 80;
+                        } else {
+                            doorHintMessage = "Press E to open the door";
+                            doorHintMessageCounter = 80;
+                        }
+                        break; // Only show message for the closest door
+                    }
+                }
+            }
+        }
+
+        if (!nearDoor && doorHintMessageCounter <= 0) {
+            doorHintMessage = "";
+        }
+
         if (gameState == playerState) {
             for (int i = 0; i < monster.length; i++) {
                 if (monster[i] != null) {
                     monster[i].update();
-                    // Remove fully faded monsters
                     if (monster[i].isDead && monster[i].fadeAlpha <= 0) {
                         monster[i] = null;
                     }
@@ -146,10 +298,18 @@ public class gamePanel extends JPanel implements Runnable {
             }
         }
 
+        attackCounter++;
+
         if (doorMessageCounter > 0) {
             doorMessageCounter--;
             if (doorMessageCounter <= 0) {
                 doorMessage = "";
+            }
+        }
+        if (doorHintMessageCounter > 0) {
+            doorHintMessageCounter--;
+            if (doorHintMessageCounter <= 0 && !nearDoor) {
+                doorHintMessage = "";
             }
         }
         if (chestMessageCounter > 0) {
@@ -160,6 +320,7 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
@@ -172,12 +333,11 @@ public class gamePanel extends JPanel implements Runnable {
             }
         }
 
-        // Draw monsters and their UI
         for (int i = 0; i < monster.length; i++) {
             if (monster[i] != null) {
-                monsterUi.draw(g2d, monster[i]); // Draw health bar and handle fade
+                monsterUi.draw(g2d, monster[i]);
                 if (!monster[i].isDead || monster[i].fadeAlpha > 0) {
-                    monster[i].draw(g2d); // Draw monster sprite
+                    monster[i].draw(g2d);
                 }
             }
         }
@@ -191,22 +351,46 @@ public class gamePanel extends JPanel implements Runnable {
 
         playerUI.draw(g2d);
 
+        // Draw the dragged item
+        if (draggedItem != null) {
+            Point mousePos = getMousePosition();
+            if (mousePos != null) {
+                int itemSize = tileSize;
+                g2d.drawImage(draggedItem.getItem().image,
+                        mousePos.x - dragOffsetX,
+                        mousePos.y - dragOffsetY,
+                        itemSize, itemSize, null);
+            }
+        }
+
+        // --- Message Display Section ---
+        // Set the font and color for all messages
+        // You can change the font family, style (e.g., Font.BOLD), and size here
         g2d.setFont(new Font("Arial", Font.PLAIN, 20));
+        // You can change the text color here (e.g., Color.YELLOW, new Color(255, 0, 0))
         g2d.setColor(Color.WHITE);
 
-        int baseMessageY = screenHeight - 70;
+        // Define the base position for the top-right corner
+        // Change this value to adjust the vertical starting position (smaller = closer to top)
+        int baseMessageY = 30;
+        // Change this value to adjust the horizontal margin from the right edge
+        int rightMargin = tileSize;
 
+        // Draw chest message
         if (!chestMessage.isEmpty()) {
             int chestMessageY = baseMessageY;
-            int chestMessageX = screenWidth - g2d.getFontMetrics().stringWidth(chestMessage) - tileSize + 30;
+            int chestMessageX = screenWidth - g2d.getFontMetrics().stringWidth(chestMessage) - rightMargin;
             g2d.drawString(chestMessage, chestMessageX, chestMessageY);
         }
 
-        if (!doorMessage.isEmpty()) {
-            int doorMessageY = baseMessageY - (chestMessage.isEmpty() ? 0 : 30);
-            int doorMessageX = screenWidth - g2d.getFontMetrics().stringWidth(doorMessage) - tileSize;
-            g2d.drawString(doorMessage, doorMessageX, doorMessageY);
+
+        // Draw door hint message (e.g., "Press E to open the door")
+        if (!doorHintMessage.isEmpty()) {
+            int doorHintMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30) + (doorMessage.isEmpty() ? 0 : 30);
+            int doorHintMessageX = screenWidth - g2d.getFontMetrics().stringWidth(doorHintMessage) - rightMargin;
+            g2d.drawString(doorHintMessage, doorHintMessageX, doorHintMessageY);
         }
+        // --- End of Message Display Section ---
 
         g2d.dispose();
     }
