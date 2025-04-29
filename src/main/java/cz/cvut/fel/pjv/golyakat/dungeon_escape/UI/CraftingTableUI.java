@@ -65,7 +65,6 @@ public class CraftingTableUI {
     public void setCraftingSlot(int index, ChestInventoryManager.ItemData item) {
         if (index >= 0 && index < craftingSlots.length) {
             craftingSlots[index] = item;
-            System.out.println("CraftingTableUI: Set slot " + index + " to " + (item != null ? item.getName() : "null"));
         }
     }
 
@@ -97,7 +96,6 @@ public class CraftingTableUI {
 
         // --- 2. есть ли комплект всех трёх частей? ---
         if (!(hasKey1 && hasKey2 && hasKey3)) {
-            System.out.println("CraftingTableUI: Cannot craft SilverKey — missing parts");
             gp.repaint();
             return;
         }

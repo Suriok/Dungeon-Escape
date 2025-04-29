@@ -18,10 +18,6 @@ public abstract class GameObject {
         int screenX = worldX - gp.player.worldX + gp.player.screenX;
         int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-        // Debug logging
-        System.out.println("Drawing " + name + " at worldX: " + worldX + ", worldY: " + worldY +
-                ", screenX: " + screenX + ", screenY: " + screenY + ", image: " + (image != null ? "loaded" : "null"));
-
         if (screenX + gp.tileSize > 0 && screenX < gp.screenWidth &&
                 screenY + gp.tileSize > 0 && screenY < gp.screenHeight) {
             if (image != null) {

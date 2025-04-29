@@ -3,7 +3,6 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -30,7 +29,6 @@ public class ChestUI {
             }
             activeChest = chest;
             activeChest.open();
-            System.out.println("ChestUI: Сундук открыт, isShowingInventory: " + isShowingInventory());
             gp.repaint();
         }
     }
@@ -46,7 +44,6 @@ public class ChestUI {
     public void closeInventory() {
         if (activeChest != null) {
             activeChest.close();
-            System.out.println("ChestUI: Сундук закрыт, isShowingInventory: " + isShowingInventory());
             activeChest = null;
             chestBounds = null;
             gp.repaint();
@@ -55,7 +52,6 @@ public class ChestUI {
 
     public void draw(Graphics2D g2d) {
         if (!isShowingInventory() || activeChest == null) {
-            System.out.println("ChestUI: Не отображаем UI, isShowingInventory: " + isShowingInventory());
             return;
         }
 
@@ -104,7 +100,6 @@ public class ChestUI {
             int col = i % gridSize;
             ChestInventoryManager.ItemData item = items.get(i);
             BufferedImage itemImage = item.getItem().image;
-            System.out.println("Drawing item: " + item.getName() + ", image=" + (itemImage != null ? "present" : "null"));
             if (itemImage != null) {
                 int x = offsetX + col * cellWidth + (cellWidth - itemSize) / 2;
                 int y = offsetY + row * cellHeight + (cellHeight - itemSize) / 2;

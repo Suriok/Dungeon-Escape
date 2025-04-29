@@ -4,27 +4,31 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 public class Object_DoorFront extends GameObject {
+    public boolean requiresKey = false; // Indicates if the door requires a key
+    private boolean isOpen = false;
     private BufferedImage closedImage;
     private BufferedImage openImage;
-    private boolean isOpen;
 
     public Object_DoorFront() {
         name = "DoorFront";
+        Collision = true; // Collidable when closed
+        solidArea = new java.awt.Rectangle(0, 0, 48, 48); // Assuming tileSize = 48
+        solidAreaDefaultX = solidArea.x;
+        solidAreaDefaultY = solidArea.y;
+
         try {
-            // Attempt to load closed door image
+            // Load closed door image
             BufferedImage tempClosed = ImageIO.read(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_front.png"));
             if (tempClosed == null) {
-                System.err.println("Failed to load door_front.png");
-                // Create a 1x1 transparent pixel as fallback
+                System.err.println("Failed to load door_front.png for Object_DoorFront");
                 tempClosed = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             }
             closedImage = tempClosed;
 
-            // Attempt to load open door image
+            // Load open door image (using door_side.png as specified)
             BufferedImage tempOpen = ImageIO.read(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side.png"));
             if (tempOpen == null) {
-                System.err.println("Failed to load door_front_open.png");
-                // Use closed image as fallback
+                System.err.println("Failed to load door_side.png for Object_DoorFront");
                 tempOpen = closedImage;
             }
             openImage = tempOpen;
@@ -33,26 +37,33 @@ public class Object_DoorFront extends GameObject {
         } catch (Exception e) {
             System.err.println("Error loading DoorFront images: " + e.getMessage());
             e.printStackTrace();
-            // Create a 1x1 transparent pixel as fallback
             closedImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             openImage = closedImage;
             image = closedImage;
         }
-
-        isOpen = false;
-        Collision = true; // Door starts as solid
     }
 
     public void interact() {
-        if (!isOpen) {
+        if (!requiresKey && !isOpen) {
             isOpen = true;
             image = openImage;
-            Collision = false; // Remove collision when door is open
-            System.out.println("Front door opened");
+            Collision = false; // No longer collidable when open
+            System.out.println("DoorFront opened!");
+        } else if (requiresKey && !isOpen) {
+            System.out.println("This door requires a Silver Key to open.");
         }
     }
 
     public boolean isOpen() {
         return isOpen;
+    }
+
+    public void unlock() {
+        if (requiresKey && !isOpen) {
+            isOpen = true;
+            image = openImage;
+            Collision = false;
+            System.out.println("DoorFront unlocked and opened with a Silver Key!");
+        }
     }
 }

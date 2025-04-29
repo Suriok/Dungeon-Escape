@@ -10,6 +10,7 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.DefensBar;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.HealthBar;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_CraftingTable;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
@@ -82,7 +83,6 @@ public class gamePanel extends JPanel implements Runnable {
     private int dragOffsetX, dragOffsetY;
     private boolean collisionLogged = false;
     private boolean objectsLogged = false;
-    private boolean dragStartedLogged = false;
     private boolean dragDroppedLogged = false;
 
     public gamePanel() {
@@ -158,10 +158,6 @@ public class gamePanel extends JPanel implements Runnable {
                         );
                         dragOffsetX = e.getX() - (offsetX + col * cellWidth + (cellWidth - itemSize) / 2);
                         dragOffsetY = e.getY() - (offsetY + row * cellHeight + (cellHeight - itemSize) / 2);
-                        if (!dragStartedLogged) {
-                            System.out.println("Drag started: Item " + draggedItem.getName() + " from player inventory index " + draggedItemIndex);
-                            dragStartedLogged = true;
-                        }
                     }
                     repaint();
                     return;
@@ -170,7 +166,7 @@ public class gamePanel extends JPanel implements Runnable {
                 // Armor slots
                 Rectangle[] armorBounds = playerUI.getArmorSlotBounds();
                 for (int i = 0; i < armorBounds.length; i++) {
-                    if (armorBounds[i] != null  && armorBounds[i].contains(e.getPoint())) {
+                    if (armorBounds[i] != null && armorBounds[i].contains(e.getPoint())) {
                         GameObject armor = player.getEquippedArmor()[i];
                         if (armor != null) {
                             draggedItem = new ChestInventoryManager.ItemData(armor.name, 1);
@@ -178,10 +174,6 @@ public class gamePanel extends JPanel implements Runnable {
                             draggedItemIndex = i; // Armor slot index
                             dragOffsetX = e.getX() - armorBounds[i].x;
                             dragOffsetY = e.getY() - armorBounds[i].y;
-                            if (!dragStartedLogged) {
-                                System.out.println("Drag started: Item " + draggedItem.getName() + " from armor slot " + i);
-                                dragStartedLogged = true;
-                            }
                         }
                         repaint();
                         return;
@@ -198,10 +190,6 @@ public class gamePanel extends JPanel implements Runnable {
                         draggedItemIndex = -2; // Special index for weapon
                         dragOffsetX = e.getX() - weaponBounds.x;
                         dragOffsetY = e.getY() - weaponBounds.y;
-                        if (!dragStartedLogged) {
-                            System.out.println("Drag started: Item " + draggedItem.getName() + " from weapon slot");
-                            dragStartedLogged = true;
-                        }
                     }
                     repaint();
                     return;
@@ -221,10 +209,6 @@ public class gamePanel extends JPanel implements Runnable {
                                     draggedItemIndex = i;
                                     dragOffsetX = e.getX() - chestItemBounds[i].x;
                                     dragOffsetY = e.getY() - chestItemBounds[i].y;
-                                    if (!dragStartedLogged) {
-                                        System.out.println("Drag started: Item " + draggedItem.getName() + " from chest index " + i);
-                                        dragStartedLogged = true;
-                                    }
                                     repaint();
                                     return;
                                 }
@@ -246,10 +230,6 @@ public class gamePanel extends JPanel implements Runnable {
                                 dragOffsetX = e.getX() - craftSlotBounds[i].x;
                                 dragOffsetY = e.getY() - craftSlotBounds[i].y;
                                 craftingTableUI.setCraftingSlot(i, null);
-                                if (!dragStartedLogged) {
-                                    System.out.println("Drag started: Item " + draggedItem.getName() + " from crafting slot " + i);
-                                    dragStartedLogged = true;
-                                }
                                 repaint();
                                 return;
                             }
@@ -268,7 +248,6 @@ public class gamePanel extends JPanel implements Runnable {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (draggedItem == null) {
-                    System.out.println("No item dragged, skipping mouseReleased");
                     return;
                 }
 
@@ -278,12 +257,11 @@ public class gamePanel extends JPanel implements Runnable {
 
                 // Player inventory
                 Rectangle inventoryBounds = playerUI.getPlayerInventoryBounds();
-                if (inventoryBounds != null && inventoryBounds.contains(e.getPoint())  && !playerUI.isArmor(draggedItem)) {
-                    System.out.println("Dropping " + draggedItem.getName() + " to player inventory");
+                if (inventoryBounds != null && inventoryBounds.contains(e.getPoint()) && !playerUI.isArmor(draggedItem)) {
                     player.addItem(draggedItem);
                     removeDraggedItem();
                     if (!dragDroppedLogged) {
-                        System.out.println("Dropped: Item " + draggedItem.getName() + " to player inventory");
+                        System.out.println("Item " + draggedItem.getName() + " dropped to player inventory");
                         dragDroppedLogged = true;
                     }
                     clearDrag();
@@ -295,32 +273,28 @@ public class gamePanel extends JPanel implements Runnable {
                     repaint();
                     return;
                 }
+
                 // Armor slots
                 Rectangle[] armorBounds = playerUI.getArmorSlotBounds();
                 for (int i = 0; i < armorBounds.length; i++) {
-                    if (armorBounds[i].contains(e.getPoint())
-                            && !isKeyPart
-                            && playerUI.isArmor(draggedItem)
-                            && playerUI.getArmorSlotIndex(draggedItem) == i) {
-                        System.out.println("Dropping " + draggedItem.getName() + " to armor slot " + i);
+                    if (armorBounds[i] != null && armorBounds[i].contains(e.getPoint()) &&
+                            !isKeyPart && playerUI.isArmor(draggedItem) && playerUI.getArmorSlotIndex(draggedItem) == i) {
                         GameObject[] equippedArmor = player.getEquippedArmor();
                         if (equippedArmor[i] != null) {
                             ChestInventoryManager.ItemData prevArmor = new ChestInventoryManager.ItemData(equippedArmor[i].name, 1);
                             if (sourceInventory instanceof Object_Small_Chest) {
                                 ((Object_Small_Chest) sourceInventory).getItems().add(prevArmor);
-                                System.out.println("Swapped armor: Added " + prevArmor.getName() + " back to chest");
                             } else if (sourceInventory == craftingTableUI && !playerUI.isArmor(prevArmor)) {
                                 player.addItem(prevArmor);
-                                System.out.println("Swapped: Added " + prevArmor.getName() + " to player inventory");
-                            } else {
-                                System.out.println("Cannot swap armor " + prevArmor.getName() + " to player inventory");
+                            } else if (sourceInventory == player) {
+                                player.addItem(prevArmor);
                             }
-                            player.unequipArmor(i); // Explicitly unequip to prevent duplication
+                            player.unequipArmor(i);
                         }
                         player.equipArmor(draggedItem.getItem(), i);
                         removeDraggedItem();
                         if (!dragDroppedLogged) {
-                            System.out.println("Dropped: Item " + draggedItem.getName() + " to armor slot " + i);
+                            System.out.println("Item " + draggedItem.getName() + " dropped to armor slot");
                             dragDroppedLogged = true;
                         }
                         clearDrag();
@@ -333,7 +307,6 @@ public class gamePanel extends JPanel implements Runnable {
                 Rectangle weaponBounds = playerUI.getWeaponSlotBounds();
                 if (weaponBounds != null && weaponBounds.contains(e.getPoint()) &&
                         playerUI.isWeapon(draggedItem) && !isKeyPart) {
-                    System.out.println("Dropping " + draggedItem.getName() + " to weapon slot");
                     GameObject equippedWeapon = player.getEquippedWeapon();
                     if (equippedWeapon != null) {
                         ChestInventoryManager.ItemData prevWeapon = new ChestInventoryManager.ItemData(equippedWeapon.name, 1);
@@ -344,14 +317,12 @@ public class gamePanel extends JPanel implements Runnable {
                         } else if (sourceInventory == craftingTableUI) {
                             player.addItem(prevWeapon);
                         }
-                        System.out.println("Swapped weapon: Added " + prevWeapon.getName() + " back to " +
-                                (sourceInventory instanceof Object_Small_Chest ? "chest" : "player"));
                         player.unequipWeapon();
                     }
                     player.equipWeapon(draggedItem.getItem());
                     removeDraggedItem();
                     if (!dragDroppedLogged) {
-                        System.out.println("Dropped: Item " + draggedItem.getName() + " to weapon slot");
+                        System.out.println("Item " + draggedItem.getName() + " dropped to weapon slot");
                         dragDroppedLogged = true;
                     }
                     clearDrag();
@@ -364,12 +335,11 @@ public class gamePanel extends JPanel implements Runnable {
                     Object_Small_Chest activeChest = chestUI.getActiveChest();
                     Rectangle chestBounds = chestUI.getChestBounds();
                     if (activeChest != null && chestBounds.contains(e.getPoint()) && !isKeyPart) {
-                        System.out.println("Dropping " + draggedItem.getName() + " to chest");
                         activeChest.getItems().add(draggedItem);
                         removeDraggedItem();
                         chestInventoryManager.updateChestData(activeChest.getId(), new ChestInventoryManager.ChestData(activeChest.isOpen(), activeChest.getItems()));
                         if (!dragDroppedLogged) {
-                            System.out.println("Dropped: Item " + draggedItem.getName() + " to chest");
+                            System.out.println("Item " + draggedItem.getName() + " dropped to chest");
                             dragDroppedLogged = true;
                         }
                         clearDrag();
@@ -386,11 +356,10 @@ public class gamePanel extends JPanel implements Runnable {
                                 && craftingTableUI.isKeyPart(draggedItem.getName())
                                 && !craftingTableUI.containsPart(draggedItem.getName())
                                 && sourceInventory == player) {
-                            System.out.println("Dropping " + draggedItem.getName() + " to crafting slot " + i);
                             craftingTableUI.setCraftingSlot(i, draggedItem);
                             removeDraggedItem();
                             if (!dragDroppedLogged) {
-                                System.out.println("Dropped: Item " + draggedItem.getName() + " to crafting slot " + i);
+                                System.out.println("Item " + draggedItem.getName() + " dropped to crafting slot");
                                 dragDroppedLogged = true;
                             }
                             clearDrag();
@@ -406,74 +375,84 @@ public class gamePanel extends JPanel implements Runnable {
                         (draggedItem.getName().equals("Apple") ||
                                 draggedItem.getName().equals("blubbery") ||
                                 draggedItem.getName().equals("potion"))) {
-                    System.out.println("Consuming " + draggedItem.getName() + " by player");
                     player.consumeHealingItem(draggedItem);
                     removeDraggedItem();
                     if (!dragDroppedLogged) {
-                        System.out.println("Dropped: Item " + draggedItem.getName() + " consumed by player");
+                        System.out.println("Item " + draggedItem.getName() + " dropped to player");
                         dragDroppedLogged = true;
                     }
                     clearDrag();
                     repaint();
                     return;
-                } else if (draggedItem.getName().equals("SilverKey") && obj[6] != null && obj[6] instanceof Object_DoorSide) {
-                    Object_DoorSide door = (Object_DoorSide) obj[6];
-                    if (door.requiresKey && !door.isOpen()) {
-                        int doorScreenX = obj[6].worldX - player.worldX + player.screenX;
-                        int doorScreenY = obj[6].worldY - player.worldY + player.screenY;
-                        Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
-                        if (doorBounds.contains(e.getPoint())) {
-                            System.out.println("Using " + draggedItem.getName() + " to unlock door");
-                            door.unlock();
-                            removeDraggedItem();
-                            doorHintMessage = "";
-                            doorHintMessageCounter = 0;
-                            doorMessage = "Door unlocked!";
-                            doorMessageCounter = 120;
-                            if (!dragDroppedLogged) {
-                                System.out.println("Dropped: Item " + draggedItem.getName() + " used to unlock door");
-                                dragDroppedLogged = true;
+                } else if (draggedItem.getName().equals("Key")) {
+                    if (obj[6] != null && obj[6] instanceof Object_DoorSide) {
+                        Object_DoorSide door = (Object_DoorSide) obj[6];
+                        if (door.requiresKey && !door.isOpen()) {
+                            int doorScreenX = obj[6].worldX - player.worldX + player.screenX;
+                            int doorScreenY = obj[6].worldY - player.worldY + player.screenY;
+                            Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
+                            if (doorBounds.contains(e.getPoint())) {
+                                door.unlock();
+                                removeDraggedItem();
+                                doorHintMessage = "";
+                                doorHintMessageCounter = 0;
+                                doorMessage = "Side door unlocked!";
+                                doorMessageCounter = 120;
+                                if (!dragDroppedLogged) {
+                                    System.out.println("Item " + draggedItem.getName() + " dropped to side door");
+                                    dragDroppedLogged = true;
+                                }
+                                clearDrag();
+                                repaint();
+                                return;
                             }
-                            clearDrag();
-                            repaint();
-                            return;
+                        }
+                    }
+                } else if (draggedItem.getName().equals("SilverKey")) {
+                    if (obj[5] != null && obj[5] instanceof Object_DoorFront) {
+                        Object_DoorFront door = (Object_DoorFront) obj[5];
+                        if (door.requiresKey && !door.isOpen()) {
+                            int doorScreenX = obj[5].worldX - player.worldX + player.screenX;
+                            int doorScreenY = obj[5].worldY - player.worldY + player.screenY;
+                            Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
+                            if (doorBounds.contains(e.getPoint())) {
+                                door.unlock();
+                                removeDraggedItem();
+                                doorHintMessage = "";
+                                doorHintMessageCounter = 0;
+                                doorMessage = "Front door unlocked!";
+                                doorMessageCounter = 120;
+                                if (!dragDroppedLogged) {
+                                    System.out.println("Item " + draggedItem.getName() + " dropped to front door");
+                                    dragDroppedLogged = true;
+                                }
+                                clearDrag();
+                                repaint();
+                                return;
+                            }
                         }
                     }
                 }
 
                 // Return to source if invalid drop
-                System.out.println("Invalid drop for " + draggedItem.getName() + ", returning to source");
                 if (sourceInventory == player) {
                     if (draggedItemIndex == -2) {
                         player.equipWeapon(draggedItem.getItem());
-                        System.out.println("Returned " + draggedItem.getName() + " to player weapon slot");
                     } else if (draggedItemIndex >= 0 && draggedItemIndex < 4) {
                         player.equipArmor(draggedItem.getItem(), draggedItemIndex);
-                        System.out.println("Returned " + draggedItem.getName() + " to player armor slot " + draggedItemIndex);
                     } else {
                         if (!playerUI.isArmor(draggedItem)) {
                             player.addItem(draggedItem);
-                            System.out.println("Returned " + draggedItem.getName() + " to player inventory");
-                        } else {
-                            System.out.println("Cannot return armor " + draggedItem.getName() + " to player inventory");
                         }
                     }
                 } else if (sourceInventory instanceof Object_Small_Chest) {
                     ((Object_Small_Chest) sourceInventory).getItems().add(draggedItem);
-                    System.out.println("Returned " + draggedItem.getName() + " to chest inventory");
                     chestInventoryManager.updateChestData(((Object_Small_Chest) sourceInventory).getId(),
                             new ChestInventoryManager.ChestData(((Object_Small_Chest) sourceInventory).isOpen(), ((Object_Small_Chest) sourceInventory).getItems()));
                 } else if (sourceInventory == craftingTableUI) {
                     if (!playerUI.isArmor(draggedItem)) {
                         player.addItem(draggedItem);
-                        System.out.println("Returned " + draggedItem.getName() + " to player inventory from crafting table");
-                    } else {
-                        System.out.println("Cannot return armor " + draggedItem.getName() + " to player inventory from crafting table");
                     }
-                }
-                if (!dragDroppedLogged) {
-                    System.out.println("Dropped: Item " + draggedItem.getName() + " returned to source");
-                    dragDroppedLogged = true;
                 }
                 clearDrag();
                 repaint();
@@ -504,9 +483,7 @@ public class gamePanel extends JPanel implements Runnable {
         draggedItem = null;
         sourceInventory = null;
         draggedItemIndex = -1;
-        dragStartedLogged = false;
         dragDroppedLogged = false;
-        System.out.println("Drag cleared");
     }
 
     private void removeDraggedItem() {
@@ -515,38 +492,27 @@ public class gamePanel extends JPanel implements Runnable {
                 ChestInventoryManager.ItemData sourceItem = player.getInventory().get(draggedItemIndex);
                 if (sourceItem.getQuantity() > 1) {
                     sourceItem.setQuantity(sourceItem.getQuantity() - 1);
-                    System.out.println("Reduced quantity of " + sourceItem.getName() + " in player inventory to " + sourceItem.getQuantity());
                 } else {
                     player.getInventory().remove(draggedItemIndex);
-                    System.out.println("Removed " + sourceItem.getName() + " from player inventory at index " + draggedItemIndex);
                 }
             } else if (draggedItemIndex >= 0 && draggedItemIndex < 4) {
                 player.unequipArmor(draggedItemIndex);
-                System.out.println("Unequipped armor from slot " + draggedItemIndex);
             } else if (draggedItemIndex == -2) {
                 player.unequipWeapon();
-                System.out.println("Unequipped weapon");
             }
         } else if (sourceInventory instanceof Object_Small_Chest) {
             Object_Small_Chest chest = (Object_Small_Chest) sourceInventory;
-            boolean removed = false;
             for (int i = 0; i < chest.getItems().size(); i++) {
                 ChestInventoryManager.ItemData sourceItem = chest.getItems().get(i);
                 if (sourceItem.getName().equals(draggedItem.getName())) {
                     if (sourceItem.getQuantity() > 1) {
                         sourceItem.setQuantity(sourceItem.getQuantity() - 1);
-                        System.out.println("Reduced quantity of " + sourceItem.getName() + " in chest to " + sourceItem.getQuantity());
                     } else {
                         chest.getItems().remove(i);
-                        System.out.println("Removed " + sourceItem.getName() + " from chest at index " + i);
                     }
-                    removed = true;
                     chestInventoryManager.updateChestData(chest.getId(), new ChestInventoryManager.ChestData(chest.isOpen(), chest.getItems()));
                     break;
                 }
-            }
-            if (!removed) {
-                System.out.println("Warning: Could not remove item " + draggedItem.getName() + " from chest");
             }
         }
         // For craftingTableUI, the item is already removed via setCraftingSlot(null)
@@ -580,8 +546,8 @@ public class gamePanel extends JPanel implements Runnable {
         obj[9].worldY = 21 * tileSize;
 
         obj[10] = new Object_CraftingTable();
-        obj[10].worldX = 16 * tileSize;
-        obj[10].worldY = 22 * tileSize;
+        obj[10].worldX = 38 * tileSize;
+        obj[10].worldY = 14 * tileSize;
 
         player.worldX = 15 * tileSize;
         player.worldY = 22 * tileSize;
@@ -643,11 +609,13 @@ public class gamePanel extends JPanel implements Runnable {
         defensBar.update(player.getTotalDefense());
 
         boolean nearDoor = false;
-        Object_DoorSide closestDoor = null;
+        Object_DoorSide closestSideDoor = null;
+        Object_DoorFront closestFrontDoor = null;
         int closestDoorDistance = Integer.MAX_VALUE;
 
         boolean nearCraftingTable = false;
         Object_CraftingTable closestTable = null;
+
         int closestTableDistance = Integer.MAX_VALUE;
 
         boolean nearChest = false;
@@ -665,13 +633,39 @@ public class gamePanel extends JPanel implements Runnable {
 
                     if (distance <= interactDistance && distance < closestDoorDistance) {
                         nearDoor = true;
-                        closestDoor = door;
+                        closestSideDoor = door;
+                        closestFrontDoor = null;
                         closestDoorDistance = distance;
                         if (door.isOpen()) {
                             doorHintMessage = "Door opened!";
                             doorHintMessageCounter = 80;
                         } else if (door.requiresKey) {
-                            doorHintMessage = "This door requires a key to open.";
+                            doorHintMessage = "This door requires a Key to open.";
+                            doorHintMessageCounter = 80;
+                        } else {
+                            doorHintMessage = "Press E to open the door";
+                            doorHintMessageCounter = 80;
+                        }
+                    }
+                }
+            } else if (obj[i] instanceof Object_DoorFront) {
+                Object_DoorFront door = (Object_DoorFront) obj[i];
+                if (door != null) {
+                    int dx = Math.abs(player.worldX - door.worldX);
+                    int dy = Math.abs(player.worldY - door.worldY);
+                    int distance = (int) Math.sqrt(dx * dx + dy * dy);
+                    int interactDistance = tileSize * 2;
+
+                    if (distance <= interactDistance && distance < closestDoorDistance) {
+                        nearDoor = true;
+                        closestSideDoor = null;
+                        closestFrontDoor = door;
+                        closestDoorDistance = distance;
+                        if (door.isOpen()) {
+                            doorHintMessage = "Door opened!";
+                            doorHintMessageCounter = 80;
+                        } else if (door.requiresKey) {
+                            doorHintMessage = "This door requires a Silver Key to open.";
                             doorHintMessageCounter = 80;
                         } else {
                             doorHintMessage = "Press E to open the door";
@@ -727,7 +721,11 @@ public class gamePanel extends JPanel implements Runnable {
                 }
                 keyH.qPressed = false;
             } else if (nearDoor && !chestUI.isShowingInventory() && !craftingTableUI.isShowing() && keyH.ePressed && closestDoorDistance <= closestChestDistance) {
-                closestDoor.interact();
+                if (closestSideDoor != null) {
+                    closestSideDoor.interact();
+                } else if (closestFrontDoor != null) {
+                    closestFrontDoor.interact();
+                }
                 keyH.ePressed = false;
             } else if (nearChest && !craftingTableUI.isShowing() && keyH.ePressed) {
                 chestUI.openChest(closestChest);
