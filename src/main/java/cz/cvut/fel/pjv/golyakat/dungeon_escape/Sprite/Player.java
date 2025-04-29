@@ -43,6 +43,7 @@ public class Player extends Entity {
     private List<ChestInventoryManager.ItemData> inventory;
     private GameObject[] equippedArmor;
     private GameObject equippedWeapon;
+    private GameObject equippedGrade; // Новый слот для grade
     private static final int ATTACK_RANGE = 96; // 2 tiles
     private static final int ATTACK_COOLDOWN = 30; // 0.5 seconds at 60 FPS
     private int attackCounter = 0;
@@ -62,6 +63,7 @@ public class Player extends Entity {
         inventory = new ArrayList<>();
         equippedArmor = new GameObject[4];
         equippedWeapon = null;
+        equippedGrade = null; // Инициализация слота grade
 
         setDefaulteValues();
         getPlayerImage();
@@ -477,6 +479,20 @@ public class Player extends Entity {
 
     public GameObject getEquippedWeapon() {
         return equippedWeapon;
+    }
+
+    public void equipGrade(GameObject grade) {
+        this.equippedGrade = grade;
+        System.out.println("Equipped grade: " + (grade != null ? grade.name : "none"));
+    }
+
+    public void unequipGrade() {
+        System.out.println("Unequipped grade");
+        this.equippedGrade = null;
+    }
+
+    public GameObject getEquippedGrade() {
+        return equippedGrade;
     }
 
     // Method to handle drag-and-drop of the key onto the door

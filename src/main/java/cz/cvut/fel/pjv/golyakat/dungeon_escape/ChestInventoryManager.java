@@ -9,6 +9,10 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_helmet;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_boots;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_pants;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_helmet;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key.Item_SilverKey;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key.Item_partKey1;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key.Item_partKey2;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key.Item_partKey3;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Iron_sword;
 
@@ -101,8 +105,16 @@ public class ChestInventoryManager {
                 return new iron_helmet();
             case "iron_sword":
                 return new Iron_sword(2, 2); // Указываем attack=2
-            case "Key": // Add case for Key
+            case "Key":
                 return new Item_Key();
+            case "Key1":
+                return new Item_partKey1();
+            case "Key2":
+                return new Item_partKey2();
+            case "Key3":
+                return new Item_partKey3();
+            case "SilverKey":
+                return new Item_SilverKey();
             default:
                 System.err.println("Unknown item name: " + name);
                 return null;

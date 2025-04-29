@@ -4,7 +4,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class KeyHandler implements KeyListener {
-    public boolean upPressed, downPressed, leftPressed, rightPressed, ePressed, fPressed;
+    public boolean upPressed, downPressed, leftPressed, rightPressed, ePressed, fPressed, qPressed;
 
     @Override
     public void keyTyped(KeyEvent e) {}
@@ -26,9 +26,14 @@ public class KeyHandler implements KeyListener {
         }
         if (code == KeyEvent.VK_E) {
             ePressed = true;
+            System.out.println("E key pressed.");
         }
         if (code == KeyEvent.VK_F) {
             fPressed = true;
+        }
+        if (code == KeyEvent.VK_Q) {
+            qPressed = true;
+            System.out.println("Q key pressed.");
         }
     }
 
@@ -53,6 +58,9 @@ public class KeyHandler implements KeyListener {
                 break;
             case KeyEvent.VK_F:
                 fPressed = false;
+                break;
+            case KeyEvent.VK_Q:
+                qPressed = false;
                 break;
         }
     }
