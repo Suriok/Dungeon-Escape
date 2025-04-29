@@ -22,8 +22,6 @@ public class AssetSetter {
     }
 
     public void setObg() {
-        // Убрали создание сундука с id=0, так как он уже создан в setUpObjects
-
         // Боковая дверь
         gp.obj[1] = new Object_DoorSide();
         gp.obj[1].worldX = 20 * gp.tileSize;
@@ -49,7 +47,7 @@ public class AssetSetter {
         gp.obj[5] = new Object_DoorFront();
         gp.obj[5].worldX = 41 * gp.tileSize;
         gp.obj[5].worldY = 10 * gp.tileSize;
-        System.out.println("Placed front door 1 at: " + gp.obj[5].worldX/gp.tileSize + ", " + gp.obj[2].worldY/gp.tileSize);
+        System.out.println("Placed front door (requires Silver Key) at: " + gp.obj[5].worldX/gp.tileSize + ", " + gp.obj[5].worldY/gp.tileSize);
 
         gp.obj[6] = new Object_DoorSide();
         gp.obj[6].worldX = 31 * gp.tileSize;

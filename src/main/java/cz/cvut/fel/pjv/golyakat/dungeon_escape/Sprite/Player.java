@@ -43,6 +43,7 @@ public class Player extends Entity {
     private List<ChestInventoryManager.ItemData> inventory;
     private GameObject[] equippedArmor;
     private GameObject equippedWeapon;
+    private GameObject equippedGrade; // Новый слот для grade
     private static final int ATTACK_RANGE = 96; // 2 tiles
     private static final int ATTACK_COOLDOWN = 30; // 0.5 seconds at 60 FPS
     private int attackCounter = 0;
@@ -62,6 +63,7 @@ public class Player extends Entity {
         inventory = new ArrayList<>();
         equippedArmor = new GameObject[4];
         equippedWeapon = null;
+        equippedGrade = null; // Инициализация слота grade
 
         setDefaulteValues();
         getPlayerImage();
@@ -208,7 +210,6 @@ public class Player extends Entity {
             }
             keyH.ePressed = false;
         } else if (keyH.ePressed) {
-            System.out.println("E pressed but no interactable object found (index: " + interactionIndex + ")");
             keyH.ePressed = false;
         }
 
@@ -233,7 +234,6 @@ public class Player extends Entity {
             }
             life = newLife;
             inventory.remove(0);
-            System.out.println("Player used " + item.getName() + ", restored " + healAmount + " HP. Current HP: " + life);
             keyH.fPressed = false;
         }
     }
@@ -279,9 +279,7 @@ public class Player extends Entity {
     }
 
     public void receiveDamage(int damage) {
-        System.out.println("DEBUG: Current equipped armor:");
         for (int i = 0; i < equippedArmor.length; i++) {
-            System.out.println("DEBUG: Slot " + i + ": " + (equippedArmor[i] != null ? equippedArmor[i].name : "empty"));
         }
         float totalDefense = getTotalDefense();
         int reducedDamage = Math.max(0, damage - (int) totalDefense);
@@ -289,9 +287,7 @@ public class Player extends Entity {
         if (life < 0) {
             life = 0;
         }
-        System.out.println("DEBUG: Total defense calculated as " + totalDefense);
-        System.out.println("Player received " + damage + " damage without armor.");
-        System.out.println("With armor (" + totalDefense + " defense), damage reduced to " + reducedDamage + ". Current HP: " + life);
+        System.out.println("Player received " + damage + " damage ");
     }
 
     public void pickUpObject(int i) {
@@ -456,12 +452,11 @@ public class Player extends Entity {
             if (equippedArmor[i] instanceof Armor) {
                 float defense = ((Armor) equippedArmor[i]).getDefensAmount();
                 totalDefense += defense;
-                System.out.println("DEBUG: Armor in slot " + i + " (" + equippedArmor[i].name + ") provides " + defense + " defense");
+                System.out.println(" Armor in slot " + i + " (" + equippedArmor[i].name + ") provides " + defense + " defense");
             } else if (equippedArmor[i] != null) {
-                System.out.println("DEBUG: Item in slot " + i + " (" + equippedArmor[i].name + ") is not an Armor");
+                System.out.println("Item in slot " + i + " (" + equippedArmor[i].name + ") is not an Armor");
             }
         }
-        System.out.println("DEBUG: Total defense = " + totalDefense);
         return totalDefense;
     }
 
@@ -477,6 +472,20 @@ public class Player extends Entity {
 
     public GameObject getEquippedWeapon() {
         return equippedWeapon;
+    }
+
+    public void equipGrade(GameObject grade) {
+        this.equippedGrade = grade;
+        System.out.println("Equipped grade: " + (grade != null ? grade.name : "none"));
+    }
+
+    public void unequipGrade() {
+        System.out.println("Unequipped grade");
+        this.equippedGrade = null;
+    }
+
+    public GameObject getEquippedGrade() {
+        return equippedGrade;
     }
 
     // Method to handle drag-and-drop of the key onto the door

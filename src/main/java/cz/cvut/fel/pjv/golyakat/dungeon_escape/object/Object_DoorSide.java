@@ -44,6 +44,7 @@ public class Object_DoorSide extends GameObject {
             openImage = closedImage;
             image = closedImage;
         }
+        System.out.println("Object_DoorSide initialized: requiresKey=" + requiresKey + ", isOpen=" + isOpen);
     }
 
     public void interact() {
@@ -53,7 +54,7 @@ public class Object_DoorSide extends GameObject {
             Collision = false; // No longer collidable when open
             System.out.println("DoorSide opened!");
         } else {
-            System.out.println("This door requires a key to open.");
+            System.out.println("This door requires a Key to open.");
         }
     }
 
@@ -65,6 +66,6 @@ public class Object_DoorSide extends GameObject {
         isOpen = true;
         image = openImage;
         Collision = false;
-        System.out.println("DoorSide unlocked and opened with a key!");
+        System.out.println("DoorSide unlocked and opened with a Key!");
     }
 }

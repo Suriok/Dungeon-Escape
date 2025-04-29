@@ -19,12 +19,12 @@ public class PlayerUI {
     private final float scaleFactor = 3.0f;
     private Rectangle playerInventoryBounds;
     private Rectangle[] armorSlotBounds;
-    private Rectangle weaponSlotBounds; // Границы слота для оружия
+    private Rectangle weaponSlotBounds;
 
     public PlayerUI(gamePanel gp) {
         this.gp = gp;
         armorSlotBounds = new Rectangle[4];
-        weaponSlotBounds = null; // Инициализируем как null, зададим позже
+        weaponSlotBounds = null;
         loadImages();
     }
 
@@ -79,8 +79,7 @@ public class PlayerUI {
         for (ChestInventoryManager.ItemData item : gp.player.getInventory()) {
             int quantity = item.getQuantity();
             for (int i = 0; i < quantity; i++) {
-                ChestInventoryManager.ItemData singleItem = new ChestInventoryManager.ItemData(item.getName(), 1);
-                expandedItems.add(singleItem);
+                expandedItems.add(new ChestInventoryManager.ItemData(item.getName(), 1));
             }
         }
 
@@ -94,13 +93,23 @@ public class PlayerUI {
             if (itemImage != null) {
                 int x = offsetX + col * cellWidth + (cellWidth - itemSize) / 2;
                 int y = offsetY + row * cellHeight + (cellHeight - itemSize) / 2;
-                g2d.drawImage(itemImage, x, y, itemSize, itemSize, null);
+                // Уменьшаем размер для фрагментов ключа
+                int drawSize = itemSize;
+                boolean isKeyPart = item.getName().equals("Key1") ||
+                        item.getName().equals("Key2") ||
+                        item.getName().equals("Key3");
+                if (isKeyPart) {
+                    drawSize = (int)(itemSize * 0.6667f); // Уменьшение на 2f (1/3)
+                    x += (itemSize - drawSize) / 2;
+                    y += (itemSize - drawSize) / 2;
+                }
+                g2d.drawImage(itemImage, x, y, drawSize, drawSize, null);
 
                 g2d.setFont(new Font("Arial", Font.PLAIN, 12));
                 g2d.setColor(Color.WHITE);
                 String quantityText = "x" + item.getQuantity();
-                int textX = x + itemSize - g2d.getFontMetrics().stringWidth(quantityText) - 2;
-                int textY = y + itemSize - 2;
+                int textX = x + drawSize - g2d.getFontMetrics().stringWidth(quantityText) - 2;
+                int textY = y + drawSize - 2;
                 g2d.drawString(quantityText, textX, textY);
             }
         }
@@ -138,7 +147,7 @@ public class PlayerUI {
             }
         }
 
-        // Отрисовка оружия в weapon_inv (1 слот)
+        // Отрисовка оружия в weapon_inv
         int weaponGridCols = 1;
         int weaponGridRows = 1;
         int weaponCellWidth = weaponInvWidth / weaponGridCols;
@@ -180,8 +189,9 @@ public class PlayerUI {
 
     public boolean isArmor(ChestInventoryManager.ItemData item) {
         String itemName = item.getName();
-        return itemName.endsWith("_helmet") || itemName.endsWith("_bib") ||
-                itemName.endsWith("_pants") || itemName.endsWith("_boots");
+        return (itemName.endsWith("_helmet") || itemName.endsWith("_bib") ||
+                itemName.endsWith("_pants") || itemName.endsWith("_boots")) &&
+                !itemName.equals("Key1") && !itemName.equals("Key2") && !itemName.equals("Key3");
     }
 
     public int getArmorSlotIndex(ChestInventoryManager.ItemData item) {
@@ -200,6 +210,7 @@ public class PlayerUI {
 
     public boolean isWeapon(ChestInventoryManager.ItemData item) {
         String itemName = item.getName();
-        return itemName.endsWith("_sword");
+        return itemName.endsWith("_sword") &&
+                !itemName.equals("Key1") && !itemName.equals("Key2") && !itemName.equals("Key3");
     }
 }
