@@ -47,6 +47,8 @@ public class Player extends Entity {
     private static final int ATTACK_RANGE = 96; // 2 tiles
     private static final int ATTACK_COOLDOWN = 30; // 0.5 seconds at 60 FPS
     private int attackCounter = 0;
+    public boolean isHit = false;
+    private int hitEffectCounter = 0;
 
     public Player(gamePanel gp, KeyHandler keyH) {
         super(gp);
@@ -236,6 +238,13 @@ public class Player extends Entity {
             inventory.remove(0);
             keyH.fPressed = false;
         }
+        if (isHit) {
+            hitEffectCounter--;
+            if (hitEffectCounter <= 0) {
+                isHit = false;
+            }
+        }
+
     }
 
     public void attack() {
@@ -267,11 +276,16 @@ public class Player extends Entity {
             }
         }
 
+        gp.playSE(1);
+
         if (target != null) {
             target.life -= attackDamage;
             if (target.life < 0) {
                 target.life = 0;
             }
+
+            gp.playSE(1);
+
             System.out.println("Player attacked " + target.name + " for " + attackDamage + " damage. Monster HP: " + target.life);
         } else {
             System.out.println("Player attacked, but no monsters in range.");
@@ -279,16 +293,23 @@ public class Player extends Entity {
     }
 
     public void receiveDamage(int damage) {
-        for (int i = 0; i < equippedArmor.length; i++) {
-        }
         float totalDefense = getTotalDefense();
         int reducedDamage = Math.max(0, damage - (int) totalDefense);
         life -= reducedDamage;
         if (life < 0) {
             life = 0;
         }
+
+        // Звук удара
+        gp.playSE(2);
+
+        // Визуальный эффект урона
+        isHit = true;
+        hitEffectCounter = 60; // 1 сек при 60 FPS
+
         System.out.println("Player received " + damage + " damage ");
     }
+
 
     public void pickUpObject(int i) {
     }
@@ -363,7 +384,20 @@ public class Player extends Entity {
         }
 
         this.image = imageToDraw;
-        super.draw(g2d, gp);
+
+        int screenX = worldX - gp.player.worldX + gp.player.screenX;
+        int screenY = worldY - gp.player.worldY + gp.player.screenY;
+
+        // 1. Отрисовать спрайт
+        g2d.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+
+        // 2. Если получен урон — накладываем красный полупрозрачный слой СВЕРХУ
+        if (isHit) {
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+            g2d.setColor(Color.RED);
+            g2d.fillRect(screenX, screenY, gp.tileSize, gp.tileSize);
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f)); // сброс прозрачности
+        }
 
         // Draw attack animation (wave effect)
         if (isAttacking && equippedWeapon != null) {

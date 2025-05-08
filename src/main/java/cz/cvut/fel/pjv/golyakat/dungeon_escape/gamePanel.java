@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class gamePanel extends JPanel implements Runnable {
+
+    // SCREEN SETTINGS
     final int originalTileSize = 16;
     final int scale = 3;
 
@@ -39,14 +41,21 @@ public class gamePanel extends JPanel implements Runnable {
     public final int maxWorldCol = 60;
     public final int maxWorldRow = 60;
 
+    // FPS
     int FPS = 60;
 
+    // SYSTEM
     TileManger tileH = new TileManger(this);
     public KeyHandler keyH = new KeyHandler();
     Thread gameThread;
     public Collision collisionChecker = new Collision(this);
-    public AssetSetter assetSetter = new AssetSetter(this);
+    public AssetSetter assetSetter;
+    Sound sound = new Sound();
 
+
+
+
+    // ENTITY AND OBJECT
     public Player player = new Player(this, keyH);
     public GameObject obj[] = new GameObject[11];
     public HealthBar healthBar;
@@ -57,6 +66,7 @@ public class gamePanel extends JPanel implements Runnable {
     public int gameState;
     public final int playerState = 1;
 
+    // MESSEGES
     public String doorMessage = "";
     public int doorMessageCounter = 0;
     public String doorHintMessage = "";
@@ -82,7 +92,7 @@ public class gamePanel extends JPanel implements Runnable {
     private int draggedItemIndex = -1;
     private int dragOffsetX, dragOffsetY;
     private boolean collisionLogged = false;
-    private boolean objectsLogged = false;
+    public boolean objectsLogged = false;
     private boolean dragDroppedLogged = false;
 
     public gamePanel() {
@@ -101,6 +111,7 @@ public class gamePanel extends JPanel implements Runnable {
         });
 
         chestInventoryManager = new ChestInventoryManager();
+        assetSetter = new AssetSetter(this);
         healthBar = new HealthBar(this);
         defensBar = new DefensBar(this);
         chestUI = new ChestUI(this);
@@ -519,51 +530,9 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     public void setUpObjects() {
-        Map<String, Integer> chest0Items = new HashMap<>();
-        chest0Items.put("leather_pants", 1);
-        chest0Items.put("leather_helmet", 1);
-        chest0Items.put("iron_sword", 1);
-        obj[0] = new Object_Small_Chest(this, 0, chest0Items);
-        obj[0].worldX = 15 * tileSize;
-        obj[0].worldY = 21 * tileSize;
-
-        Map<String, Integer> chest7Items = new HashMap<>();
-        chest7Items.put("Key1", 1);
-        obj[7] = new Object_Small_Chest(this, 7, chest7Items);
-        obj[7].worldX = 40 * tileSize;
-        obj[7].worldY = 30 * tileSize;
-
-        Map<String, Integer> chest8Items = new HashMap<>();
-        chest8Items.put("Key2", 1);
-        obj[8] = new Object_Small_Chest(this, 8, chest8Items);
-        obj[8].worldX = 25 * tileSize;
-        obj[8].worldY = 13 * tileSize;
-
-        Map<String, Integer> chest9Items = new HashMap<>();
-        chest9Items.put("Key3", 1);
-        obj[9] = new Object_Small_Chest(this, 9, chest9Items);
-        obj[9].worldX = 50 * tileSize;
-        obj[9].worldY = 21 * tileSize;
-
-        obj[10] = new Object_CraftingTable();
-        obj[10].worldX = 38 * tileSize;
-        obj[10].worldY = 14 * tileSize;
-
-        player.worldX = 15 * tileSize;
-        player.worldY = 22 * tileSize;
-
-        if (!objectsLogged) {
-            System.out.println("Objects initialized:");
-            System.out.println("Chest 0 at (" + (obj[0].worldX / tileSize) + ", " + (obj[0].worldY / tileSize) + "): " + chest0Items);
-            System.out.println("Chest 7 at (" + (obj[7].worldX / tileSize) + ", " + (obj[7].worldY / tileSize) + "): " + chest7Items);
-            System.out.println("Chest 8 at (" + (obj[8].worldX / tileSize) + ", " + (obj[8].worldY / tileSize) + "): " + chest8Items);
-            System.out.println("Chest 9 at (" + (obj[9].worldX / tileSize) + ", " + (obj[9].worldY / tileSize) + "): " + chest9Items);
-            System.out.println("Crafting Table at (" + (obj[10].worldX / tileSize) + ", " + (obj[10].worldY / tileSize) + ")");
-            objectsLogged = true;
-        }
-
         assetSetter.setObg();
         assetSetter.setMonster();
+        playMusic(0);
     }
 
     public void startGameThread() {
@@ -900,5 +869,18 @@ public class gamePanel extends JPanel implements Runnable {
         }
 
         g2d.dispose();
+    }
+    public void playMusic(int i) {
+        sound.setFile(i);
+        sound.playSound();
+        sound.loopSound();
+    }
+
+    public void stopMusic() {
+        sound.StopSound();
+    }
+    public void playSE(int i){
+        sound.setFile(i);
+        sound.playSound();
     }
 }

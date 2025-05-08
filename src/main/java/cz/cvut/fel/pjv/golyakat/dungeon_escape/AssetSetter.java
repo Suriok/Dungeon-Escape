@@ -4,21 +4,24 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Goblin;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Slime;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Zombie;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Skeleton;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_CraftingTable;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 
 public class AssetSetter {
+    public ChestInventoryManager chestInventoryManager;
     gamePanel gp;
     Random random;
 
     public AssetSetter(gamePanel gp) {
         this.gp = gp;
         this.random = new Random();
+        this.chestInventoryManager = gp.chestInventoryManager;
     }
 
     public void setObg() {
@@ -47,13 +50,58 @@ public class AssetSetter {
         gp.obj[5] = new Object_DoorFront();
         gp.obj[5].worldX = 41 * gp.tileSize;
         gp.obj[5].worldY = 10 * gp.tileSize;
+        ((Object_DoorFront) gp.obj[5]).requiresKey = true; // This door requires a Silver Key
         System.out.println("Placed front door (requires Silver Key) at: " + gp.obj[5].worldX/gp.tileSize + ", " + gp.obj[5].worldY/gp.tileSize);
 
         gp.obj[6] = new Object_DoorSide();
         gp.obj[6].worldX = 31 * gp.tileSize;
         gp.obj[6].worldY = 7 * gp.tileSize;
         ((Object_DoorSide) gp.obj[6]).requiresKey = true; // This door requires a key
-        System.out.println("Placed side door (requires key) at: " + gp.obj[6].worldX/gp.tileSize + ", " + gp.obj[1].worldY/gp.tileSize);
+        System.out.println("Placed side door (requires key) at: " + gp.obj[6].worldX/gp.tileSize + ", " + gp.obj[6].worldY/gp.tileSize);
+
+        Map<String, Integer> chest0Items = new HashMap<>();
+        chest0Items.put("leather_pants", 1);
+        chest0Items.put("leather_helmet", 1);
+        chest0Items.put("iron_sword", 1);
+        gp.obj[0] = new Object_Small_Chest(this, 0, chest0Items);
+        gp.obj[0].worldX = 15 * gp.tileSize;
+        gp.obj[0].worldY = 21 * gp.tileSize;
+
+        Map<String, Integer> chest7Items = new HashMap<>();
+        chest7Items.put("Key1", 1);
+        gp.obj[7] = new Object_Small_Chest(this, 7, chest7Items);
+        gp.obj[7].worldX = 40 * gp.tileSize;
+        gp.obj[7].worldY = 30 * gp.tileSize;
+
+        Map<String, Integer> chest8Items = new HashMap<>();
+        chest8Items.put("Key2", 1);
+        gp.obj[8] = new Object_Small_Chest(this, 8, chest8Items);
+        gp.obj[8].worldX = 25 * gp.tileSize;
+        gp.obj[8].worldY = 13 * gp.tileSize;
+
+        Map<String, Integer> chest9Items = new HashMap<>();
+        chest9Items.put("Key3", 1);
+        gp.obj[9] = new Object_Small_Chest(this, 9, chest9Items);
+        gp.obj[9].worldX = 50 * gp.tileSize;
+        gp.obj[9].worldY = 21 * gp.tileSize;
+
+        gp.obj[10] = new Object_CraftingTable();
+        gp.obj[10].worldX = 38 * gp.tileSize;
+        gp.obj[10].worldY = 14 * gp.tileSize;
+
+        gp.player.worldX = 15 * gp.tileSize;
+        gp.player.worldY = 22 * gp.tileSize;
+
+        if (!gp.objectsLogged) {
+            System.out.println("Objects initialized:");
+            System.out.println("Chest 0 at (" + (gp.obj[0].worldX / gp.tileSize) + ", " + (gp.obj[0].worldY / gp.tileSize) + "): " + chest0Items);
+            System.out.println("Chest 7 at (" + (gp.obj[7].worldX / gp.tileSize) + ", " + (gp.obj[7].worldY / gp.tileSize) + "): " + chest7Items);
+            System.out.println("Chest 8 at (" + (gp.obj[8].worldX / gp.tileSize) + ", " + (gp.obj[8].worldY / gp.tileSize) + "): " + chest8Items);
+            System.out.println("Chest 9 at (" + (gp.obj[9].worldX / gp.tileSize) + ", " + (gp.obj[9].worldY / gp.tileSize) + "): " + chest9Items);
+            System.out.println("Crafting Table at (" + (gp.obj[10].worldX / gp.tileSize) + ", " + (gp.obj[10].worldY / gp.tileSize) + ")");
+            gp.objectsLogged = true;
+        }
+
     }
 
     public void setMonster() {
