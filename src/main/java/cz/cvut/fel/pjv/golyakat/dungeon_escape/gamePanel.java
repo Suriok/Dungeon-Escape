@@ -52,8 +52,9 @@ public class gamePanel extends JPanel implements Runnable {
     public AssetSetter assetSetter;
     Sound sound = new Sound();
 
-
-
+    //GAME STATE
+    public int getGameState;
+    public final int titleState = 0;
 
     // ENTITY AND OBJECT
     public Player player = new Player(this, keyH);
@@ -65,18 +66,6 @@ public class gamePanel extends JPanel implements Runnable {
 
     public int gameState;
     public final int playerState = 1;
-
-    // MESSEGES
-    public String doorMessage = "";
-    public int doorMessageCounter = 0;
-    public String doorHintMessage = "";
-    public int doorHintMessageCounter = 0;
-    public String chestMessage = "";
-    public int chestMessageCounter = 0;
-    public String healingHintMessage = "";
-    public int healingHintMessageCounter = 0;
-    public String craftingHintMessage = "";
-    public int craftingHintMessageCounter = 0;
 
     public ChestUI chestUI;
     public CraftingTableUI craftingTableUI;
@@ -94,6 +83,43 @@ public class gamePanel extends JPanel implements Runnable {
     private boolean collisionLogged = false;
     public boolean objectsLogged = false;
     private boolean dragDroppedLogged = false;
+
+    // MESSEGES
+    public HintMessage doorMessage = new HintMessage();
+    public HintMessage doorHintMessage = new HintMessage();
+    public HintMessage chestMessage = new HintMessage();
+    public HintMessage healingHintMessage = new HintMessage();
+    public HintMessage craftingHintMessage = new HintMessage();
+
+    // UI MESSAGE SETTINGS
+    private final int messageFontSize = 20;
+    private final int messageLineHeight = 30;
+    private final int messageX = screenWidth - tileSize * 7; // вправо
+    private final int messageY = 25;
+
+
+    // HINT MASSAGE
+    public class HintMessage {
+        public String text = "";
+        public int counter = 0;
+        public boolean near = false;
+
+        public void show(String message, int duration, boolean isNear) {
+            this.text = message;
+            this.counter = duration;
+            this.near = isNear;
+        }
+
+        public void update() {
+            if (counter > 0) counter--;
+            if (counter <= 0) text = "";
+        }
+
+        public boolean isVisible() {
+            return !text.isEmpty();
+        }
+    }
+
 
     public gamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -405,10 +431,8 @@ public class gamePanel extends JPanel implements Runnable {
                             if (doorBounds.contains(e.getPoint())) {
                                 door.unlock();
                                 removeDraggedItem();
-                                doorHintMessage = "";
-                                doorHintMessageCounter = 0;
-                                doorMessage = "Side door unlocked!";
-                                doorMessageCounter = 120;
+                                doorHintMessage.show("", 0, false);
+                                doorMessage.show("Side door unlocked!", 40, true);
                                 if (!dragDroppedLogged) {
                                     System.out.println("Item " + draggedItem.getName() + " dropped to side door");
                                     dragDroppedLogged = true;
@@ -429,10 +453,8 @@ public class gamePanel extends JPanel implements Runnable {
                             if (doorBounds.contains(e.getPoint())) {
                                 door.unlock();
                                 removeDraggedItem();
-                                doorHintMessage = "";
-                                doorHintMessageCounter = 0;
-                                doorMessage = "Front door unlocked!";
-                                doorMessageCounter = 120;
+                                doorHintMessage.show("", 0, false);
+                                doorMessage.show("Front door unlocked!", 40, true);
                                 if (!dragDroppedLogged) {
                                     System.out.println("Item " + draggedItem.getName() + " dropped to front door");
                                     dragDroppedLogged = true;
@@ -532,7 +554,8 @@ public class gamePanel extends JPanel implements Runnable {
     public void setUpObjects() {
         assetSetter.setObg();
         assetSetter.setMonster();
-        playMusic(0);
+        //playMusic(0);
+        gameState = titleState;
     }
 
     public void startGameThread() {
@@ -606,14 +629,11 @@ public class gamePanel extends JPanel implements Runnable {
                         closestFrontDoor = null;
                         closestDoorDistance = distance;
                         if (door.isOpen()) {
-                            doorHintMessage = "Door opened!";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("Door opened!", 40, true);
                         } else if (door.requiresKey) {
-                            doorHintMessage = "This door requires a Key to open.";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("This door requires a Key to open.", 40, true);
                         } else {
-                            doorHintMessage = "Press E to open the door";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("Press E to open the door", 40, true);
                         }
                     }
                 }
@@ -631,14 +651,11 @@ public class gamePanel extends JPanel implements Runnable {
                         closestFrontDoor = door;
                         closestDoorDistance = distance;
                         if (door.isOpen()) {
-                            doorHintMessage = "Door opened!";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("Door opened!", 40, true);
                         } else if (door.requiresKey) {
-                            doorHintMessage = "This door requires a Silver Key to open.";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("This door requires a Key to open.", 40, true);
                         } else {
-                            doorHintMessage = "Press E to open the door";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("Press E to open the door", 40, true);
                         }
                     }
                 }
@@ -655,8 +672,7 @@ public class gamePanel extends JPanel implements Runnable {
                         nearCraftingTable = true;
                         closestTable = table;
                         closestTableDistance = distance;
-                        craftingHintMessage = "Press Q to open the crafting table";
-                        craftingHintMessageCounter = 80;
+                        craftingHintMessage.show("Press Q to open the crafting table", 40, true);
                     }
                 }
             }
@@ -672,12 +688,12 @@ public class gamePanel extends JPanel implements Runnable {
                         nearChest = true;
                         closestChest = chest;
                         closestChestDistance = distance;
-                        chestMessage = "Press E to open the chest";
-                        chestMessageCounter = 80;
+                        chestMessage.show("Press E to open the chest", 40, true);
                     }
                 }
             }
         }
+
 
         if (keyH.ePressed || keyH.qPressed) {
             if (nearCraftingTable && !chestUI.isShowingInventory() && keyH.qPressed && closestTableDistance <= closestDoorDistance && closestTableDistance <= closestChestDistance) {
@@ -706,23 +722,11 @@ public class gamePanel extends JPanel implements Runnable {
             }
         }
 
-        if (!nearDoor && doorHintMessageCounter <= 0) {
-            doorHintMessage = "";
-        }
-        if (!nearCraftingTable && craftingHintMessageCounter <= 0) {
-            craftingHintMessage = "";
-        }
-        if (!nearChest && chestMessageCounter <= 0) {
-            chestMessage = "";
-        }
-
         boolean hasHealingItem = player.getInventory().stream().anyMatch(item ->
                 item.getName().equals("Apple") || item.getName().equals("blubbery") || item.getName().equals("potion"));
+
         if (hasHealingItem) {
-            healingHintMessage = "Drag Apple, Blubbery, or Potion onto the player to restore HP";
-            healingHintMessageCounter = 80;
-        } else if (healingHintMessageCounter <= 0) {
-            healingHintMessage = "";
+            healingHintMessage.show("Drag item onto the player to restore HP", 40, true);
         }
 
         if (gameState == playerState) {
@@ -738,36 +742,12 @@ public class gamePanel extends JPanel implements Runnable {
 
         attackCounter++;
 
-        if (doorMessageCounter > 0) {
-            doorMessageCounter--;
-            if (doorMessageCounter <= 0) {
-                doorMessage = "";
-            }
-        }
-        if (doorHintMessageCounter > 0) {
-            doorHintMessageCounter--;
-            if (doorHintMessageCounter <= 0 && !nearDoor) {
-                doorHintMessage = "";
-            }
-        }
-        if (chestMessageCounter > 0) {
-            chestMessageCounter--;
-            if (chestMessageCounter <= 0) {
-                chestMessage = "";
-            }
-        }
-        if (healingHintMessageCounter > 0) {
-            healingHintMessageCounter--;
-            if (healingHintMessageCounter <= 0 && !hasHealingItem) {
-                healingHintMessage = "";
-            }
-        }
-        if (craftingHintMessageCounter > 0) {
-            craftingHintMessageCounter--;
-            if (craftingHintMessageCounter <= 0 && !nearCraftingTable) {
-                craftingHintMessage = "";
-            }
-        }
+        doorMessage.update();
+        doorHintMessage.update();
+        chestMessage.update();
+        healingHintMessage.update();
+        craftingHintMessage.update();
+
     }
 
     @Override
@@ -775,100 +755,104 @@ public class gamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        tileH.draw(g2d);
+        // TITEL SCREEN
+        if(gameState == titleState){
 
-        for (int i = 0; i < obj.length; i++) {
-            if (obj[i] != null) {
-                int screenX = obj[i].worldX - player.worldX + player.screenX;
-                int screenY = obj[i].worldY - player.worldY + player.screenY;
-                if (screenX + tileSize > 0 && screenX < screenWidth &&
-                        screenY + tileSize > 0 && screenY < screenHeight) {
-                    obj[i].draw(g2d, this);
-                }
-            }
         }
+        // Game Screen
+        else {
+            tileH.draw(g2d);
 
-        for (int i = 0; i < monster.length; i++) {
-            if (monster[i] != null) {
-                int screenX = monster[i].worldX - player.worldX + player.screenX;
-                int screenY = monster[i].worldY - player.worldY + player.screenY;
-                if (screenX + tileSize > 0 && screenX < screenWidth &&
-                        screenY + tileSize > 0 && screenY < screenHeight) {
-                    monsterUi.draw(g2d, monster[i]);
-                    if (!monster[i].isDead || monster[i].fadeAlpha > 0) {
-                        monster[i].draw(g2d);
+            for (int i = 0; i < obj.length; i++) {
+                if (obj[i] != null) {
+                    int screenX = obj[i].worldX - player.worldX + player.screenX;
+                    int screenY = obj[i].worldY - player.worldY + player.screenY;
+                    if (screenX + tileSize > 0 && screenX < screenWidth &&
+                            screenY + tileSize > 0 && screenY < screenHeight) {
+                        obj[i].draw(g2d, this);
                     }
                 }
             }
-        }
 
-        player.draw(g2d);
-
-        healthBar.draw(g2d);
-        defensBar.draw(g2d);
-
-        chestUI.draw(g2d);
-        craftingTableUI.draw(g2d);
-
-        playerUI.draw(g2d);
-
-        if (draggedItem != null) {
-            Point mousePos = getMousePosition();
-            if (mousePos != null) {
-                int itemSize = tileSize;
-                boolean isKeyPart = draggedItem.getName().equals("Key1") ||
-                        draggedItem.getName().equals("Key2") ||
-                        draggedItem.getName().equals("Key3");
-                if (isKeyPart) {
-                    itemSize = (int)(tileSize * 0.6667f);
+            for (int i = 0; i < monster.length; i++) {
+                if (monster[i] != null) {
+                    int screenX = monster[i].worldX - player.worldX + player.screenX;
+                    int screenY = monster[i].worldY - player.worldY + player.screenY;
+                    if (screenX + tileSize > 0 && screenX < screenWidth &&
+                            screenY + tileSize > 0 && screenY < screenHeight) {
+                        monsterUi.draw(g2d, monster[i]);
+                        if (!monster[i].isDead || monster[i].fadeAlpha > 0) {
+                            monster[i].draw(g2d);
+                        }
+                    }
                 }
-                g2d.drawImage(draggedItem.getItem().image,
-                        mousePos.x - dragOffsetX,
-                        mousePos.y - dragOffsetY,
-                        itemSize, itemSize, null);
             }
+
+            player.draw(g2d);
+            healthBar.draw(g2d);
+            defensBar.draw(g2d);
+            chestUI.draw(g2d);
+            craftingTableUI.draw(g2d);
+            playerUI.draw(g2d);
+
+            if (draggedItem != null) {
+                Point mousePos = getMousePosition();
+                if (mousePos != null) {
+                    int itemSize = tileSize;
+                    boolean isKeyPart = draggedItem.getName().equals("Key1") ||
+                            draggedItem.getName().equals("Key2") ||
+                            draggedItem.getName().equals("Key3");
+                    if (isKeyPart) {
+                        itemSize = (int)(tileSize * 0.6667f);
+                    }
+                    g2d.drawImage(draggedItem.getItem().image,
+                            mousePos.x - dragOffsetX,
+                            mousePos.y - dragOffsetY,
+                            itemSize, itemSize, null);
+                }
+            }
+            int fontSize = messageFontSize;
+            int lineHeight = messageLineHeight;
+            int baseX = messageX;
+            int baseY = messageY;
+
+            g2d.setFont(new Font("Arial", Font.PLAIN, fontSize));
+            g2d.setColor(Color.WHITE);
+
+            ArrayList<String> lines = new ArrayList<>();
+            if (chestMessage.isVisible()) lines.add("Chest: " + chestMessage.text);
+            if (doorMessage.isVisible()) lines.add("Door: " + doorMessage.text);
+            if (doorHintMessage.isVisible()) lines.add("Hint: " + doorHintMessage.text);
+            if (healingHintMessage.isVisible()) lines.add("Heal: " + healingHintMessage.text);
+            if (craftingHintMessage.isVisible()) lines.add("Craft: " + craftingHintMessage.text);
+
+            FontMetrics fm = g2d.getFontMetrics();
+            int maxWidth = screenWidth - baseX;
+
+            int currentY = baseY;
+
+            for (String originalLine : lines) {
+                String[] words = originalLine.split(" ");
+                StringBuilder currentLine = new StringBuilder();
+
+                for (String word : words) {
+                    String testLine = currentLine + word + " ";
+                    if (fm.stringWidth(testLine) > maxWidth) {
+                        g2d.drawString(currentLine.toString(), baseX, currentY);
+                        currentY += lineHeight;
+                        currentLine = new StringBuilder(word + " ");
+                    } else {
+                        currentLine.append(word).append(" ");
+                    }
+                }
+
+                if (!currentLine.toString().isEmpty()) {
+                    g2d.drawString(currentLine.toString(), baseX, currentY);
+                    currentY += lineHeight;
+                }
+            }
+            g2d.dispose();
         }
-
-        g2d.setFont(new Font("Arial", Font.PLAIN, 20));
-        g2d.setColor(Color.WHITE);
-
-        int baseMessageY = 30;
-        int rightMargin = tileSize;
-
-        if (!chestMessage.isEmpty()) {
-            int chestMessageY = baseMessageY;
-            int chestMessageX = screenWidth - g2d.getFontMetrics().stringWidth(chestMessage) - rightMargin;
-            g2d.drawString(chestMessage, chestMessageX, chestMessageY);
-        }
-
-        if (!doorMessage.isEmpty()) {
-            int doorMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30);
-            int doorMessageX = screenWidth - g2d.getFontMetrics().stringWidth(doorMessage) - rightMargin;
-            g2d.drawString(doorMessage, doorMessageX, doorMessageY);
-        }
-
-        if (!doorHintMessage.isEmpty()) {
-            int doorHintMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30) + (doorMessage.isEmpty() ? 0 : 30);
-            int doorHintMessageX = screenWidth - g2d.getFontMetrics().stringWidth(doorHintMessage) - rightMargin;
-            g2d.drawString(doorHintMessage, doorHintMessageX, doorHintMessageY);
-        }
-
-        if (!healingHintMessage.isEmpty()) {
-            int healingHintMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30) +
-                    (doorMessage.isEmpty() ? 0 : 30) + (doorHintMessage.isEmpty() ? 0 : 30);
-            int healingHintMessageX = screenWidth - g2d.getFontMetrics().stringWidth(healingHintMessage) - rightMargin;
-            g2d.drawString(healingHintMessage, healingHintMessageX, healingHintMessageY);
-        }
-
-        if (!craftingHintMessage.isEmpty()) {
-            int craftingHintMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30) +
-                    (doorMessage.isEmpty() ? 0 : 30) + (doorHintMessage.isEmpty() ? 0 : 30) +
-                    (healingHintMessage.isEmpty() ? 0 : 30);
-            int craftingHintMessageX = screenWidth - g2d.getFontMetrics().stringWidth(craftingHintMessage) - rightMargin;
-            g2d.drawString(craftingHintMessage, craftingHintMessageX, craftingHintMessageY);
-        }
-
-        g2d.dispose();
     }
     public void playMusic(int i) {
         sound.setFile(i);

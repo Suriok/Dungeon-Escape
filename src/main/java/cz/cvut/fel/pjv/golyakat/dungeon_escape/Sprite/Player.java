@@ -157,35 +157,6 @@ public class Player extends Entity {
         }
 
         interactionIndex = gp.collisionChecker.checkObjectForInteraction(this, true);
-        if (interactionIndex != 999 && gp.obj[interactionIndex] != null) {
-            String objName = gp.obj[interactionIndex].name;
-            if (objName.equals("DoorFront") && !((Object_DoorFront) gp.obj[interactionIndex]).isOpen()) {
-                gp.doorMessage = "Press E to open door";
-                gp.doorMessageCounter = 120;
-                System.out.println("Near door: " + objName + " at index " + interactionIndex);
-            } else if (objName.equals("DoorSide") && !((Object_DoorSide) gp.obj[interactionIndex]).isOpen()) {
-                Object_DoorSide door = (Object_DoorSide) gp.obj[interactionIndex];
-                if (door.requiresKey) {
-                    gp.doorMessage = "This door requires a key to open.";
-                    gp.doorHintMessage = "Drag the key from your inventory onto the door to unlock it.";
-                    gp.doorMessageCounter = 120;
-                    gp.doorHintMessageCounter = 120;
-                    System.out.println("Near door that requires a key: " + objName + " at index " + interactionIndex);
-                } else {
-                    gp.doorMessage = "Press E to open door";
-                    gp.doorMessageCounter = 120;
-                    System.out.println("Near door: " + objName + " at index " + interactionIndex);
-                }
-            } else if (objName.equals("small_chest")) {
-                if (((Object_Small_Chest) gp.obj[interactionIndex]).isShowingInventory()) {
-                    gp.chestMessage = "Press E to close the chest";
-                } else {
-                    gp.chestMessage = "Press E to open the chest";
-                }
-                gp.chestMessageCounter = 120;
-            }
-        }
-
         if (keyH.ePressed && interactionIndex != 999 && gp.obj[interactionIndex] != null) {
             System.out.println("Attempting to interact with object at index: " + interactionIndex + " (" + gp.obj[interactionIndex].name + ")");
             // Handle DoorSide that requires a key as a fallback for testing
