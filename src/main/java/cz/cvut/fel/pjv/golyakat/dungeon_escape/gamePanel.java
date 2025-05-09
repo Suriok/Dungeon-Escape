@@ -103,6 +103,7 @@ public class gamePanel extends JPanel implements Runnable {
     private boolean collisionLogged = false;
     public boolean objectsLogged = false;
     private boolean dragDroppedLogged = false;
+    private boolean draggedFromArmor = false;
 
     // MESSAGES
     public HintMessage doorMessage = new HintMessage();
@@ -119,7 +120,7 @@ public class gamePanel extends JPanel implements Runnable {
 
     // HINT MESSAGE
     public class HintMessage {
-        public String text = "";
+          public String text = "";
         public int counter = 0;
         public boolean near = false;
 
@@ -465,6 +466,7 @@ public class gamePanel extends JPanel implements Runnable {
                     if (index >= 0 && index < expandedItems.size()) {
                         draggedItem = new ChestInventoryManager.ItemData(expandedItems.get(index).getName(), 1);
                         sourceInventory = player;
+                        draggedFromArmor = false;
                         draggedItemIndex = player.getInventory().indexOf(
                                 player.getInventory().stream()
                                         .filter(item -> item.getName().equals(draggedItem.getName()))
@@ -486,6 +488,7 @@ public class gamePanel extends JPanel implements Runnable {
                         if (armor != null) {
                             draggedItem = new ChestInventoryManager.ItemData(armor.name, 1);
                             sourceInventory = player;
+                            draggedFromArmor = true;
                             draggedItemIndex = i; // Armor slot index
                             dragOffsetX = e.getX() - armorBounds[i].x;
                             dragOffsetY = e.getY() - armorBounds[i].y;
@@ -756,19 +759,14 @@ public class gamePanel extends JPanel implements Runnable {
 
                 // Return to source if invalid drop
                 if (sourceInventory == player) {
-                    if (draggedItemIndex == -2) {
-                        player.equipWeapon(draggedItem.getItem());
-                    } else if (draggedItemIndex >= 0 && draggedItemIndex < 4) {
+                    if (draggedFromArmor) {                       // вернули броню
                         player.equipArmor(draggedItem.getItem(), draggedItemIndex);
-                    } else {
-                        if (!playerUI.isArmor(draggedItem)) {
-                            player.addItem(draggedItem);
-                        }
+
+                    } else if (draggedItemIndex == -2) {          // вернули оружие
+                        player.equipWeapon(draggedItem.getItem());
+
                     }
                 } else if (sourceInventory instanceof Object_Small_Chest) {
-                    ((Object_Small_Chest) sourceInventory).getItems().add(draggedItem);
-                    chestInventoryManager.updateChestData(((Object_Small_Chest) sourceInventory).getId(),
-                            new ChestInventoryManager.ChestData(((Object_Small_Chest) sourceInventory).isOpen(), ((Object_Small_Chest) sourceInventory).getItems()));
                     if (!dragDroppedLogged) {
                         System.out.println("Item " + draggedItem.getName() + " dropped back to chest");
                         dragDroppedLogged = true;
@@ -814,6 +812,7 @@ public class gamePanel extends JPanel implements Runnable {
         sourceInventory = null;
         draggedItemIndex = -1;
         dragDroppedLogged = false;
+        draggedFromArmor = false;
     }
 
     private void removeDraggedItem() {

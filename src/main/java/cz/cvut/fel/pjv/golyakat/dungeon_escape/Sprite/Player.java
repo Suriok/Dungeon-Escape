@@ -217,6 +217,11 @@ public class Player extends Entity {
             }
         }
 
+        // GAMEOVER - WHEN PLAYER DO NOT HAVE HP
+        if(life <= 0){
+            gp.gameState = gp.gameOverState;
+        }
+
     }
 
     public void attack() {
@@ -435,10 +440,10 @@ public class Player extends Entity {
     }
 
     public void equipArmor(GameObject armor, int slot) {
-        if (slot >= 0 && slot < equippedArmor.length) {
-            equippedArmor[slot] = armor;
-            System.out.println("Equipped armor: " + armor.name + " in slot " + slot);
-        }
+        if (!(armor instanceof Armor)) return;            // допускаем ТОЛЬКО Armor
+        if (slot < 0 || slot >= equippedArmor.length) return;
+        equippedArmor[slot] = armor;
+        System.out.println("Equipped armor: " + armor.name + " in slot " + slot);
     }
 
     public void unequipArmor(int slot) {

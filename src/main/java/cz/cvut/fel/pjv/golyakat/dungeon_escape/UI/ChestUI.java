@@ -57,7 +57,7 @@ public class ChestUI {
 
         BufferedImage inventoryImage = activeChest.getInventoryImage();
         if (inventoryImage == null) {
-            System.out.println("ChestUI: Картинка недоступна");
+            System.out.println("ChestUI: No image found");
             return;
         }
 
