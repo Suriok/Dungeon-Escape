@@ -17,13 +17,13 @@ public class TitleScreenUI {
 
     private final gamePanel gp;
     private BufferedImage background;
-    public int commandNum;
 
-
+    // MAIN TITEL PANEL
     private static final float BTN_ALPHA = 0.60f;
     private static final int BTN_BORDER = 2;
     private static final Font BTN_FONT = new Font("Arial", Font.BOLD, 24);
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 48);
+
 
 
 
@@ -39,6 +39,7 @@ public class TitleScreenUI {
     private final List<UIButton> buttons = new ArrayList<>();
 
     public TitleScreenUI(gamePanel gp) {
+
         this.gp = gp;
         loadBackground();
 
@@ -70,6 +71,8 @@ public class TitleScreenUI {
             g.dispose();
         }
     }
+
+
 
 
     public void draw(Graphics2D g2) {
@@ -109,6 +112,71 @@ public class TitleScreenUI {
             int ty = r.y + (r.height - (int)strRect.getHeight()) / 2 + fm.getAscent();
             g2.drawString(btn.text, tx, ty);
         }
+
+        // GAME OVER
+        if(gp.gameState == gp.gameOverState){
+            drawGameOverScreen(g2);
+        }
+
+    }
+
+    // GAME OVER
+    public void drawGameOverScreen(Graphics2D g2) {
+        // Полупрозрачное затемнение фона
+        g2.setColor(new Color(0, 0, 0, 150));
+        g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
+
+        // Размер и положение основного блока
+        int boxWidth = gp.tileSize * 10;
+        int boxHeight = gp.tileSize * 9; // ← немного уменьшен
+        int boxX = (gp.screenWidth - boxWidth) / 2;
+        int boxY = (gp.screenHeight - boxHeight) / 2;
+
+        // Прямоугольник
+        g2.setColor(new Color(0, 0, 0, 180));
+        g2.fillRect(boxX, boxY, boxWidth, boxHeight);
+        g2.setColor(Color.WHITE);
+        g2.setStroke(new BasicStroke(4));
+        g2.drawRect(boxX, boxY, boxWidth, boxHeight);
+
+        // Шрифты и строки
+        String title = "GAME OVER";
+        String[] options = {"Try Again", "Back to Menu", "Exit"};
+
+        Font titleFont = new Font("Arial", Font.BOLD, 48);
+        Font optionFont = new Font("Arial", Font.PLAIN, 28);
+
+        g2.setFont(titleFont);
+        FontMetrics titleFM = g2.getFontMetrics();
+        int titleHeight = titleFM.getHeight();
+        int titleWidth = titleFM.stringWidth(title);
+
+        g2.setFont(optionFont);
+        FontMetrics optionFM = g2.getFontMetrics();
+        int optionHeight = optionFM.getHeight();
+
+        int spacing = 10; // отступ между строками
+        int totalContentHeight = titleHeight + spacing + options.length * optionHeight + (options.length - 1) * spacing;
+
+        int contentStartY = boxY + (boxHeight - totalContentHeight) / 2;
+
+        // Рисуем заголовок
+        g2.setFont(titleFont);
+        int titleX = boxX + (boxWidth - titleWidth) / 2;
+        int titleY = contentStartY + titleFM.getAscent();
+        g2.drawString(title, titleX, titleY);
+
+        // Рисуем опции
+        g2.setFont(optionFont);
+        int optionY = titleY + spacing;
+
+        for (int i = 0; i < options.length; i++) {
+            optionY += optionHeight + spacing;
+            String opt = options[i];
+            int textW = optionFM.stringWidth(opt);
+            int x = boxX + (boxWidth - textW) / 2;
+            g2.drawString(opt, x, optionY);
+        }
     }
 
 
@@ -132,6 +200,43 @@ public class TitleScreenUI {
     }
 
     public void mouseReleased(Point p) {
+        // game Over
+        if (gp.gameState == gp.gameOverState) {
+            int boxWidth = gp.tileSize * 10;
+            int boxHeight = gp.tileSize * 9;
+            int boxX = (gp.screenWidth - boxWidth) / 2;
+            int boxY = (gp.screenHeight - boxHeight) / 2;
+
+            // те же шрифты
+            Font titleFont = new Font("Arial", Font.BOLD, 48);
+            Font optionFont = new Font("Arial", Font.PLAIN, 28);
+
+            FontMetrics titleFM = gp.getFontMetrics(titleFont);
+            FontMetrics optionFM = gp.getFontMetrics(optionFont);
+
+            int titleHeight = titleFM.getHeight();
+            int optionHeight = optionFM.getHeight();
+            int spacing = 10;
+            int totalContentHeight = titleHeight + spacing + 3 * optionHeight + 2 * spacing;
+            int contentStartY = boxY + (boxHeight - totalContentHeight) / 2;
+            int titleY = contentStartY + titleFM.getAscent();
+            int optionY = titleY + spacing;
+
+            for (int i = 0; i < 3; i++) {
+                optionY += optionHeight + spacing;
+                Rectangle r = new Rectangle(boxX, optionY - optionHeight, boxWidth, optionHeight);
+                if (r.contains(p)) {
+                    switch (i) {
+                        case 0 -> gp.startNewGame();         // Try Again
+                        case 1 -> gp.gameState = gp.titleState;  // Back to Menu
+                        case 2 -> System.exit(0);            // Exit
+                    }
+                }
+            }
+            return;
+        }
+
+        // Main Menu
         for (UIButton b : buttons) {
             boolean click = b.pressed && b.bounds.contains(p);
             b.pressed = false;

@@ -85,6 +85,7 @@ public class gamePanel extends JPanel implements Runnable {
 
     public int gameState;
     public final int playerState = 1;
+    public final int gameOverState = 2;
 
     public ChestUI chestUI;
     public CraftingTableUI craftingTableUI;
@@ -421,6 +422,11 @@ public class gamePanel extends JPanel implements Runnable {
                     return;
                 }
 
+                if (gameState == titleState || gameState == gameOverState) {
+                    titleUi.mousePressed(e.getPoint());
+                    return;
+                }
+
                 // Правая кнопка мыши — атака
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     if (!chestUI.isShowingInventory() && !craftingTableUI.isShowing()) {
@@ -556,6 +562,12 @@ public class gamePanel extends JPanel implements Runnable {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+
+                if (gameState == titleState || gameState == gameOverState) {
+                    titleUi.mouseReleased(e.getPoint());
+                    return;
+                }
+
                 if (gameState == titleState) {
                     titleUi.mouseReleased(e.getPoint());
                     return;
@@ -774,9 +786,19 @@ public class gamePanel extends JPanel implements Runnable {
         this.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                if (gameState == titleState)
+                if (gameState == titleState){
                     titleUi.mouseMoved(e.getPoint());
+                }
+
+                if (gameState == titleState || gameState == gameOverState) {
+                    titleUi.mouseMoved(e.getPoint());
+                    return;
+                }
             }
+
+
+
+
 
             @Override
             public void mouseDragged(MouseEvent e) {
@@ -862,6 +884,11 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
+
+        if (gameState != playerState) {
+            return;
+        }
+
         player.update();
         if (player.collisionOn && !collisionLogged) {
             System.out.println("Player collided at (" + (player.worldX / tileSize) + ", " + (player.worldY / tileSize) + ")");
@@ -1019,6 +1046,13 @@ public class gamePanel extends JPanel implements Runnable {
         chestMessage.update();
         healingHintMessage.update();
         craftingHintMessage.update();
+
+
+        if (player.life <= 0) {
+            System.out.println("PLAYER DIED!");
+            gameState = gameOverState;
+            return;
+        }
     }
 
     @Override
@@ -1033,6 +1067,7 @@ public class gamePanel extends JPanel implements Runnable {
             g2d.dispose();
             return;
         }
+
         // Game Screen
         else {
             tileH.draw(g2d);
@@ -1123,9 +1158,19 @@ public class gamePanel extends JPanel implements Runnable {
                     g2d.drawString(currentLine.toString(), baseX, currentY);
                     currentY += lineHeight;
                 }
+
+
             }
+
+            // Game Over
+            if (gameState == gameOverState) {
+                titleUi.drawGameOverScreen(g2d);
+                return;
+            }
+
             g2d.dispose();
         }
+
     }
 
     public void playMusic(int i) {
