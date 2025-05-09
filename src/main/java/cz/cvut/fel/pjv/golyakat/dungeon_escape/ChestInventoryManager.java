@@ -3,7 +3,7 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Apple;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Blubbery;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_HealthePotion;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Key; // Add import for Item_Key
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Key;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_pants;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_helmet;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_boots;
@@ -21,13 +21,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class ChestInventoryManager {
-    private Map<Integer, ChestData> chestDataMap;
-
+    private final Map<Integer, ChestData> chestDataMap = new HashMap<>();
     public ChestInventoryManager() {
-        chestDataMap = new HashMap<>();
-        loadChestData();
     }
 
     public static class ChestData implements Serializable {
@@ -104,7 +102,7 @@ public class ChestInventoryManager {
             case "iron_helmet":
                 return new iron_helmet();
             case "iron_sword":
-                return new Iron_sword(2, 2); // Указываем attack=2
+                return new Iron_sword(2);
             case "Key":
                 return new Item_Key();
             case "Key1":
@@ -141,7 +139,7 @@ public class ChestInventoryManager {
     }
 
     public void saveChestData() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("chest_data.dat"))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("chest_data.xml"))) {
             oos.writeObject(chestDataMap);
             System.out.println("Chest data saved successfully.");
         } catch (IOException e) {
@@ -149,19 +147,26 @@ public class ChestInventoryManager {
         }
     }
 
-    public void resetChestData() {
-        try {
-            File file = new File("chest_inventory.xml");
-            try (FileWriter writer = new FileWriter(file, false)) {
-                writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<chests>\n</chests>");
-                System.out.println("Chest inventory XML reset successfully.");
-            }
-        } catch (IOException e) {
-            System.err.println("Error resetting chest inventory XML: " + e.getMessage());
-        }
-    }
 
+    /** Загрузить данные сундуков (сейчас заглушка) */
     private void loadChestData() {
         System.out.println("Starting fresh, no previous chest data loaded.");
     }
+
+    /** Обойти все сундуки и выполнить действие */
+    public void forEachChest(BiConsumer<Integer, List<ItemData>> action) {
+        chestDataMap.forEach((id, chest) -> action.accept(id, chest.items));
+    }
+
+    /** Заменить содержимое сундука по id (используется при загрузке игры) */
+    public void overrideChest(int id, List<ItemData> items) {
+        chestDataMap.put(id, new ChestData(true, items));
+    }
+
+    /** Сбросить все сундуки (используется при старте новой игры) */
+    public void resetChestData() {
+        chestDataMap.clear();
+    }
+
+
 }

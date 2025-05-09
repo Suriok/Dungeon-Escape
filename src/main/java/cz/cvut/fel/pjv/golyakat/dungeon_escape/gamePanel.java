@@ -1,30 +1,48 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Player;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.ChestUI;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.CraftingTableUI;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.PlayerUI;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.MonsterUI;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.*;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_bib;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_boots;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_helmet;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_pants;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_bib;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_boots;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_helmet;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_pants;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.DefensBar;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.HealthBar;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Apple;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Blubbery;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_HealthePotion;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Key;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Goblin;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Skeleton;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Slime;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Zombie;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_CraftingTable;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Iron_sword;
+
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class gamePanel extends JPanel implements Runnable {
 
@@ -50,9 +68,10 @@ public class gamePanel extends JPanel implements Runnable {
     Thread gameThread;
     public Collision collisionChecker = new Collision(this);
     public AssetSetter assetSetter;
+    private TitleScreenUI titleUi;
     Sound sound = new Sound();
 
-    //GAME STATE
+    // GAME STATE
     public int getGameState;
     public final int titleState = 0;
 
@@ -84,7 +103,7 @@ public class gamePanel extends JPanel implements Runnable {
     public boolean objectsLogged = false;
     private boolean dragDroppedLogged = false;
 
-    // MESSEGES
+    // MESSAGES
     public HintMessage doorMessage = new HintMessage();
     public HintMessage doorHintMessage = new HintMessage();
     public HintMessage chestMessage = new HintMessage();
@@ -97,8 +116,7 @@ public class gamePanel extends JPanel implements Runnable {
     private final int messageX = screenWidth - tileSize * 7; // вправо
     private final int messageY = 25;
 
-
-    // HINT MASSAGE
+    // HINT MESSAGE
     public class HintMessage {
         public String text = "";
         public int counter = 0;
@@ -120,6 +138,248 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    // ---------- SAVE / LOAD ----------
+    private static final Path SAVE_PATH = Path.of("saved_game.xml");
+    private final XmlMapper xml = new XmlMapper();
+
+    private GameObject makeItem(String name) {
+        switch (name) {
+            case "Apple":
+                return new Item_Apple();
+            case "blubbery":
+                return new Item_Blubbery();
+            case "potion":
+                return new Item_HealthePotion();
+            case "Key":
+            case "Key1":
+            case "Key2":
+            case "Key3":
+            case "SilverKey":
+                return new Item_Key();
+            case "leather_helmet":
+                return new leather_helmet();
+            case "leather_bib":
+                return new leather_bib();
+            case "leather_pants":
+                return new leather_pants();
+            case "leather_boots":
+                return new leather_boots();
+            case "iron_helmet":
+                return new iron_helmet();
+            case "iron_bib":
+                return new iron_bib();
+            case "iron_pants":
+                return new iron_pants();
+            case "iron_boots":
+                return new iron_boots();
+            case "iron_sword":
+                return new Iron_sword(2);
+            default:
+                System.err.println("Unknown item: " + name);
+                return null;
+        }
+    }
+
+    private SaveData buildSaveData() {
+        SaveData data = new SaveData();
+
+        data.player.worldX = player.worldX;
+        data.player.worldY = player.worldY;
+        data.player.life = player.life;
+        System.out.println("Saving player position: (" + player.worldX + ", " + player.worldY + "), HP: " + player.life);
+
+        List<ChestInventoryManager.ItemData> inventory = player.getInventory();
+        if (inventory != null && !inventory.isEmpty()) {
+            inventory.forEach(it -> {
+                if (it != null && it.getName() != null) {
+                    data.player.backpack.add(new SaveData.ItemData(it.getName(), it.getQuantity()));
+                    System.out.println("Saving inventory item: " + it.getName() + " x" + it.getQuantity());
+                }
+            });
+        } else {
+            System.err.println("Player inventory is null or empty");
+        }
+
+        GameObject[] equippedArmor = player.getEquippedArmor();
+        if (equippedArmor != null) {
+            for (int i = 0; i < equippedArmor.length; i++) {
+                if (equippedArmor[i] != null && equippedArmor[i].name != null) {
+                    data.player.armor.add(new SaveData.ItemData(equippedArmor[i].name, 1));
+                    System.out.println("Saving armor in slot " + i + ": " + equippedArmor[i].name);
+                }
+            }
+        } else {
+            System.err.println("Equipped armor array is null");
+        }
+        if (data.player.armor.isEmpty()) {
+            System.out.println("No equipped armor to save");
+        }
+
+        GameObject weapon = player.getEquippedWeapon();
+        if (weapon != null && weapon.name != null) {
+            data.player.weapon = new SaveData.ItemData(weapon.name, 1);
+            System.out.println("Saving weapon: " + weapon.name);
+        } else {
+            System.out.println("No equipped weapon to save");
+        }
+
+        GameObject grade = player.getEquippedGrade();
+        if (grade != null && grade.name != null) {
+            data.player.grade = new SaveData.ItemData(grade.name, 1);
+            System.out.println("Saving grade: " + grade.name);
+        } else {
+            System.out.println("No equipped grade to save");
+        }
+
+        for (Entity m : monster) {
+            if (m != null) {
+                SaveData.MonsterData md = new SaveData.MonsterData();
+                md.type = m.getClass().getSimpleName();
+                md.worldX = m.worldX;
+                md.worldY = m.worldY;
+                md.life = m.life;
+                md.dead = m.isDead;
+                data.monsters.add(md);
+                System.out.println("Saving monster " + md.type + " at (" + md.worldX + ", " + md.worldY + ")");
+            }
+        }
+
+        chestInventoryManager.forEachChest((id, list) -> {
+            SaveData.ChestData cd = new SaveData.ChestData();
+            cd.id = id;
+            if (list != null) {
+                list.forEach(it -> {
+                    if (it != null && it.getName() != null) {
+                        cd.items.add(new SaveData.ItemData(it.getName(), it.getQuantity()));
+                        System.out.println("Saving chest " + cd.id + " item: " + it.getName() + " x" + it.getQuantity());
+                    }
+                });
+            }
+            data.chests.add(cd);
+        });
+
+        return data;
+    }
+
+    private void restoreFromSave(SaveData d) {
+        player.reset();
+        player.worldX = d.player.worldX;
+        player.worldY = d.player.worldY;
+        player.life = d.player.life;
+        System.out.println("Restored player position: (" + player.worldX + ", " + player.worldY + "), HP: " + player.life);
+
+        // Восстановление инвентаря
+        if (d.player.backpack != null && !d.player.backpack.isEmpty()) {
+            d.player.backpack.forEach(it -> {
+                if (it != null && it.name != null) {
+                    player.addItem(new ChestInventoryManager.ItemData(it.name, it.qty));
+                    System.out.println("Restored inventory item: " + it.name + " x" + it.qty);
+                }
+            });
+        } else {
+            System.out.println("No backpack data to restore");
+        }
+
+        if (d.player.armor != null && !d.player.armor.isEmpty()) {
+            for (int i = 0; i < d.player.armor.size() && i < 4; i++) {
+                SaveData.ItemData armorData = d.player.armor.get(i);
+                if (armorData != null && armorData.name != null) {
+                    GameObject armorObj = makeItem(armorData.name);
+                    if (armorObj != null) {
+                        player.equipArmor(armorObj, i);
+                        System.out.println("Restored armor in slot " + i + ": " + armorData.name);
+                    } else {
+                        System.err.println("Failed to restore armor: " + armorData.name);
+                    }
+                }
+            }
+        } else {
+            System.out.println("No armor data to restore");
+        }
+
+        if (d.player.weapon != null && d.player.weapon.name != null) {
+            GameObject weaponObj = makeItem(d.player.weapon.name);
+            if (weaponObj != null) {
+                player.equipWeapon(weaponObj);
+                System.out.println("Restored weapon: " + d.player.weapon.name);
+            } else {
+                System.err.println("Failed to restore weapon: " + d.player.weapon.name);
+            }
+        } else {
+            System.out.println("No weapon data to restore");
+        }
+
+        if (d.player.grade != null && d.player.grade.name != null) {
+            GameObject gradeObj = makeItem(d.player.grade.name);
+            if (gradeObj != null) {
+                player.equipGrade(gradeObj);
+                System.out.println("Restored grade: " + d.player.grade.name);
+            } else {
+                System.err.println("Failed to restore grade: " + d.player.grade.name);
+            }
+        } else {
+            System.out.println("No grade data to restore");
+        }
+
+        Arrays.fill(monster, null);
+        if (d.monsters != null && !d.monsters.isEmpty()) {
+            for (int i = 0; i < d.monsters.size() && i < monster.length; i++) {
+                SaveData.MonsterData md = d.monsters.get(i);
+                if (md != null && md.type != null) {
+                    switch (md.type) {
+                        case "Boss_Goblin":
+                            monster[i] = new Boss_Goblin(this);
+                            break;
+                        case "Monster_Slime":
+                            monster[i] = new Monster_Slime(this);
+                            break;
+                        case "Monster_Zombie":
+                            monster[i] = new Monster_Zombie(this);
+                            break;
+                        case "Monster_Skeleton":
+                            monster[i] = new Monster_Skeleton(this);
+                            break;
+                        default:
+                            System.err.println("Unknown monster type: " + md.type);
+                            continue;
+                    }
+                    monster[i].worldX = md.worldX;
+                    monster[i].worldY = md.worldY;
+                    monster[i].life = md.life;
+                    monster[i].isDead = md.dead;
+                    System.out.println("Restored monster " + md.type + " at (" + md.worldX + ", " + md.worldY + ")");
+                }
+            }
+        } else {
+            System.out.println("No monster data to restore");
+        }
+
+        chestInventoryManager.resetChestData();
+        if (d.chests != null && !d.chests.isEmpty()) {
+            d.chests.forEach(cd -> {
+                if (cd != null && cd.items != null) {
+                    chestInventoryManager.overrideChest(cd.id, toItemList(cd.items));
+                    System.out.println("Restored chest ID " + cd.id + " with " + cd.items.size() + " items");
+                }
+            });
+        } else {
+            System.out.println("No chest data to restore");
+        }
+    }
+
+    private List<ChestInventoryManager.ItemData> toItemList(List<SaveData.ItemData> list) {
+        List<ChestInventoryManager.ItemData> result = new ArrayList<>();
+        if (list != null) {
+            list.forEach(e -> {
+                if (e != null && e.name != null) {
+                    result.add(new ChestInventoryManager.ItemData(e.name, e.qty));
+                }
+            });
+        }
+        return result;
+    }
+
+
 
     public gamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -128,6 +388,8 @@ public class gamePanel extends JPanel implements Runnable {
         this.addKeyListener(keyH);
         this.setFocusable(true);
         this.requestFocusInWindow();
+
+        playMusic(0);
 
         this.addMouseListener(new MouseAdapter() {
             @Override
@@ -144,12 +406,22 @@ public class gamePanel extends JPanel implements Runnable {
         craftingTableUI = new CraftingTableUI(this);
         playerUI = new PlayerUI(this);
         monsterUi = new MonsterUI(this);
-        gameState = playerState;
+        titleUi = new TitleScreenUI(this);
+        gameState = titleState;
 
         // Centralized MouseListener for drag-and-drop
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                requestFocusInWindow(); // для захвата фокуса клавиатуры
+
+                // если титульный экран — отправляем событие туда
+                if (gameState == titleState) {
+                    titleUi.mousePressed(e.getPoint());
+                    return;
+                }
+
+                // Правая кнопка мыши — атака
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     if (!chestUI.isShowingInventory() && !craftingTableUI.isShowing()) {
                         if (attackCounter >= ATTACK_COOLDOWN) {
@@ -284,10 +556,13 @@ public class gamePanel extends JPanel implements Runnable {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                if (gameState == titleState) {
+                    titleUi.mouseReleased(e.getPoint());
+                    return;
+                }
                 if (draggedItem == null) {
                     return;
                 }
-
                 boolean isKeyPart = draggedItem.getName().equals("Key1") ||
                         draggedItem.getName().equals("Key2") ||
                         draggedItem.getName().equals("Key3");
@@ -482,6 +757,10 @@ public class gamePanel extends JPanel implements Runnable {
                     ((Object_Small_Chest) sourceInventory).getItems().add(draggedItem);
                     chestInventoryManager.updateChestData(((Object_Small_Chest) sourceInventory).getId(),
                             new ChestInventoryManager.ChestData(((Object_Small_Chest) sourceInventory).isOpen(), ((Object_Small_Chest) sourceInventory).getItems()));
+                    if (!dragDroppedLogged) {
+                        System.out.println("Item " + draggedItem.getName() + " dropped back to chest");
+                        dragDroppedLogged = true;
+                    }
                 } else if (sourceInventory == craftingTableUI) {
                     if (!playerUI.isArmor(draggedItem)) {
                         player.addItem(draggedItem);
@@ -494,22 +773,18 @@ public class gamePanel extends JPanel implements Runnable {
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
+            public void mouseMoved(MouseEvent e) {
+                if (gameState == titleState)
+                    titleUi.mouseMoved(e.getPoint());
+            }
+
+            @Override
             public void mouseDragged(MouseEvent e) {
                 if (draggedItem != null) {
                     repaint();
                 }
             }
         });
-
-        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        if (frame != null) {
-            frame.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosing(WindowEvent e) {
-                    chestInventoryManager.resetChestData();
-                }
-            });
-        }
     }
 
     private void clearDrag() {
@@ -548,13 +823,11 @@ public class gamePanel extends JPanel implements Runnable {
                 }
             }
         }
-        // For craftingTableUI, the item is already removed via setCraftingSlot(null)
     }
 
     public void setUpObjects() {
         assetSetter.setObg();
         assetSetter.setMonster();
-        //playMusic(0);
         gameState = titleState;
     }
 
@@ -694,7 +967,6 @@ public class gamePanel extends JPanel implements Runnable {
             }
         }
 
-
         if (keyH.ePressed || keyH.qPressed) {
             if (nearCraftingTable && !chestUI.isShowingInventory() && keyH.qPressed && closestTableDistance <= closestDoorDistance && closestTableDistance <= closestChestDistance) {
                 if (craftingTableUI.isShowing()) {
@@ -747,7 +1019,6 @@ public class gamePanel extends JPanel implements Runnable {
         chestMessage.update();
         healingHintMessage.update();
         craftingHintMessage.update();
-
     }
 
     @Override
@@ -755,14 +1026,16 @@ public class gamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        // TITEL SCREEN
-        if(gameState == titleState){
 
+        // TITLE SCREEN
+        if (gameState == titleState) {
+            titleUi.draw(g2d);
+            g2d.dispose();
+            return;
         }
         // Game Screen
         else {
             tileH.draw(g2d);
-
             for (int i = 0; i < obj.length; i++) {
                 if (obj[i] != null) {
                     int screenX = obj[i].worldX - player.worldX + player.screenX;
@@ -803,7 +1076,7 @@ public class gamePanel extends JPanel implements Runnable {
                             draggedItem.getName().equals("Key2") ||
                             draggedItem.getName().equals("Key3");
                     if (isKeyPart) {
-                        itemSize = (int)(tileSize * 0.6667f);
+                        itemSize = (int) (tileSize * 0.6667f);
                     }
                     g2d.drawImage(draggedItem.getItem().image,
                             mousePos.x - dragOffsetX,
@@ -854,6 +1127,7 @@ public class gamePanel extends JPanel implements Runnable {
             g2d.dispose();
         }
     }
+
     public void playMusic(int i) {
         sound.setFile(i);
         sound.playSound();
@@ -863,8 +1137,71 @@ public class gamePanel extends JPanel implements Runnable {
     public void stopMusic() {
         sound.StopSound();
     }
-    public void playSE(int i){
+
+    public void playSE(int i) {
         sound.setFile(i);
         sound.playSound();
+    }
+
+
+
+    //NEW GAME
+
+    public void startNewGame() {
+        player.reset();
+        chestInventoryManager.resetChestData();
+
+        setUpObjects();
+
+        gameState = playerState;
+        repaint();
+    }
+
+    public void saveGame() {
+        try {
+            SaveData d = buildSaveData();
+            Path parent = SAVE_PATH.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            xml.writerWithDefaultPrettyPrinter().writeValue(SAVE_PATH.toFile(), d);
+            System.out.println("Game saved to " + SAVE_PATH.toAbsolutePath());
+            if (Files.exists(SAVE_PATH)) {
+                System.out.println("Save file confirmed at " + SAVE_PATH.toAbsolutePath());
+            } else {
+                System.err.println("Save file not found after saving!");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Failed to save game: " + ex.getMessage());
+        }
+    }
+
+    public void loadSavedGame() {
+        if (!Files.exists(SAVE_PATH)) {
+            System.err.println("No save file found at " + SAVE_PATH.toAbsolutePath() + " – starting new game.");
+            doorMessage.show("No saved game found. Starting a new game.", 120, false);
+            startNewGame();
+            return;
+        }
+        try {
+            SaveData d = xml.readValue(SAVE_PATH.toFile(), SaveData.class);
+            restoreFromSave(d);
+            gameState = playerState;
+            repaint();
+            System.out.println("Save loaded successfully from " + SAVE_PATH.toAbsolutePath() + ":");
+            System.out.println(" - Player HP: " + player.life);
+            System.out.println(" - Inventory items: " + d.player.backpack.size());
+            System.out.println(" - Armor slots: " + d.player.armor.size());
+            System.out.println(" - Weapon: " + (d.player.weapon != null ? d.player.weapon.name : "none"));
+            System.out.println(" - Grade: " + (d.player.grade != null ? d.player.grade.name : "none"));
+            System.out.println(" - Chests: " + d.chests.size());
+            doorMessage.show("Game loaded successfully!", 120, false);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Failed to load save from " + SAVE_PATH.toAbsolutePath() + " – starting new game.");
+            doorMessage.show("Failed to load saved game. Starting a new game.", 120, false);
+            startNewGame();
+        }
     }
 }

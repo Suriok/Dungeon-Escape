@@ -19,6 +19,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -512,4 +513,12 @@ public class Player extends Entity {
             }
         }
     }
+    public void reset() {
+        setDefaulteValues();
+        getInventory().clear();
+        Arrays.fill(equippedArmor, null);
+        equippedWeapon = null;
+        equippedGrade = null;
+    }
+
 }
