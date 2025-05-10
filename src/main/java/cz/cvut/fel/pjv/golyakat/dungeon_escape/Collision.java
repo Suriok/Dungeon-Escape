@@ -1,6 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
@@ -28,15 +29,12 @@ public class Collision {
         String direction = (entity.direction != null) ? entity.direction : "down";
         entity.collisionOn = false;
 
-        // Check tile collisions
         switch (direction) {
             case "up":
                 int nextTopRow = (entityTopWorldY - entity.speed) / gp.tileSize;
-                if (nextTopRow < 0) {
-                    entity.collisionOn = true;
-                } else {
-                    int tileNumLeft = gp.tileH.mapTileNum[nextTopRow][entityLeftCol];
-                    int tileNumRight = gp.tileH.mapTileNum[nextTopRow][entityRightCol];
+                if (nextTopRow >= 0) {
+                    int tileNumLeft = gp.tileH.mapTileNum[gp.currentMap][nextTopRow][entityLeftCol];
+                    int tileNumRight = gp.tileH.mapTileNum[gp.currentMap][nextTopRow][entityRightCol];
                     if (gp.tileH.tiles[tileNumLeft].collision || gp.tileH.tiles[tileNumRight].collision) {
                         entity.collisionOn = true;
                     }
@@ -44,11 +42,9 @@ public class Collision {
                 break;
             case "down":
                 int nextBottomRow = (entityBottomWorldY + entity.speed) / gp.tileSize;
-                if (nextBottomRow >= gp.maxWorldRow) {
-                    entity.collisionOn = true;
-                } else {
-                    int tileNumLeft = gp.tileH.mapTileNum[nextBottomRow][entityLeftCol];
-                    int tileNumRight = gp.tileH.mapTileNum[nextBottomRow][entityRightCol];
+                if (nextBottomRow < gp.maxWorldRow) {
+                    int tileNumLeft = gp.tileH.mapTileNum[gp.currentMap][nextBottomRow][entityLeftCol];
+                    int tileNumRight = gp.tileH.mapTileNum[gp.currentMap][nextBottomRow][entityRightCol];
                     if (gp.tileH.tiles[tileNumLeft].collision || gp.tileH.tiles[tileNumRight].collision) {
                         entity.collisionOn = true;
                     }
@@ -56,11 +52,9 @@ public class Collision {
                 break;
             case "left":
                 int nextLeftCol = (entityLeftWorldX - entity.speed) / gp.tileSize;
-                if (nextLeftCol < 0) {
-                    entity.collisionOn = true;
-                } else {
-                    int tileNumTop = gp.tileH.mapTileNum[entityTopRow][nextLeftCol];
-                    int tileNumBottom = gp.tileH.mapTileNum[entityBottomRow][nextLeftCol];
+                if (nextLeftCol >= 0) {
+                    int tileNumTop = gp.tileH.mapTileNum[gp.currentMap][entityTopRow][nextLeftCol];
+                    int tileNumBottom = gp.tileH.mapTileNum[gp.currentMap][entityBottomRow][nextLeftCol];
                     if (gp.tileH.tiles[tileNumTop].collision || gp.tileH.tiles[tileNumBottom].collision) {
                         entity.collisionOn = true;
                     }
@@ -68,11 +62,9 @@ public class Collision {
                 break;
             case "right":
                 int nextRightCol = (entityRightWorldX + entity.speed) / gp.tileSize;
-                if (nextRightCol >= gp.maxWorldCol) {
-                    entity.collisionOn = true;
-                } else {
-                    int tileNumTop = gp.tileH.mapTileNum[entityTopRow][nextRightCol];
-                    int tileNumBottom = gp.tileH.mapTileNum[entityBottomRow][nextRightCol];
+                if (nextRightCol < gp.maxWorldCol) {
+                    int tileNumTop = gp.tileH.mapTileNum[gp.currentMap][entityTopRow][nextRightCol];
+                    int tileNumBottom = gp.tileH.mapTileNum[gp.currentMap][entityBottomRow][nextRightCol];
                     if (gp.tileH.tiles[tileNumTop].collision || gp.tileH.tiles[tileNumBottom].collision) {
                         entity.collisionOn = true;
                     }
@@ -80,7 +72,7 @@ public class Collision {
                 break;
         }
 
-        // Check object collisions for non-player entities (e.g., monsters)
+        // Check collision with objects (for non-player entities too)
         if (!entity.getClass().getSimpleName().equals("Player")) {
             checkObject(entity, false);
         }
@@ -89,69 +81,45 @@ public class Collision {
     public int checkObject(Entity entity, boolean player) {
         int index = 999;
 
-        for (int i = 0; i < gp.obj.length; i++) {
-            if (gp.obj[i] != null) {
-                // Получаем текущую область сущности
+        for (int i = 0; i < gp.obj[gp.currentMap].length; i++) {
+            if (gp.obj[gp.currentMap][i] != null) {
+                GameObject obj = gp.obj[gp.currentMap][i];
+
+                // Set actual positions
                 entity.solidArea.x = entity.worldX + entity.solidArea.x;
                 entity.solidArea.y = entity.worldY + entity.solidArea.y;
+                obj.solidArea.x = obj.worldX + obj.solidArea.x;
+                obj.solidArea.y = obj.worldY + obj.solidArea.y;
 
-                // Получаем область объекта
-                gp.obj[i].solidArea.x = gp.obj[i].worldX + gp.obj[i].solidArea.x;
-                gp.obj[i].solidArea.y = gp.obj[i].worldY + gp.obj[i].solidArea.y;
-
-                // Проверяем коллизию для движения
                 switch (entity.direction) {
                     case "up":
                         entity.solidArea.y -= entity.speed;
-                        if (entity.solidArea.intersects(gp.obj[i].solidArea)) {
-                            if (gp.obj[i].Collision) {
-                                entity.collisionOn = true;
-                            }
-                            if (player) {
-                                index = i;
-                            }
-                        }
                         break;
                     case "down":
                         entity.solidArea.y += entity.speed;
-                        if (entity.solidArea.intersects(gp.obj[i].solidArea)) {
-                            if (gp.obj[i].Collision) {
-                                entity.collisionOn = true;
-                            }
-                            if (player) {
-                                index = i;
-                            }
-                        }
                         break;
                     case "left":
                         entity.solidArea.x -= entity.speed;
-                        if (entity.solidArea.intersects(gp.obj[i].solidArea)) {
-                            if (gp.obj[i].Collision) {
-                                entity.collisionOn = true;
-                            }
-                            if (player) {
-                                index = i;
-                            }
-                        }
                         break;
                     case "right":
                         entity.solidArea.x += entity.speed;
-                        if (entity.solidArea.intersects(gp.obj[i].solidArea)) {
-                            if (gp.obj[i].Collision) {
-                                entity.collisionOn = true;
-                            }
-                            if (player) {
-                                index = i;
-                            }
-                        }
                         break;
                 }
 
-                // Сбрасываем области
+                if (entity.solidArea.intersects(obj.solidArea)) {
+                    if (obj.Collision) {
+                        entity.collisionOn = true;
+                    }
+                    if (player) {
+                        index = i;
+                    }
+                }
+
+                // Reset
                 entity.solidArea.x = entity.solidAreaDefaultX;
                 entity.solidArea.y = entity.solidAreaDefaultY;
-                gp.obj[i].solidArea.x = gp.obj[i].solidAreaDefaultX;
-                gp.obj[i].solidArea.y = gp.obj[i].solidAreaDefaultY;
+                obj.solidArea.x = obj.solidAreaDefaultX;
+                obj.solidArea.y = obj.solidAreaDefaultY;
             }
         }
         return index;
@@ -160,48 +128,49 @@ public class Collision {
     public int checkObjectForInteraction(Entity entity, boolean player) {
         int index = 999;
 
-        for (int i = 0; i < gp.obj.length; i++) {
-            if (gp.obj[i] != null) {
-                // Получаем текущую область сущности
+        for (int i = 0; i < gp.obj[gp.currentMap].length; i++) {
+            if (gp.obj[gp.currentMap][i] != null) {
+                GameObject obj = gp.obj[gp.currentMap][i];
+
                 entity.solidArea.x = entity.worldX + entity.solidArea.x;
                 entity.solidArea.y = entity.worldY + entity.solidArea.y;
 
-                // Расширяем область объекта для взаимодействия
-                gp.obj[i].solidArea.x = gp.obj[i].worldX + gp.obj[i].solidArea.x - gp.tileSize;
-                gp.obj[i].solidArea.y = gp.obj[i].worldY + gp.obj[i].solidArea.y - gp.tileSize;
-                gp.obj[i].solidArea.width += 2 * gp.tileSize;
-                gp.obj[i].solidArea.height += 2 * gp.tileSize;
+                obj.solidArea.x = obj.worldX + obj.solidArea.x - gp.tileSize;
+                obj.solidArea.y = obj.worldY + obj.solidArea.y - gp.tileSize;
+                obj.solidArea.width += 2 * gp.tileSize;
+                obj.solidArea.height += 2 * gp.tileSize;
 
-                // Проверяем пересечение
-                if (entity.solidArea.intersects(gp.obj[i].solidArea)) {
+                if (entity.solidArea.intersects(obj.solidArea)) {
                     if (player) {
                         index = i;
                     }
                 }
 
-                // Сбрасываем области
                 entity.solidArea.x = entity.solidAreaDefaultX;
                 entity.solidArea.y = entity.solidAreaDefaultY;
-                gp.obj[i].solidArea.x = gp.obj[i].solidAreaDefaultX;
-                gp.obj[i].solidArea.y = gp.obj[i].solidAreaDefaultY;
-                gp.obj[i].solidArea.width = gp.tileSize; // Возвращаем исходный размер
-                gp.obj[i].solidArea.height = gp.tileSize;
+                obj.solidArea.x = obj.solidAreaDefaultX;
+                obj.solidArea.y = obj.solidAreaDefaultY;
+                obj.solidArea.width = gp.tileSize;
+                obj.solidArea.height = gp.tileSize;
             }
         }
+
         return index;
     }
 
     public void handleObjectInteraction(Entity entity, int objectIndex) {
-        if (objectIndex != 999 && gp.obj[objectIndex] != null) {
-            String objName = gp.obj[objectIndex].name;
-            if (objName.equals("DoorFront") && !((Object_DoorFront) gp.obj[objectIndex]).isOpen()) {
-                ((Object_DoorFront) gp.obj[objectIndex]).interact();
+        if (objectIndex != 999 && gp.obj[gp.currentMap][objectIndex] != null) {
+            GameObject obj = gp.obj[gp.currentMap][objectIndex];
+            String objName = obj.name;
+
+            if (objName.equals("DoorFront") && !((Object_DoorFront) obj).isOpen()) {
+                ((Object_DoorFront) obj).interact();
                 System.out.println("Interacting with front door");
-            } else if (objName.equals("DoorSide") && !((Object_DoorSide) gp.obj[objectIndex]).isOpen()) {
-                ((Object_DoorSide) gp.obj[objectIndex]).interact();
+            } else if (objName.equals("DoorSide") && !((Object_DoorSide) obj).isOpen()) {
+                ((Object_DoorSide) obj).interact();
                 System.out.println("Interacting with side door");
             } else if (objName.equals("small_chest")) {
-                Object_Small_Chest chest = (Object_Small_Chest) gp.obj[objectIndex];
+                Object_Small_Chest chest = (Object_Small_Chest) obj;
                 gp.chestUI.openChest(chest);
                 System.out.println("Interacting with chest");
             }

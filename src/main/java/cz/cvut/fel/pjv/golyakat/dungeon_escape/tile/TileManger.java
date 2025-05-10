@@ -17,7 +17,7 @@ public class TileManger {
     gamePanel gp; // Odkaz na hlavní herní panel
 
     public Tile[] tiles; // Pole všech typů dlaždic
-    public int[][] mapTileNum; // 2D pole reprezentující číselnou mapu dlaždic
+    public int[][][] mapTileNum; // 2D pole reprezentující číselnou mapu dlaždic
 
     // Seznam průchozích oblastí (každá oblast je seznam souřadnic Point)
     public List<List<Point>> walkableRegions;
@@ -29,13 +29,14 @@ public class TileManger {
     public TileManger(gamePanel gp) {
         this.gp = gp;
 
-        tiles = new Tile[10]; // Předem definovaných 10 typů dlaždic
-        mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow]; // Inicializace mapy
+        tiles = new Tile[15]; // Předem definovaných 10 typů dlaždic
+        mapTileNum = new int[gp.maxMap][gp.maxWorldCol][gp.maxWorldRow]; // Inicializace mapy
         walkableRegions = new ArrayList<>();
         playerRegion = new ArrayList<>();
 
         getTileImage(); // Načteme obrázky dlaždic
-        loadMap("/cz/cvut/fel/pjv/golyakat/dungeon_escape/maps/level1.txt"); // Načteme mapu z textového souboru
+        loadMap("/cz/cvut/fel/pjv/golyakat/dungeon_escape/maps/level1.txt", 0); // Načteme mapu z textového souboru
+        loadMap("/cz/cvut/fel/pjv/golyakat/dungeon_escape/maps/level2.txt", 1); // Načteme mapu z textového souboru
         findWalkableRegions(); // Vyhledáme všechny průchozí oblasti
     }
 
@@ -80,6 +81,8 @@ public class TileManger {
             tiles[9] = new Tile();
             tiles[9].image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/tileset/right_up_corner.png")));
 
+            tiles[10] = new Tile();
+            tiles[10].image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/ledde.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -97,7 +100,7 @@ public class TileManger {
         // Procházíme všechny dlaždice a hledáme oblasti s typem dlaždice 5 (floor)
         for (int row = 0; row < gp.maxWorldRow; row++) {
             for (int col = 0; col < gp.maxWorldCol; col++) {
-                if (!visited[row][col] && mapTileNum[row][col] == 5) {
+                if (!visited[row][col] && mapTileNum[gp.currentMap][row][col] == 5) {
                     List<Point> region = new ArrayList<>();
                     // Použijeme DFS pro průchod sousedními průchozími dlaždicemi
                     dfs(row, col, visited, region);
@@ -122,7 +125,7 @@ public class TileManger {
     // DFS algoritmus pro nalezení všech sousedních průchozích dlaždic
     private void dfs(int row, int col, boolean[][] visited, List<Point> region) {
         // Kontrola hran mapy a zda již bylo navštíveno nebo je neprochozí
-        if (row < 0 || row >= gp.maxWorldRow || col < 0 || col >= gp.maxWorldCol || visited[row][col] || mapTileNum[row][col] != 5) {
+        if (row < 0 || row >= gp.maxWorldRow || col < 0 || col >= gp.maxWorldCol || visited[row][col] || mapTileNum[gp.currentMap][row][col] != 5) {
             return;
         }
 
@@ -137,11 +140,11 @@ public class TileManger {
     }
 
     // Načtení mapy z textového souboru
-    public void loadMap(String s) {
+    public void loadMap(String filePath, int map) {
         try {
-            InputStream is = getClass().getResourceAsStream(s);
+            InputStream is = getClass().getResourceAsStream(filePath);
             if (is == null) {
-                throw new IOException("Could not find map file: " + s);
+                throw new IOException("Could not find map file: " + filePath);
             }
 
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -158,16 +161,16 @@ public class TileManger {
                 for (col = 0; col < gp.maxWorldCol && col < numbers.length; col++) {
                     try {
                         int num = Integer.parseInt(numbers[col]);
-                        mapTileNum[row][col] = num;
+                        mapTileNum[map][row][col] = num;
                     } catch (NumberFormatException e) {
                         System.err.println("Invalid number format at row " + row + ", col " + col);
-                        mapTileNum[row][col] = 0;
+                        mapTileNum[map][row][col] = 0;
                     }
                 }
 
                 // Zaplníme zbytek řádku nulami, pokud jsou sloupce kratší než očekáváme
                 while (col < gp.maxWorldCol) {
-                    mapTileNum[row][col] = 0;
+                    mapTileNum[map][row][col] = 0;
                     col++;
                 }
 
@@ -177,7 +180,7 @@ public class TileManger {
             // Vyplníme zbytek mapy nulami, pokud je řádků méně než očekáváme
             while (row < gp.maxWorldRow) {
                 for (col = 0; col < gp.maxWorldCol; col++) {
-                    mapTileNum[row][col] = 0;
+                    mapTileNum[map][row][col] = 0;
                 }
                 row++;
             }
@@ -188,7 +191,7 @@ public class TileManger {
             // Pokud dojde k chybě, vyplníme mapu nulami
             for (int row = 0; row < gp.maxWorldRow; row++) {
                 for (int col = 0; col < gp.maxWorldCol; col++) {
-                    mapTileNum[row][col] = 0;
+                    mapTileNum[map][row][col] = 0;
                 }
             }
         }
@@ -201,7 +204,7 @@ public class TileManger {
 
         // Procházíme celou mapu
         while (worldRow < gp.maxWorldRow && worldCol < gp.maxWorldCol) {
-            int tileNum = mapTileNum[worldRow][worldCol];
+            int tileNum = mapTileNum[gp.currentMap][worldRow][worldCol];
 
             int worldX = worldCol * gp.tileSize;
             int worldY = worldRow * gp.tileSize;

@@ -1,15 +1,14 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.AssetSetter;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 
 public class Object_Small_Chest extends GameObject {
@@ -21,7 +20,7 @@ public class Object_Small_Chest extends GameObject {
     private ChestInventoryManager chestInventoryManager;
     private Map<String, Integer> fixedArmor;
 
-    public Object_Small_Chest(gamePanel gp, int id, Map<String, Integer> fixedArmor) {
+    public Object_Small_Chest(AssetSetter gp, int id, Map<String, Integer> fixedArmor) {
         this.id = id;
         this.fixedArmor = (fixedArmor != null) ? fixedArmor : new HashMap<>();
         this.chestInventoryManager = gp.chestInventoryManager;

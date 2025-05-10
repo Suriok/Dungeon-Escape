@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_bib;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Apple;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Blubbery;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_HealthePotion;
@@ -93,6 +94,8 @@ public class ChestInventoryManager {
                 return new Item_HealthePotion();
             case "leather_pants":
                 return new leather_pants();
+            case "leather_bib":
+                return new leather_bib();
             case "leather_helmet":
                 return new leather_helmet();
             case "leather_boots":

@@ -56,8 +56,11 @@ public class gamePanel extends JPanel implements Runnable {
     public final int screenWidth = tileSize * maxScreenCol;
     public final int screenHeight = tileSize * maxScreenRow;
 
+    //WORLD SETTINGS
     public final int maxWorldCol = 60;
     public final int maxWorldRow = 60;
+    public final int maxMap = 2; // number of all levels
+    public int currentMap = 1; // current map index
 
     // FPS
     int FPS = 60;
@@ -77,10 +80,10 @@ public class gamePanel extends JPanel implements Runnable {
 
     // ENTITY AND OBJECT
     public Player player = new Player(this, keyH);
-    public GameObject obj[] = new GameObject[11];
+    public GameObject obj[][] = new GameObject[maxMap][11];
     public HealthBar healthBar;
     public DefensBar defensBar;
-    public Entity monster[] = new Entity[20];
+    public Entity monster[][] = new Entity[maxMap][20];
     public MonsterUI monsterUi;
 
     public int gameState;
@@ -233,7 +236,7 @@ public class gamePanel extends JPanel implements Runnable {
             System.out.println("No equipped grade to save");
         }
 
-        for (Entity m : monster) {
+        for (Entity m : monster[currentMap]) {
             if (m != null) {
                 SaveData.MonsterData md = new SaveData.MonsterData();
                 md.type = m.getClass().getSimpleName();
@@ -330,25 +333,25 @@ public class gamePanel extends JPanel implements Runnable {
                 if (md != null && md.type != null) {
                     switch (md.type) {
                         case "Boss_Goblin":
-                            monster[i] = new Boss_Goblin(this);
+                            monster[0][i] = new Boss_Goblin(this);
                             break;
                         case "Monster_Slime":
-                            monster[i] = new Monster_Slime(this);
+                            monster[currentMap][i] = new Monster_Slime(this);
                             break;
                         case "Monster_Zombie":
-                            monster[i] = new Monster_Zombie(this);
+                            monster[currentMap][i] = new Monster_Zombie(this);
                             break;
                         case "Monster_Skeleton":
-                            monster[i] = new Monster_Skeleton(this);
+                            monster[currentMap][i] = new Monster_Skeleton(this);
                             break;
                         default:
                             System.err.println("Unknown monster type: " + md.type);
                             continue;
                     }
-                    monster[i].worldX = md.worldX;
-                    monster[i].worldY = md.worldY;
-                    monster[i].life = md.life;
-                    monster[i].isDead = md.dead;
+                    monster[currentMap][i].worldX = md.worldX;
+                    monster[currentMap][i].worldY = md.worldY;
+                    monster[currentMap][i].life = md.life;
+                    monster[currentMap][i].isDead = md.dead;
                     System.out.println("Restored monster " + md.type + " at (" + md.worldX + ", " + md.worldY + ")");
                 }
             }
@@ -712,11 +715,11 @@ public class gamePanel extends JPanel implements Runnable {
                     repaint();
                     return;
                 } else if (draggedItem.getName().equals("Key")) {
-                    if (obj[6] != null && obj[6] instanceof Object_DoorSide) {
-                        Object_DoorSide door = (Object_DoorSide) obj[6];
+                    if (obj[0][6] != null && obj[0][6] instanceof Object_DoorSide) {
+                        Object_DoorSide door = (Object_DoorSide) obj[0][6];
                         if (door.requiresKey && !door.isOpen()) {
-                            int doorScreenX = obj[6].worldX - player.worldX + player.screenX;
-                            int doorScreenY = obj[6].worldY - player.worldY + player.screenY;
+                            int doorScreenX = obj[0][6].worldX - player.worldX + player.screenX;
+                            int doorScreenY = obj[0][6].worldY - player.worldY + player.screenY;
                             Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
                             if (doorBounds.contains(e.getPoint())) {
                                 door.unlock();
@@ -734,11 +737,11 @@ public class gamePanel extends JPanel implements Runnable {
                         }
                     }
                 } else if (draggedItem.getName().equals("SilverKey")) {
-                    if (obj[5] != null && obj[5] instanceof Object_DoorFront) {
-                        Object_DoorFront door = (Object_DoorFront) obj[5];
+                    if (obj[0][5] != null && obj[0][5] instanceof Object_DoorFront) {
+                        Object_DoorFront door = (Object_DoorFront) obj[0][5];
                         if (door.requiresKey && !door.isOpen()) {
-                            int doorScreenX = obj[5].worldX - player.worldX + player.screenX;
-                            int doorScreenY = obj[5].worldY - player.worldY + player.screenY;
+                            int doorScreenX = obj[0][5].worldX - player.worldX + player.screenX;
+                            int doorScreenY = obj[0][5].worldY - player.worldY + player.screenY;
                             Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
                             if (doorBounds.contains(e.getPoint())) {
                                 door.unlock();
@@ -793,10 +796,6 @@ public class gamePanel extends JPanel implements Runnable {
                     return;
                 }
             }
-
-
-
-
 
             @Override
             public void mouseDragged(MouseEvent e) {
@@ -913,9 +912,9 @@ public class gamePanel extends JPanel implements Runnable {
         Object_Small_Chest closestChest = null;
         int closestChestDistance = Integer.MAX_VALUE;
 
-        for (int i = 0; i < obj.length; i++) {
-            if (obj[i] instanceof Object_DoorSide) {
-                Object_DoorSide door = (Object_DoorSide) obj[i];
+        for (int i = 0; i < obj[currentMap].length; i++) {
+            if (obj[currentMap][i] instanceof Object_DoorSide) {
+                Object_DoorSide door = (Object_DoorSide) obj[currentMap][i];
                 if (door != null) {
                     int dx = Math.abs(player.worldX - door.worldX);
                     int dy = Math.abs(player.worldY - door.worldY);
@@ -936,8 +935,8 @@ public class gamePanel extends JPanel implements Runnable {
                         }
                     }
                 }
-            } else if (obj[i] instanceof Object_DoorFront) {
-                Object_DoorFront door = (Object_DoorFront) obj[i];
+            } else if (obj[currentMap][i] instanceof Object_DoorFront) {
+                Object_DoorFront door = (Object_DoorFront) obj[currentMap][i];
                 if (door != null) {
                     int dx = Math.abs(player.worldX - door.worldX);
                     int dy = Math.abs(player.worldY - door.worldY);
@@ -959,8 +958,8 @@ public class gamePanel extends JPanel implements Runnable {
                     }
                 }
             }
-            if (obj[i] instanceof Object_CraftingTable) {
-                Object_CraftingTable table = (Object_CraftingTable) obj[i];
+            if (obj[currentMap][i] instanceof Object_CraftingTable) {
+                Object_CraftingTable table = (Object_CraftingTable) obj[currentMap][i];
                 if (table != null) {
                     int dx = Math.abs(player.worldX - table.worldX);
                     int dy = Math.abs(player.worldY - table.worldY);
@@ -975,8 +974,9 @@ public class gamePanel extends JPanel implements Runnable {
                     }
                 }
             }
-            if (obj[i] instanceof Object_Small_Chest) {
-                Object_Small_Chest chest = (Object_Small_Chest) obj[i];
+            if (obj[currentMap][i] instanceof Object_Small_Chest) {
+
+                Object_Small_Chest chest = (Object_Small_Chest) obj[currentMap][i];
                 if (chest != null) {
                     int dx = Math.abs(player.worldX - chest.worldX);
                     int dy = Math.abs(player.worldY - chest.worldY);
@@ -987,9 +987,17 @@ public class gamePanel extends JPanel implements Runnable {
                         nearChest = true;
                         closestChest = chest;
                         closestChestDistance = distance;
-                        chestMessage.show("Press E to open the chest", 40, true);
+
+                        if (chest.isOpen()) {
+                            chestMessage.show("Press E to close the chest", 40, true);
+                        } else {
+                            chestMessage.show("Press E to open the chest", 40, true);
+                        }
+
                     }
                 }
+
+
             }
         }
 
@@ -1028,11 +1036,11 @@ public class gamePanel extends JPanel implements Runnable {
         }
 
         if (gameState == playerState) {
-            for (int i = 0; i < monster.length; i++) {
-                if (monster[i] != null) {
-                    monster[i].update();
-                    if (monster[i].isDead && monster[i].fadeAlpha <= 0) {
-                        monster[i] = null;
+            for (int i = 0; i < monster[currentMap].length; i++) {
+                if (monster[currentMap][i] != null) {
+                    monster[currentMap][i].update();
+                    if (monster[currentMap][i].isDead && monster[currentMap][i].fadeAlpha <= 0) {
+                        monster[currentMap][i] = null;
                     }
                 }
             }
@@ -1070,27 +1078,31 @@ public class gamePanel extends JPanel implements Runnable {
         // Game Screen
         else {
             tileH.draw(g2d);
-            for (int i = 0; i < obj.length; i++) {
-                if (obj[i] != null) {
-                    int screenX = obj[i].worldX - player.worldX + player.screenX;
-                    int screenY = obj[i].worldY - player.worldY + player.screenY;
+            for (int i = 0; i < obj[currentMap].length; i++) {
+                if (obj[currentMap][i] != null) {
+                    int screenX = obj[currentMap][i].worldX - player.worldX + player.screenX;
+                    int screenY = obj[currentMap][i].worldY - player.worldY + player.screenY;
                     if (screenX + tileSize > 0 && screenX < screenWidth &&
                             screenY + tileSize > 0 && screenY < screenHeight) {
-                        obj[i].draw(g2d, this);
+                        obj[currentMap][i].draw(g2d, this);
                     }
                 }
             }
-
-            for (int i = 0; i < monster.length; i++) {
-                if (monster[i] != null) {
-                    int screenX = monster[i].worldX - player.worldX + player.screenX;
-                    int screenY = monster[i].worldY - player.worldY + player.screenY;
+            // Monsters
+            for (int i = 0; i < monster[currentMap].length; i++) {
+                if (monster[currentMap][i] != null) {
+                    int screenX = monster[currentMap][i].worldX - player.worldX + player.screenX;
+                    int screenY = monster[currentMap][i].worldY - player.worldY + player.screenY;
                     if (screenX + tileSize > 0 && screenX < screenWidth &&
                             screenY + tileSize > 0 && screenY < screenHeight) {
-                        monsterUi.draw(g2d, monster[i]);
-                        if (!monster[i].isDead || monster[i].fadeAlpha > 0) {
-                            monster[i].draw(g2d);
+                        monsterUi.draw(g2d, monster[currentMap][i]); // Отрисовка UI монстра (например, полоска здоровья)
+                        if (!monster[currentMap][i].isDead || monster[currentMap][i].fadeAlpha > 0) {
+                            monster[currentMap][i].draw(g2d); // Отрисовка самого монстра
                         }
+                    }
+                    // Проверка смерти и обнуление
+                    if (monster[currentMap][i].isDead && monster[currentMap][i].fadeAlpha <= 0) {
+                        monster[currentMap][i] = null;
                     }
                 }
             }

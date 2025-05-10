@@ -73,8 +73,14 @@ public class Player extends Entity {
     }
 
     public void setDefaulteValues() {
+        if (gp.currentMap == 0){
         worldX = gp.tileSize * 15;
         worldY = gp.tileSize * 22;
+        }
+        if (gp.currentMap == 1){
+            worldX = gp.tileSize * 12;
+            worldY = gp.tileSize * 17;
+        }
         speed = 4;
         direction = "down";
 
@@ -158,11 +164,10 @@ public class Player extends Entity {
         }
 
         interactionIndex = gp.collisionChecker.checkObjectForInteraction(this, true);
-        if (keyH.ePressed && interactionIndex != 999 && gp.obj[interactionIndex] != null) {
-            System.out.println("Attempting to interact with object at index: " + interactionIndex + " (" + gp.obj[interactionIndex].name + ")");
+        if (keyH.ePressed && interactionIndex != 999 && gp.obj[gp.currentMap][interactionIndex] != null) {
             // Handle DoorSide that requires a key as a fallback for testing
-            if (gp.obj[interactionIndex].name.equals("DoorSide")) {
-                Object_DoorSide door = (Object_DoorSide) gp.obj[interactionIndex];
+            if (gp.obj[gp.currentMap][interactionIndex].name.equals("DoorSide")) {
+                Object_DoorSide door = (Object_DoorSide) gp.obj[gp.currentMap][interactionIndex];
                 if (door.requiresKey && !door.isOpen()) {
                     // Check if the player has a key
                     ChestInventoryManager.ItemData keyItem = inventory.stream()
@@ -241,7 +246,7 @@ public class Player extends Entity {
 
         Entity target = null;
         double minDistance = Double.MAX_VALUE;
-        for (Entity monster : gp.monster) {
+        for (Entity monster : gp.monster[gp.currentMap]) {
             if (monster != null && !monster.isDead) {
                 int dx = monster.worldX - worldX;
                 int dy = monster.worldY - worldY;
@@ -501,8 +506,8 @@ public class Player extends Entity {
 
     // Method to handle drag-and-drop of the key onto the door
     public void useKeyOnDoor(int doorIndex) {
-        if (doorIndex != 999 && gp.obj[doorIndex] != null && gp.obj[doorIndex].name.equals("DoorSide")) {
-            Object_DoorSide door = (Object_DoorSide) gp.obj[doorIndex];
+        if (doorIndex != 999 && gp.obj[gp.currentMap][doorIndex] != null && gp.obj[gp.currentMap][doorIndex].name.equals("DoorSide")) {
+            Object_DoorSide door = (Object_DoorSide) gp.obj[0][doorIndex];
             if (door.requiresKey && !door.isOpen()) {
                 ChestInventoryManager.ItemData keyItem = inventory.stream()
                         .filter(item -> item.getName().equals("Key"))
