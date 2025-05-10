@@ -79,7 +79,7 @@ public class Player extends Entity {
         }
         if (gp.currentMap == 1){
             worldX = gp.tileSize * 12;
-            worldY = gp.tileSize * 17;
+            worldY = gp.tileSize * 18;
         }
         speed = 4;
         direction = "down";

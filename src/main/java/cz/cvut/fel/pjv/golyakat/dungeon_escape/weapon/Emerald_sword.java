@@ -6,15 +6,15 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Weapon;
 import javax.imageio.ImageIO;
 import java.io.IOException;
 
-public class Iron_sword extends GameObject implements Weapon {
+public class Emerald_sword extends GameObject implements Weapon {
     private final int attack;
 
-    public Iron_sword(int attackValue) {
+    public Emerald_sword(int attackValue) {
         this.attack = attackValue;
-        name = "iron_sword";
+        name = "emerald_sword";
         try {
             image = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/sword/Sword.png"));
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/sword/emerald_sword.png"));
         } catch (IOException e) {
             System.err.println("Error loading image for iron_sword: " + e.getMessage());
         }

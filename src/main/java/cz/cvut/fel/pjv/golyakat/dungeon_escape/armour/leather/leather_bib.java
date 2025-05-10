@@ -8,6 +8,7 @@ import java.util.Objects;
 
 public class leather_bib extends GameObject implements Armor {
     private final float defensAmount;
+    public SlotType getSlot() { return SlotType.CHEST; }
 
     public leather_bib() {
         name = "leather_bib";

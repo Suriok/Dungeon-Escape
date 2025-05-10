@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_bib;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_bib;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Apple;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Blubbery;
@@ -15,6 +16,7 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key.Item_partKey1;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key.Item_partKey2;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key.Item_partKey3;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Emerald_sword;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Iron_sword;
 
 import java.io.*;
@@ -104,8 +106,12 @@ public class ChestInventoryManager {
                 return new iron_pants();
             case "iron_helmet":
                 return new iron_helmet();
+            case "iron_bib":
+                return new iron_bib();
             case "iron_sword":
                 return new Iron_sword(2);
+            case "emerald_sword":
+                return new Emerald_sword(3);
             case "Key":
                 return new Item_Key();
             case "Key1":

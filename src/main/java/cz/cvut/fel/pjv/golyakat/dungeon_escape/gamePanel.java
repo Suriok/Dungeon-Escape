@@ -29,6 +29,7 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_CraftingTable;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Emerald_sword;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Iron_sword;
 
 
@@ -179,6 +180,8 @@ public class gamePanel extends JPanel implements Runnable {
                 return new iron_boots();
             case "iron_sword":
                 return new Iron_sword(2);
+            case "emerald_sword":
+                return new Emerald_sword(3);
             default:
                 System.err.println("Unknown item: " + name);
                 return null;

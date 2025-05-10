@@ -25,6 +25,9 @@ public class AssetSetter {
     }
 
     public void setObg() {
+        // 1 LEVEL OBJECT
+
+        //DOORS
         gp.obj[0][1] = new Object_DoorSide();
         gp.obj[0][1].worldX = 20 * gp.tileSize;
         gp.obj[0][1].worldY = 22 * gp.tileSize;
@@ -51,7 +54,7 @@ public class AssetSetter {
         gp.obj[0][6].worldY = 7 * gp.tileSize;
         ((Object_DoorSide) gp.obj[0][6]).requiresKey = true; // This door requires a key
 
-
+        //CHEST
         Map<String, Integer> chest0Items = new HashMap<>();
         chest0Items.put("leather_pants", 1);
         chest0Items.put("leather_helmet", 1);
@@ -84,7 +87,62 @@ public class AssetSetter {
         gp.obj[0][10].worldX = 38 * gp.tileSize;
         gp.obj[0][10].worldY = 14 * gp.tileSize;
 
+        // 2 LEVEL OBJECT
+        // DOORS
+        gp.obj[1][1] = new Object_DoorSide();
+        gp.obj[1][1].worldX = 15 * gp.tileSize;
+        gp.obj[1][1].worldY = 19 * gp.tileSize;
 
+        gp.obj[1][2] = new Object_DoorFront();
+        gp.obj[1][2].worldX = 27 * gp.tileSize;
+        gp.obj[1][2].worldY = 21 * gp.tileSize;
+
+        gp.obj[1][3] = new Object_DoorSide();
+        gp.obj[1][3].worldX = 39 * gp.tileSize;
+        gp.obj[1][3].worldY = 28 * gp.tileSize;
+        ((Object_DoorSide) gp.obj[1][3]).requiresKey = true; // This door requires a key
+
+        gp.obj[1][4] = new Object_DoorFront();
+        gp.obj[1][4].worldX = 44 * gp.tileSize;
+        gp.obj[1][4].worldY = 21 * gp.tileSize;
+        ((Object_DoorFront) gp.obj[1][4]).requiresKey = true; // This door requires a Silver Key
+
+        gp.obj[1][5] = new Object_DoorFront();
+        gp.obj[1][5].worldX = 34 * gp.tileSize;
+        gp.obj[1][5].worldY = 17 * gp.tileSize;
+
+        //CHEST
+        Map<String, Integer> chest10Items = new HashMap<>();
+        chest10Items.put("iron_bib", 1);
+        chest10Items.put("iron_pants", 1);
+        chest10Items.put("emerald_sword", 1);
+        gp.obj[1][0] = new Object_Small_Chest(this, 0, chest10Items);
+        gp.obj[1][0].worldX = 13 * gp.tileSize;
+        gp.obj[1][0].worldY = 18 * gp.tileSize;
+
+        Map<String, Integer> chest17Items = new HashMap<>();
+        chest17Items.put("Key1", 1);
+        gp.obj[1][7] = new Object_Small_Chest(this, 7, chest17Items);
+        gp.obj[1][7].worldX = 30 * gp.tileSize;
+        gp.obj[1][7].worldY = 18 * gp.tileSize;
+
+        Map<String, Integer> chest18Items = new HashMap<>();
+        chest18Items.put("Key2", 1);
+        chest18Items.put("iron_helmet", 1);
+        gp.obj[1][8] = new Object_Small_Chest(this, 8, chest18Items);
+        gp.obj[1][8].worldX = 32 * gp.tileSize;
+        gp.obj[1][8].worldY = 27 * gp.tileSize;
+
+        Map<String, Integer> chest19Items = new HashMap<>();
+        chest19Items.put("Key3", 1);
+        chest19Items.put("iron_boots", 1);
+        gp.obj[1][9] = new Object_Small_Chest(this, 9, chest19Items);
+        gp.obj[1][9].worldX = 35 * gp.tileSize;
+        gp.obj[1][9].worldY = 12 * gp.tileSize;
+
+        gp.obj[1][10] = new Object_CraftingTable();
+        gp.obj[1][10].worldX = 38 * gp.tileSize;
+        gp.obj[1][10].worldY = 27 * gp.tileSize;
     }
 
     public void setMonster() {
@@ -108,7 +166,7 @@ public class AssetSetter {
         spawnedPositions.add(new Point(8, 35));
         System.out.println("Spawned Boss Goblin at col: 35, row: 8");
 
-        // Spawn other monsters
+         //Spawn other monsters
         for (int i = 1; i < monstersToSpawn; i++) {
             List<Point> region = availableRegions.get(i % availableRegions.size());
 
