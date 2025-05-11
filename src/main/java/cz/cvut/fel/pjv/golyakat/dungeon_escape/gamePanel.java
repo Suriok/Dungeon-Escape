@@ -4,7 +4,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Player;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.*;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_bib;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_boots;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_helmet;
@@ -67,27 +66,30 @@ public class gamePanel extends JPanel implements Runnable {
     int FPS = 60;
 
     // SYSTEM
-    TileManger tileH = new TileManger(this);
+    public TileManger tileH = new TileManger(this);
     public KeyHandler keyH = new KeyHandler();
     Thread gameThread;
     public Collision collisionChecker = new Collision(this);
     public AssetSetter assetSetter;
-    private TitleScreenUI titleUi;
+    private final TitleScreenUI titleUi;
     Sound sound = new Sound();
 
-    // GAME STATE
-    public int getGameState;
-    public final int titleState = 0;
+
+
+
 
     // ENTITY AND OBJECT
     public Player player = new Player(this, keyH);
-    public GameObject obj[][] = new GameObject[maxMap][11];
+    public GameObject[][] obj = new GameObject[maxMap][11];
     public HealthBar healthBar;
     public DefensBar defensBar;
-    public Entity monster[][] = new Entity[maxMap][20];
+    public Entity[][] monster = new Entity[maxMap][20];
     public MonsterUI monsterUi;
+    public boolean[] levelSpawned = new boolean[maxMap];
 
+    // GAME STATE
     public int gameState;
+    public final int titleState = 0;
     public final int playerState = 1;
     public final int gameOverState = 2;
 
@@ -105,7 +107,6 @@ public class gamePanel extends JPanel implements Runnable {
     private int draggedItemIndex = -1;
     private int dragOffsetX, dragOffsetY;
     private boolean collisionLogged = false;
-    public boolean objectsLogged = false;
     private boolean dragDroppedLogged = false;
     private boolean draggedFromArmor = false;
 
@@ -124,7 +125,7 @@ public class gamePanel extends JPanel implements Runnable {
 
     // HINT MESSAGE
     public class HintMessage {
-          public String text = "";
+        public String text = "";
         public int counter = 0;
         public boolean near = false;
 
@@ -717,42 +718,40 @@ public class gamePanel extends JPanel implements Runnable {
                     clearDrag();
                     repaint();
                     return;
+                    // Key
                 } else if (draggedItem.getName().equals("Key")) {
-                    if (obj[0][6] != null && obj[0][6] instanceof Object_DoorSide) {
-                        Object_DoorSide door = (Object_DoorSide) obj[0][6];
-                        if (door.requiresKey && !door.isOpen()) {
-                            int doorScreenX = obj[0][6].worldX - player.worldX + player.screenX;
-                            int doorScreenY = obj[0][6].worldY - player.worldY + player.screenY;
-                            Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
-                            if (doorBounds.contains(e.getPoint())) {
-                                door.unlock();
-                                removeDraggedItem();
-                                doorHintMessage.show("", 0, false);
-                                doorMessage.show("Side door unlocked!", 40, true);
-                                if (!dragDroppedLogged) {
-                                    System.out.println("Item " + draggedItem.getName() + " dropped to side door");
-                                    dragDroppedLogged = true;
-                                }
-                                clearDrag();
-                                repaint();
-                                return;
-                            }
-                        }
+                    GameObject target = null;
+                    String label = "";
+
+                    if (obj[0][6] instanceof Object_DoorSide && currentMap == 0) {
+                        target = obj[0][6];
+                        label = "Side door";
+                    } else if (obj[1][4] instanceof Object_DoorSide && currentMap == 1) {
+                        target = obj[1][4];
+                        label = "Side door";
                     }
-                } else if (draggedItem.getName().equals("SilverKey")) {
-                    if (obj[0][5] != null && obj[0][5] instanceof Object_DoorFront) {
-                        Object_DoorFront door = (Object_DoorFront) obj[0][5];
-                        if (door.requiresKey && !door.isOpen()) {
-                            int doorScreenX = obj[0][5].worldX - player.worldX + player.screenX;
-                            int doorScreenY = obj[0][5].worldY - player.worldY + player.screenY;
+
+                    if (target != null) {
+                        boolean requires = false;
+                        boolean opened = true;
+
+                        if (target instanceof Object_DoorSide door) {
+                            requires = door.requiresKey;
+                            opened = door.isOpen();
+                        }
+
+                        if (requires && !opened) {
+                            int doorScreenX = target.worldX - player.worldX + player.screenX;
+                            int doorScreenY = target.worldY - player.worldY + player.screenY;
                             Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
                             if (doorBounds.contains(e.getPoint())) {
-                                door.unlock();
+                                if (target instanceof Object_DoorSide d) d.unlock();
+
                                 removeDraggedItem();
                                 doorHintMessage.show("", 0, false);
-                                doorMessage.show("Front door unlocked!", 40, true);
+                                doorMessage.show(label + " unlocked!", 40, true);
                                 if (!dragDroppedLogged) {
-                                    System.out.println("Item " + draggedItem.getName() + " dropped to front door");
+                                    System.out.println("Item " + draggedItem.getName() + " dropped to " + label);
                                     dragDroppedLogged = true;
                                 }
                                 clearDrag();
@@ -763,29 +762,49 @@ public class gamePanel extends JPanel implements Runnable {
                     }
                 }
 
-                // Return to source if invalid drop
-                if (sourceInventory == player) {
-                    if (draggedFromArmor) {                       // вернули броню
-                        player.equipArmor(draggedItem.getItem(), draggedItemIndex);
+                else if (draggedItem.getName().equals("SilverKey")) {
+                    GameObject target = null;
+                    String label = "";
 
-                    } else if (draggedItemIndex == -2) {          // вернули оружие
-                        player.equipWeapon(draggedItem.getItem());
+                    if (obj[0][5] instanceof Object_DoorFront && currentMap == 0) {
+                        target = obj[0][5];
+                        label = "Front door";
+                    } else if (obj[1][3] instanceof Object_DoorFront && currentMap == 1) { // ← исправлено!
+                        target = obj[1][3];
+                        label = "Front door";
+                    }
 
+                    if (target != null) {
+                        boolean requires = false;
+                        boolean opened = true;
+
+                        if (target instanceof Object_DoorFront door) {
+                            requires = door.requiresKey;
+                            opened = door.isOpen();
+                        }
+
+                        if (requires && !opened) {
+                            int doorScreenX = target.worldX - player.worldX + player.screenX;
+                            int doorScreenY = target.worldY - player.worldY + player.screenY;
+                            Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
+                            if (doorBounds.contains(e.getPoint())) {
+                                if (target instanceof Object_DoorFront d) d.unlock();
+
+                                removeDraggedItem();
+                                doorHintMessage.show("", 0, false);
+                                doorMessage.show(label + " unlocked!", 40, true);
+                                if (!dragDroppedLogged) {
+                                    System.out.println("Item " + draggedItem.getName() + " dropped to " + label);
+                                    dragDroppedLogged = true;
+                                }
+                                clearDrag();
+                                repaint();
+                                return;
+                            }
+                        }
                     }
-                } else if (sourceInventory instanceof Object_Small_Chest) {
-                    if (!dragDroppedLogged) {
-                        System.out.println("Item " + draggedItem.getName() + " dropped back to chest");
-                        dragDroppedLogged = true;
-                    }
-                } else if (sourceInventory == craftingTableUI) {
-                    if (!playerUI.isArmor(draggedItem)) {
-                        player.addItem(draggedItem);
-                    }
-                }
-                clearDrag();
-                repaint();
-            }
-        });
+                }}
+            });
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
             @Override

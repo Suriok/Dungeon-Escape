@@ -261,4 +261,23 @@ public class TitleScreenUI {
         }
     }
 
+    public void handleClick(Point p) {
+        for (UIButton b : buttons) {               // buttons – это ваш список кнопок
+            if (b.bounds.contains(p)) {
+                switch (b.text) {                  // текст на кнопке
+                    case "Start Game"       -> gp.startNewGame();
+                    case "Start Saved Game" -> gp.loadSavedGame();
+                    case "Exit"             -> System.exit(0);
+                }
+                break;
+            }
+        }
+    }
+
+    /* Если у вас есть отдельный экран Game Over – аналогичная обёртка: */
+    public void handleGameOverClick(Point p) {
+        handleClick(p);            // в моём примере действия одинаковые
+    }
+
+
 }

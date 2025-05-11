@@ -13,32 +13,24 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-public class Boss_Goblin extends Entity {
+public class Boss_Eye extends Entity {
     private gamePanel gp;
     public int actionLockCounter = 0;
     private static final int DETECTION_RANGE = 5 * 48; // 5 tiles (assuming tileSize = 48)
     private static final int ATTACK_RANGE = 48; // 1 tile
     private static final int ATTACK_COOLDOWN = 60; // 1 second at 60 FPS
     private int attackCounter = 0;
-    private static final int ATTACK_DAMAGE = 9;
-
-    // Fireball attack properties
-    private static final int FIREBALL_COOLDOWN = 10 * 60; // 30 seconds at 60 FPS
-    private int fireballCounter = 0;
-    private static final int FIREBALL_SPEED = 5;
-    private static final int FIREBALL_DAMAGE = 2;
-    private List<Fireball> fireballs = new ArrayList<>();
-    private BufferedImage fireballImage;
+    private static final int ATTACK_DAMAGE = 15;
 
     private boolean hasDroppedKey = false; // Flag to ensure the key is dropped only once
 
-    public Boss_Goblin(gamePanel gp) {
+    public Boss_Eye(gamePanel gp) {
         super(gp);
         this.gp = gp;
 
-        name = "Boss Goblin";
+        name = "Boss_Eye";
         speed = 2;
-        maxLife = 6;
+        maxLife = 15;
         life = maxLife;
 
         direction = "down";
@@ -52,28 +44,19 @@ public class Boss_Goblin extends Entity {
         solidAreaDefaultY = solidArea.y;
 
         getImage();
-        loadFireballImage();
     }
 
-    private void loadFireballImage() {
-        try {
-            fireballImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Fireball/FB001.png")));
-        } catch (Exception e) {
-            System.err.println("Error loading fireball image: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     public void getImage() {
         try {
-            up1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin.png")));
-            up2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin_1.png")));
-            down1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin.png")));
-            down2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin_1.png")));
-            left1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin.png")));
-            left2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin_1.png")));
-            right1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin.png")));
-            right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin_1.png")));
+            up1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Eye.png")));
+            up2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/eye_1.png")));
+            down1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Eye.png")));
+            down2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/eye_1.png")));
+            left1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Eye.png")));
+            left2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/eye_1.png")));
+            right1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Eye.png")));
+            right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/eye_1.png")));
         } catch (Exception e) {
             System.err.println("Error loading skeleton sprites: " + e.getMessage());
             e.printStackTrace();
@@ -114,17 +97,6 @@ public class Boss_Goblin extends Entity {
         }
     }
 
-    private void shootFireball() {
-        int dx = gp.player.worldX - worldX;
-        int dy = gp.player.worldY - worldY;
-        double distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance > 0) {
-            double speedX = (dx / distance) * FIREBALL_SPEED;
-            double speedY = (dy / distance) * FIREBALL_SPEED;
-            fireballs.add(new Fireball(worldX + gp.tileSize, worldY + gp.tileSize, speedX, speedY));
-            System.out.println(name + " shot a fireball!");
-        }
-    }
 
     public void update() {
         if (isDead) {
@@ -176,39 +148,6 @@ public class Boss_Goblin extends Entity {
             attackCounter = 0;
             System.out.println(name + " attacked player! Player HP: " + gp.player.life);
         }
-
-        // Handle fireball attack
-        fireballCounter++;
-        if (fireballCounter >= FIREBALL_COOLDOWN) {
-            shootFireball();
-            fireballCounter = 0;
-        }
-
-        // Update fireballs
-        List<Fireball> fireballsToRemove = new ArrayList<>();
-        for (Fireball fireball : fireballs) {
-            fireball.update();
-            // Check collision with player
-            int fireballScreenX = (int) fireball.x - gp.player.worldX + gp.player.screenX;
-            int fireballScreenY = (int) fireball.y - gp.player.worldY + gp.player.screenY;
-            int playerScreenCenterX = gp.player.screenX + gp.tileSize / 2;
-            int playerScreenCenterY = gp.player.screenY + gp.tileSize / 2;
-            double fireballDistance = Math.sqrt(Math.pow(fireballScreenX - playerScreenCenterX, 2) + Math.pow(fireballScreenY - playerScreenCenterY, 2));
-            if (fireballDistance <= gp.tileSize / 2) {
-                gp.player.receiveDamage(FIREBALL_DAMAGE);
-                fireballsToRemove.add(fireball);
-                System.out.println(name + "'s fireball hit player! Player HP: " + gp.player.life);
-                continue;
-            }
-            // Remove fireballs that go off-screen
-            if (fireball.x < gp.player.worldX - gp.screenWidth / 2 ||
-                    fireball.x > gp.player.worldX + gp.screenWidth / 2 ||
-                    fireball.y < gp.player.worldY - gp.screenHeight / 2 ||
-                    fireball.y > gp.player.worldY + gp.screenHeight / 2) {
-                fireballsToRemove.add(fireball);
-            }
-        }
-        fireballs.removeAll(fireballsToRemove);
 
         // Animation
         spriteCounter++;
@@ -269,40 +208,13 @@ public class Boss_Goblin extends Entity {
         int screenX = worldX - gp.player.worldX + gp.player.screenX;
         int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-        // Draw the goblin at double size (2 * gp.tileSize)
+        // Draw the eye at double size (2 * gp.tileSize)
         int scaledSize = gp.tileSize * 2;
         if (screenX > -scaledSize && screenX < gp.screenWidth && screenY > -scaledSize && screenY < gp.screenHeight) {
             if (!isDead) {
                 g2d.drawImage(image, screenX, screenY, scaledSize, scaledSize, null);
             }
         }
-
-        // Draw fireballs
-        for (Fireball fireball : fireballs) {
-            int fireballScreenX = (int) fireball.x - gp.player.worldX + gp.player.screenX;
-            int fireballScreenY = (int) fireball.y - gp.player.worldY + gp.player.screenY;
-            if (fireballScreenX > -gp.tileSize && fireballScreenX < gp.screenWidth && fireballScreenY > -gp.tileSize && fireballScreenY < gp.screenHeight) {
-                g2d.drawImage(fireballImage, fireballScreenX, fireballScreenY, gp.tileSize / 2, gp.tileSize / 2, null);
-            }
-        }
-        // Health bar and fade effect are handled by MonsterUi
     }
 
-    // Inner class to represent a fireball projectile
-    private class Fireball {
-        double x, y;
-        double speedX, speedY;
-
-        Fireball(double x, double y, double speedX, double speedY) {
-            this.x = x;
-            this.y = y;
-            this.speedX = speedX;
-            this.speedY = speedY;
-        }
-
-        void update() {
-            x += speedX;
-            y += speedY;
-        }
-    }
 }

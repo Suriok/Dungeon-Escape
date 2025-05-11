@@ -12,7 +12,7 @@ public class iron_bib extends GameObject implements Armor {
 
     public iron_bib() {
         name = "iron_bib";
-        defensAmount = 8;
+        defensAmount = 5;
         try {
             java.io.InputStream stream = getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/armour/iron_bib.png");

@@ -46,10 +46,9 @@ public class Player extends Entity {
     private GameObject equippedWeapon;
     private GameObject equippedGrade; // Новый слот для grade
     private static final int ATTACK_RANGE = 96; // 2 tiles
-    private static final int ATTACK_COOLDOWN = 30; // 0.5 seconds at 60 FPS
-    private int attackCounter = 0;
     public boolean isHit = false;
     private int hitEffectCounter = 0;
+    private static final int LADDER_TILE = 10;
 
     public Player(gamePanel gp, KeyHandler keyH) {
         super(gp);
@@ -137,7 +136,33 @@ public class Player extends Entity {
             }
 
             gp.collisionChecker.checkTiles(this);
-            int objIndex = gp.collisionChecker.checkObject(this, true);
+            gp.collisionChecker.checkObject(this, true);
+
+            int col = (worldX + solidArea.x) / gp.tileSize;   // колонки и строки,
+            int row = (worldY + solidArea.y) / gp.tileSize;   // в которых сейчас игрок
+            int currentTile = gp.tileH.mapTileNum[gp.currentMap][row][col];
+
+            if (currentTile == LADDER_TILE) {
+
+                // 1) Переключаем карту ОДИН раз
+                gp.currentMap = (gp.currentMap == 0) ? 1 : 0;
+
+                // 2) Пересчёт проходных зон под новую карту
+                gp.tileH.findWalkableRegions();
+
+                // 3) Первый вход? – cпауним монстров
+                if (!gp.levelSpawned[gp.currentMap]) {
+                    gp.assetSetter.setMonster();          // метод сам смотрит на gp.currentMap
+                    gp.levelSpawned[gp.currentMap] = true;
+                }
+
+                // 4) Ставим игрока на стартовые координаты
+                setDefaulteValues();
+
+                // 5) Чуть сдвинем, чтобы не стоял прямо на лестнице
+                worldY += gp.tileSize;
+            }
+
 
             if (collisionOn) {
                 worldX = oldX;

@@ -12,7 +12,7 @@ public class iron_boots extends GameObject implements Armor {
 
     public iron_boots() {
         name = "iron_boots";
-        defensAmount = 5;
+        defensAmount = 2;
         try {
             java.io.InputStream stream = getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/armour/iron_boots.png");

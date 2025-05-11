@@ -11,6 +11,14 @@ import java.util.List;
 @JacksonXmlRootElement(localName = "save")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SaveData {
+
+    @JacksonXmlProperty(isAttribute = true)
+    public int currentMap; // Добавлено для сохранения текущей карты
+
+    @JacksonXmlElementWrapper(localName = "levelsSpawned")
+    @JacksonXmlProperty(localName = "level")
+    public boolean[] levelSpawned; // Добавлено для сохранения состояния спавна уровней
+
     public static class ItemData {
         @JacksonXmlProperty(isAttribute = true)
         public String name;

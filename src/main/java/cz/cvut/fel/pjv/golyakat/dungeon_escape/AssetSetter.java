@@ -1,5 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Eye;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Goblin;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Slime;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Zombie;
@@ -100,12 +102,12 @@ public class AssetSetter {
         gp.obj[1][3] = new Object_DoorSide();
         gp.obj[1][3].worldX = 39 * gp.tileSize;
         gp.obj[1][3].worldY = 28 * gp.tileSize;
-        ((Object_DoorSide) gp.obj[1][3]).requiresKey = true; // This door requires a key
+        ((Object_DoorSide) gp.obj[1][3]).requiresKey = true; // This door requires  a Silver Key
 
         gp.obj[1][4] = new Object_DoorFront();
         gp.obj[1][4].worldX = 44 * gp.tileSize;
         gp.obj[1][4].worldY = 21 * gp.tileSize;
-        ((Object_DoorFront) gp.obj[1][4]).requiresKey = true; // This door requires a Silver Key
+        ((Object_DoorFront) gp.obj[1][4]).requiresKey = true; // This door requires a  Key
 
         gp.obj[1][5] = new Object_DoorFront();
         gp.obj[1][5].worldX = 34 * gp.tileSize;
@@ -153,88 +155,92 @@ public class AssetSetter {
             return;
         }
 
-        int playerCol = (gp.currentMap == 0) ? 15 : 14;
-        int playerRow = (gp.currentMap == 0) ? 22 : 10;
-
         int monstersToSpawn = 14; // Reduced by 1 to make room for the boss
         List<Point> spawnedPositions = new ArrayList<>();
 
-        // Spawn the Boss_Goblin at fixed position (x:35, y:8)
-        gp.monster[0][0] = new Boss_Goblin(gp);
-        gp.monster[0][0].worldX = 35 * gp.tileSize;
-        gp.monster[0][0].worldY = 8 * gp.tileSize;
-        spawnedPositions.add(new Point(8, 35));
-        System.out.println("Spawned Boss Goblin at col: 35, row: 8");
-
-         //Spawn other monsters
-        for (int i = 1; i < monstersToSpawn; i++) {
-            List<Point> region = availableRegions.get(i % availableRegions.size());
-
-            if (region.isEmpty()) {
-                System.out.println("Region " + (i % availableRegions.size()) + " is empty, skipping monster spawn.");
-                continue;
-            }
-
-            int attempts = 0;
-            int maxAttempts = 50;
-            Point spawnPoint = null;
-
-            while (attempts < maxAttempts) {
-                spawnPoint = region.get(random.nextInt(region.size()));
-                int col = spawnPoint.y;
-                int row = spawnPoint.x;
-
-                int distToPlayerX = Math.abs(col - playerCol);
-                int distToPlayerY = Math.abs(row - playerRow);
-                if (distToPlayerX < 10 && distToPlayerY < 10) {
-                    attempts++;
-                    spawnPoint = null;
-                    continue;
-                }
-
-                boolean tooClose = false;
-                for (Point existing : spawnedPositions) {
-                    int distX = Math.abs(existing.y - col);
-                    int distY = Math.abs(existing.x - row);
-                    if (distX < 5 && distY < 5) {
-                        tooClose = true;
-                        break;
-                    }
-                }
-
-                if (!tooClose) {
-                    break;
-                }
-
-                attempts++;
-                spawnPoint = null;
-            }
-
-            if (spawnPoint != null) {
-                int col = spawnPoint.y;
-                int row = spawnPoint.x;
-
-                int monsterType = random.nextInt(3);
-                switch (monsterType) {
-                    case 0:
-                        gp.monster[gp.currentMap][i] = new Monster_Slime(gp);
-                        break;
-                    case 1:
-                        gp.monster[gp.currentMap][i] = new Monster_Zombie(gp);
-                        break;
-                    case 2:
-                        gp.monster[gp.currentMap][i] = new Monster_Skeleton(gp);
-                        break;
-                }
-
-                gp.monster[gp.currentMap][i].worldX = col * gp.tileSize;
-                gp.monster[gp.currentMap][i].worldY = row * gp.tileSize;
-                spawnedPositions.add(new Point(row, col));
-
-                System.out.println("Spawned " + gp.monster[gp.currentMap][i].name + " " + i + " at col: " + col + ", row: " + row);
-            } else {
-                System.out.println("Failed to spawn monster " + i + " after " + maxAttempts + " attempts.");
-            }
+        if (gp.currentMap == 0) {
+            gp.monster[0][0] = new Boss_Goblin(gp);
+            gp.monster[0][0].worldX = 35 * gp.tileSize;
+            gp.monster[0][0].worldY = 8 * gp.tileSize;
+        } else if (gp.currentMap == 1) {
+            gp.monster[1][0] = new Boss_Eye(gp);
+            gp.monster[1][0].worldX = 41 * gp.tileSize;
+            gp.monster[1][0].worldY = 25 * gp.tileSize;
         }
+
+//        // Spawn other monsters
+//        for (int i = 1; i < monstersToSpawn; i++) {
+//            List<Point> region = availableRegions.get(i % availableRegions.size());
+//
+//            if (region.isEmpty()) {
+//                System.out.println("Region " + (i % availableRegions.size()) + " is empty, skipping monster spawn.");
+//                continue;
+//            }
+//
+//            Point spawnPoint = null;
+//            int maxAttempts = 50;
+//
+//            for (int attempt = 0; attempt < maxAttempts; attempt++) {
+//                Point candidate = region.get(random.nextInt(region.size()));
+//                int col = candidate.y;
+//                int row = candidate.x;
+//                int spawnX = col * gp.tileSize;
+//                int spawnY = row * gp.tileSize;
+//
+//                // Не спавним в прямоугольнике 5x5 тайлов вокруг игрока
+//                Rectangle monsterRect = new Rectangle(spawnX, spawnY, gp.tileSize, gp.tileSize);
+//                Rectangle safeZone = new Rectangle(
+//                        gp.player.worldX - gp.tileSize * 2,
+//                        gp.player.worldY - gp.tileSize * 2,
+//                        gp.tileSize * 10,
+//                        gp.tileSize * 10
+//                );
+//
+//                if (monsterRect.intersects(safeZone)) {
+//                    continue;
+//                }
+//
+//                // Не слишком ли близко к уже заспавненным?
+//                boolean tooClose = false;
+//                for (Point existing : spawnedPositions) {
+//                    int dx = Math.abs(existing.y - col);
+//                    int dy = Math.abs(existing.x - row);
+//                    if (dx < 5 && dy < 5) {
+//                        tooClose = true;
+//                        break;
+//                    }
+//                }
+//
+//                if (!tooClose) {
+//                    spawnPoint = candidate;
+//                    break;
+//                }
+//            }
+//
+//            if (spawnPoint == null) {
+//                System.out.printf("Failed to spawn monster %d after %d attempts.%n", i, maxAttempts);
+//                continue;
+//            }
+//
+//            int col = spawnPoint.y;
+//            int row = spawnPoint.x;
+//            int spawnX = col * gp.tileSize;
+//            int spawnY = row * gp.tileSize;
+//
+//            // Создаём монстра
+//            Entity monster = switch (random.nextInt(3)) {
+//                case 0 -> new Monster_Slime(gp);
+//                case 1 -> new Monster_Zombie(gp);
+//                case 2 -> new Monster_Skeleton(gp);
+//                default -> throw new IllegalStateException("Unexpected monster type");
+//            };
+//
+//            monster.worldX = spawnX;
+//            monster.worldY = spawnY;
+//            gp.monster[gp.currentMap][i] = monster;
+//            spawnedPositions.add(new Point(row, col));
+//
+//            System.out.printf("Spawned %s %d at col: %d, row: %d%n", monster.name, i, col, row);
+//        }
     }
 }

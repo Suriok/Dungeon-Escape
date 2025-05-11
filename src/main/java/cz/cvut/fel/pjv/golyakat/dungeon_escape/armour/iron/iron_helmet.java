@@ -12,7 +12,7 @@ public class iron_helmet extends GameObject implements Armor {
 
     public iron_helmet() {
         name = "iron_helmet";
-        defensAmount = 3;
+        defensAmount = 2;
         try {
             java.io.InputStream stream = getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/armour/iron_helmet.png");
