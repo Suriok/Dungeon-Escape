@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
 public abstract class GameObject {
     public BufferedImage image, image2, image3, image4, image5;
     public String name;
-    public boolean Collision = false;
+    public boolean Collision = true;
     public int worldX, worldY;
     public Rectangle solidArea = new Rectangle(0, 0, 48, 48);
     public int solidAreaDefaultX = 0;

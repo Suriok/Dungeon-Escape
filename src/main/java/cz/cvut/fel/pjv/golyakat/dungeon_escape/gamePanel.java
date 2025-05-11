@@ -209,6 +209,9 @@ public class gamePanel extends JPanel implements Runnable {
             System.err.println("Player inventory is null or empty");
         }
 
+        data.currentMap   = currentMap;
+        data.levelSpawned = levelSpawned.clone();
+
         GameObject[] equippedArmor = player.getEquippedArmor();
         if (equippedArmor != null) {
             for (int i = 0; i < equippedArmor.length; i++) {
@@ -271,6 +274,25 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     private void restoreFromSave(SaveData d) {
+        currentMap = d.currentMap;                           // по умолчанию 0, если в XML нет атрибута
+        if (d.levelSpawned != null && d.levelSpawned.length == levelSpawned.length) {
+            levelSpawned = d.levelSpawned.clone();
+        } else {
+            Arrays.fill(levelSpawned, false);
+        }
+
+        /* 2.  Подготовка окружения под нужную карту */
+        assetSetter.setObg();                 // заново раскладываем двери/сундуки/и т.д.
+        tileH.findWalkableRegions();          // пересчёт проходных зон
+
+        if (!levelSpawned[currentMap]) {      // если в этой карте монстры ещё не спавнились
+            assetSetter.setMonster();
+            levelSpawned[currentMap] = true;
+        }
+
+        /* 3.  Сбрасываем сущности игрока НА ОСНОВЕ новой currentMap */
+        player.reset();                       // ставит стартовые координаты для карты
+
         player.reset();
         player.worldX = d.player.worldX;
         player.worldY = d.player.worldY;
@@ -330,7 +352,9 @@ public class gamePanel extends JPanel implements Runnable {
             System.out.println("No grade data to restore");
         }
 
-        Arrays.fill(monster, null);
+        for (Entity[] row : monster) {
+            Arrays.fill(row, null);
+        }
         if (d.monsters != null && !d.monsters.isEmpty()) {
             for (int i = 0; i < d.monsters.size() && i < monster.length; i++) {
                 SaveData.MonsterData md = d.monsters.get(i);
@@ -1226,6 +1250,9 @@ public class gamePanel extends JPanel implements Runnable {
     //NEW GAME
 
     public void startNewGame() {
+        currentMap = 0;
+        Arrays.fill(levelSpawned, false);
+        levelSpawned[currentMap] = true;
         player.reset();
         chestInventoryManager.resetChestData();
 
