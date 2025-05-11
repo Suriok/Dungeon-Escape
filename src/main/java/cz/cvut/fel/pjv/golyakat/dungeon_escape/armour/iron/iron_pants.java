@@ -6,9 +6,17 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 import javax.imageio.ImageIO;
 import java.util.Objects;
 
+/**
+ * Třída {@code iron_pants} reprezentuje železné kalhoty, které chrání spodní polovinu těla hráče.
+ * <p>
+ *  poskytují obrannou hodnotu 3.
+ * Obrázek kalhot je načítán ze souboru a zobrazuje se v inventáři i při výběru výstroje.
+ * </p>
+ */
+
 public class iron_pants extends GameObject implements Armor {
     private final float defensAmount;
-    public SlotType getSlot() { return SlotType. LEGS; }
+
 
     public iron_pants() {
         name = "iron_pants";

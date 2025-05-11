@@ -6,9 +6,16 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 import javax.imageio.ImageIO;
 import java.util.Objects;
 
+/**
+ * Třída {@code leather_helmet} reprezentuje koženou přilbu,
+ * která se nasazuje na hlavu hráče a poskytuje základní ochranu.
+ * <p>
+ * Obranná hodnota přilby je 1 bod.
+ * </p>
+ */
+
 public class leather_helmet extends GameObject implements Armor {
     private final float defensAmount;
-    public SlotType getSlot() { return SlotType.HEAD; }
 
     public leather_helmet() {
         name = "leather_helmet";

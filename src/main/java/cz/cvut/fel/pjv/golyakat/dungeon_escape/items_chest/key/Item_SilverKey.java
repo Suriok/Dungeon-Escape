@@ -6,7 +6,11 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 /**
- * Готовый серебряный ключ, собираемый из трёх частей.
+ * Třída {@code Item_SilverKey} reprezentuje kompletní stříbrný klíč,
+ * který je možné vycraftit spojením tří částí: {@link Item_partKey1}, {@link Item_partKey2}, a {@link Item_partKey3}.
+ * <p>
+ * Tento klíč slouží k odemykání speciálních dveří ve vyšších úrovních hry.
+ * </p>
  */
 public class Item_SilverKey extends GameObject {
 

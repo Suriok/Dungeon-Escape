@@ -11,35 +11,56 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
+/**
+ * Třída {@code TitleScreenUI} slouží k vykreslení úvodní obrazovky a obrazovky Game Over.
+ * <p>
+ * Obsahuje logiku pro vykreslení pozadí, nadpisu, tlačítek a jejich interakci.
+ * </p>
+ */
 public class TitleScreenUI {
 
+    /** Odkaz na hlavní panel hry, ze kterého získáváme velikosti, stav hry atd. */
     private final gamePanel gp;
+
+    /** Obrázek pozadí hlavního menu */
     private BufferedImage background;
 
-    // MAIN TITEL PANEL
+    /** Průhlednost pozadí tlačítek */
     private static final float BTN_ALPHA = 0.60f;
+
+    /** Tloušťka rámečku tlačítka */
     private static final int BTN_BORDER = 2;
+
+    /** Font používaný pro text tlačítek */
     private static final Font BTN_FONT = new Font("Arial", Font.BOLD, 24);
+
+    /** Font používaný pro hlavní nadpis hry */
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 48);
 
-
-
-
+    /**
+     * Vnitřní třída reprezentující jedno tlačítko na obrazovce.
+     */
     private static class UIButton {
         Rectangle bounds;
         String text;
         boolean hovered = false;
         boolean pressed = false;
 
-        UIButton(Rectangle b, String t) { this.bounds = b; this.text = t; }
+        UIButton(Rectangle b, String t) {
+            this.bounds = b;
+            this.text = t;
+        }
     }
 
+    /** Seznam všech tlačítek na obrazovce */
     private final List<UIButton> buttons = new ArrayList<>();
 
+    /**
+     * Vytvoří novou úvodní obrazovku s tlačítky pro spuštění hry.
+     *
+     * @param gp hlavní instance hry
+     */
     public TitleScreenUI(gamePanel gp) {
-
         this.gp = gp;
         loadBackground();
 
@@ -47,19 +68,19 @@ public class TitleScreenUI {
         int btnHeight = gp.tileSize * 2;
         int gap = gp.tileSize / 2;
         int centerX = gp.screenWidth / 2 - btnWidth / 2;
-
-
         int firstY = gp.tileSize * 4;
 
-        buttons.add(new UIButton(
-                new Rectangle(centerX, firstY, btnWidth, btnHeight), "Start Game"));
-        buttons.add(new UIButton(
-                new Rectangle(centerX, firstY + (btnHeight + gap), btnWidth, btnHeight), "Start Saved Game"));
-        buttons.add(new UIButton(
-                new Rectangle(centerX, firstY + 2 * (btnHeight + gap), btnWidth, btnHeight), "Exit"));
+        buttons.add(new UIButton(new Rectangle(centerX, firstY, btnWidth, btnHeight), "Start Game"));
+        buttons.add(new UIButton(new Rectangle(centerX, firstY + (btnHeight + gap), btnWidth, btnHeight), "Start Saved Game"));
+        buttons.add(new UIButton(new Rectangle(centerX, firstY + 2 * (btnHeight + gap), btnWidth, btnHeight), "Exit"));
     }
 
-
+    /**
+     * Načte pozadí pro titulní obrazovku.
+     * <p>
+     * Pokud se nepodaří načíst obrázek, vytvoří se jednoduchý černý obdélník jako záloha.
+     * </p>
+     */
     private void loadBackground() {
         try {
             background = ImageIO.read(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/titel background.png"));
@@ -72,14 +93,15 @@ public class TitleScreenUI {
         }
     }
 
-
-
-
+    /**
+     * Vykreslí hlavní titulní obrazovku včetně pozadí, nadpisu a všech tlačítek.
+     *
+     * @param g2 grafický kontext
+     */
     public void draw(Graphics2D g2) {
-
         g2.drawImage(background, 0, 0, gp.screenWidth, gp.screenHeight, null);
 
-
+        // Titulek
         g2.setFont(TITLE_FONT);
         g2.setColor(Color.WHITE);
         String title = "Dungeon Escape";
@@ -88,23 +110,20 @@ public class TitleScreenUI {
         int titleY = gp.tileSize * 3;
         g2.drawString(title, titleX, titleY);
 
-
+        // Tlačítka
         g2.setFont(BTN_FONT);
         for (UIButton btn : buttons) {
             float scale = btn.hovered ? 1.05f : 1.0f;
             Rectangle r = scale(btn.bounds, scale);
 
-
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, BTN_ALPHA));
             g2.setColor(Color.BLACK);
             g2.fillRect(r.x, r.y, r.width, r.height);
-
 
             g2.setComposite(AlphaComposite.SrcOver);
             g2.setStroke(new BasicStroke(BTN_BORDER));
             g2.setColor(Color.WHITE);
             g2.drawRect(r.x, r.y, r.width, r.height);
-
 
             FontMetrics fm = g2.getFontMetrics();
             Rectangle2D strRect = fm.getStringBounds(btn.text, g2);
@@ -113,33 +132,31 @@ public class TitleScreenUI {
             g2.drawString(btn.text, tx, ty);
         }
 
-        // GAME OVER
-        if(gp.gameState == gp.gameOverState){
+        if (gp.gameState == gp.gameOverState) {
             drawGameOverScreen(g2);
         }
-
     }
 
-    // GAME OVER
+    /**
+     * Vykreslí obrazovku Game Over s možnostmi výběru.
+     *
+     * @param g2 grafický kontext
+     */
     public void drawGameOverScreen(Graphics2D g2) {
-        // Полупрозрачное затемнение фона
         g2.setColor(new Color(0, 0, 0, 150));
         g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 
-        // Размер и положение основного блока
         int boxWidth = gp.tileSize * 10;
-        int boxHeight = gp.tileSize * 9; // ← немного уменьшен
+        int boxHeight = gp.tileSize * 9;
         int boxX = (gp.screenWidth - boxWidth) / 2;
         int boxY = (gp.screenHeight - boxHeight) / 2;
 
-        // Прямоугольник
         g2.setColor(new Color(0, 0, 0, 180));
         g2.fillRect(boxX, boxY, boxWidth, boxHeight);
         g2.setColor(Color.WHITE);
         g2.setStroke(new BasicStroke(4));
         g2.drawRect(boxX, boxY, boxWidth, boxHeight);
 
-        // Шрифты и строки
         String title = "GAME OVER";
         String[] options = {"Try Again", "Back to Menu", "Exit"};
 
@@ -155,116 +172,98 @@ public class TitleScreenUI {
         FontMetrics optionFM = g2.getFontMetrics();
         int optionHeight = optionFM.getHeight();
 
-        int spacing = 10; // отступ между строками
+        int spacing = 10;
         int totalContentHeight = titleHeight + spacing + options.length * optionHeight + (options.length - 1) * spacing;
 
         int contentStartY = boxY + (boxHeight - totalContentHeight) / 2;
 
-        // Рисуем заголовок
-        g2.setFont(titleFont);
         int titleX = boxX + (boxWidth - titleWidth) / 2;
         int titleY = contentStartY + titleFM.getAscent();
+        g2.setFont(titleFont);
         g2.drawString(title, titleX, titleY);
 
-        // Рисуем опции
         g2.setFont(optionFont);
         int optionY = titleY + spacing;
-
-        for (int i = 0; i < options.length; i++) {
+        for (String opt : options) {
             optionY += optionHeight + spacing;
-            String opt = options[i];
-            int textW = optionFM.stringWidth(opt);
-            int x = boxX + (boxWidth - textW) / 2;
+            int x = boxX + (boxWidth - optionFM.stringWidth(opt)) / 2;
             g2.drawString(opt, x, optionY);
         }
     }
 
-
+    /**
+     * Přepočítá souřadnice tlačítka podle daného měřítka.
+     *
+     * @param src původní obdélník
+     * @param k   škálovací koeficient
+     * @return nový obdélník
+     */
     private static Rectangle scale(Rectangle src, float k) {
         if (k == 1f) return src;
-        int newW = Math.round(src.width  * k);
+        int newW = Math.round(src.width * k);
         int newH = Math.round(src.height * k);
         int newX = src.x - (newW - src.width) / 2;
         int newY = src.y - (newH - src.height) / 2;
         return new Rectangle(newX, newY, newW, newH);
     }
 
-
+    /**
+     * Ošetřuje pohyb myši a zajišťuje efekt hover (zvýraznění) tlačítka.
+     *
+     * @param p bod kurzoru myši
+     */
     public void mouseMoved(Point p) {
         for (UIButton b : buttons) b.hovered = b.bounds.contains(p);
     }
 
+    /**
+     * Označí tlačítko jako stisknuté, pokud bylo kliknuto.
+     *
+     * @param p pozice kliknutí myši
+     */
     public void mousePressed(Point p) {
         buttons.forEach(b -> b.pressed = b.bounds.contains(p));
-
     }
 
+    /**
+     * Ošetřuje uvolnění tlačítka myši – buď v Game Over menu, nebo v hlavní nabídce.
+     *
+     * @param p pozice uvolnění myši
+     */
     public void mouseReleased(Point p) {
-        // game Over
         if (gp.gameState == gp.gameOverState) {
-            int boxWidth = gp.tileSize * 10;
-            int boxHeight = gp.tileSize * 9;
-            int boxX = (gp.screenWidth - boxWidth) / 2;
-            int boxY = (gp.screenHeight - boxHeight) / 2;
-
-            // те же шрифты
-            Font titleFont = new Font("Arial", Font.BOLD, 48);
-            Font optionFont = new Font("Arial", Font.PLAIN, 28);
-
-            FontMetrics titleFM = gp.getFontMetrics(titleFont);
-            FontMetrics optionFM = gp.getFontMetrics(optionFont);
-
-            int titleHeight = titleFM.getHeight();
-            int optionHeight = optionFM.getHeight();
-            int spacing = 10;
-            int totalContentHeight = titleHeight + spacing + 3 * optionHeight + 2 * spacing;
-            int contentStartY = boxY + (boxHeight - totalContentHeight) / 2;
-            int titleY = contentStartY + titleFM.getAscent();
-            int optionY = titleY + spacing;
-
-            for (int i = 0; i < 3; i++) {
-                optionY += optionHeight + spacing;
-                Rectangle r = new Rectangle(boxX, optionY - optionHeight, boxWidth, optionHeight);
-                if (r.contains(p)) {
-                    switch (i) {
-                        case 0 -> gp.startNewGame();         // Try Again
-                        case 1 -> gp.gameState = gp.titleState;  // Back to Menu
-                        case 2 -> System.exit(0);            // Exit
-                    }
-                }
-            }
+            handleGameOverClick(p);
             return;
         }
 
-        // Main Menu
         for (UIButton b : buttons) {
             boolean click = b.pressed && b.bounds.contains(p);
             b.pressed = false;
             if (click) {
                 switch (b.text) {
-                    case "Start Game" ->
-                            gp.startNewGame();
-
-                    case "Start Saved Game" ->
-                            gp.loadSavedGame();
-
+                    case "Start Game" -> gp.startNewGame();
+                    case "Start Saved Game" -> gp.loadSavedGame();
                     case "Exit" -> {
                         gp.saveGame();
-
                         Window w = SwingUtilities.getWindowAncestor(gp);
-                        if (w != null) w.dispatchEvent(
-                                new java.awt.event.WindowEvent(
-                                        w, java.awt.event.WindowEvent.WINDOW_CLOSING));
+                        if (w != null) {
+                            w.dispatchEvent(new java.awt.event.WindowEvent(w, java.awt.event.WindowEvent.WINDOW_CLOSING));
+                        }
                     }
                 }
             }
         }
     }
 
+    /**
+     * Zpracuje kliknutí na některé z tlačítek – obecná obálka.
+     *
+     * @param p pozice kliknutí
+     */
     public void handleClick(Point p) {
-        for (UIButton b : buttons) {               // buttons – это ваш список кнопок
+        for (UIButton b : buttons) {
             if (b.bounds.contains(p)) {
-                switch (b.text) {                  // текст на кнопке
+                switch (b.text) {
                     case "Start Game"       -> gp.startNewGame();
                     case "Start Saved Game" -> gp.loadSavedGame();
                     case "Exit"             -> System.exit(0);
@@ -274,10 +273,12 @@ public class TitleScreenUI {
         }
     }
 
-    /* Если у вас есть отдельный экран Game Over – аналогичная обёртка: */
+    /**
+     * Zpracuje kliknutí na možnosti v obrazovce Game Over.
+     *
+     * @param p pozice kliknutí
+     */
     public void handleGameOverClick(Point p) {
-        handleClick(p);            // в моём примере действия одинаковые
+        handleClick(p);
     }
-
-
 }

@@ -6,9 +6,18 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 import javax.imageio.ImageIO;
 import java.util.Objects;
 
+/**
+ * Třída {@code iron_helmet} reprezentuje železnou přilbu, která poskytuje střední úroveň ochrany pro hlavu hráče.
+ * <p>
+ *  Poskytuje hodnotu obrany 2.
+ * </p>
+ * <p>
+ * Obrázek je načítán z resource složky a používá se pro vykreslení v inventáři i na postavě.
+ * </p>
+ */
+
 public class iron_helmet extends GameObject implements Armor {
     private final float defensAmount;
-    public SlotType getSlot() { return SlotType. HEAD; }
 
     public iron_helmet() {
         name = "iron_helmet";

@@ -6,9 +6,13 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 import javax.imageio.ImageIO;
 import java.util.Objects;
 
+/**
+ * Třída {@code iron_boots} představuje železné boty, které poskytují základní ochranu nohou.
+ * Obranná hodnota bot činí 2.
+ *
+ */
 public class iron_boots extends GameObject implements Armor {
     private final float defensAmount;
-    public SlotType getSlot() { return SlotType. HEAD; }
 
     public iron_boots() {
         name = "iron_boots";

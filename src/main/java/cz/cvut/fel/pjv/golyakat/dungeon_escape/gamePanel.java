@@ -18,6 +18,7 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Apple;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Blubbery;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_HealthePotion;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Key;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Eye;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Goblin;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Skeleton;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Slime;
@@ -43,6 +44,15 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+
+/**
+ * Třída {@code gamePanel} slouží jako hlavní panel hry, který spravuje herní logiku, vykreslování,
+ * herní smyčku, interakce, UI i ukládání a načítání hry.
+ * <p>
+ * Využívá komponenty jako {@link Player}, {@link GameObject}, {@link HealthBar}, {@link MonsterUI}, {@link TileManger} atd.
+ * Obsahuje vlastní herní smyčku pomocí rozhraní {@link Runnable}, sleduje herní stav a zajišťuje přechody mezi scénami.
+ * </p>
+ */
 
 public class gamePanel extends JPanel implements Runnable {
 
@@ -74,10 +84,6 @@ public class gamePanel extends JPanel implements Runnable {
     private final TitleScreenUI titleUi;
     Sound sound = new Sound();
 
-
-
-
-
     // ENTITY AND OBJECT
     public Player player = new Player(this, keyH);
     public GameObject[][] obj = new GameObject[maxMap][11];
@@ -85,6 +91,10 @@ public class gamePanel extends JPanel implements Runnable {
     public DefensBar defensBar;
     public Entity[][] monster = new Entity[maxMap][20];
     public MonsterUI monsterUi;
+    /**
+     * Určuje, zda již byla daná mapa inicializována (monstra, objekty).
+     * Slouží k tomu, aby se spawnování provádělo pouze jednou.
+     */
     public boolean[] levelSpawned = new boolean[maxMap];
 
     // GAME STATE
@@ -96,6 +106,9 @@ public class gamePanel extends JPanel implements Runnable {
     public ChestUI chestUI;
     public CraftingTableUI craftingTableUI;
     public PlayerUI playerUI;
+    /**
+     * Předmět, který je právě přetahován hráčem (drag-and-drop).
+     */
     public ChestInventoryManager chestInventoryManager;
 
     private int attackCounter = 0;
@@ -149,6 +162,16 @@ public class gamePanel extends JPanel implements Runnable {
     private static final Path SAVE_PATH = Path.of("saved_game.xml");
     private final XmlMapper xml = new XmlMapper();
 
+    /**
+     * Na základě názvu vytvoří a vrátí instanci příslušného herního předmětu nebo výbavy.
+     * <p>
+     * Používá se při obnově hry z uloženého stavu, aby se z názvu (uloženého v XML)
+     * zrekonstruoval správný typ objektu {@link GameObject}.
+     * </p>
+     *
+     * @param name název předmětu podle uložení v save souboru
+     * @return instance objektu odpovídajícího názvu nebo {@code null}, pokud nebyl rozpoznán
+     */
     private GameObject makeItem(String name) {
         switch (name) {
             case "Apple":
@@ -189,6 +212,21 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Vytvoří objekt {@link SaveData}, který obsahuje kompletní stav hry pro uložení do XML.
+     * <p>
+     * Do výstupního objektu se ukládají:
+     * <ul>
+     *     <li>Pozice a život hráče</li>
+     *     <li>Inventář, brnění, zbraň a vylepšení</li>
+     *     <li>Stav monster na aktuální mapě</li>
+     *     <li>Obsahy truhel</li>
+     *     <li>Informace o tom, které mapy byly již spawnuty</li>
+     * </ul>
+     * </p>
+     *
+     * @return připravený objekt {@link SaveData} pro serializaci do XML
+     */
     private SaveData buildSaveData() {
         SaveData data = new SaveData();
 
@@ -273,6 +311,22 @@ public class gamePanel extends JPanel implements Runnable {
         return data;
     }
 
+    /**
+     * Obnoví celý stav hry ze zadaného objektu {@link SaveData}.
+     * <p>
+     * Provádí následující kroky:
+     * <ol>
+     *     <li>Obnovení aktuální mapy a inicializace prostředí</li>
+     *     <li>Nastavení pozice a životů hráče</li>
+     *     <li>Rekonstrukce inventáře, výbavy, zbraně a vylepšení</li>
+     *     <li>Načtení monster a jejich pozic/stavů</li>
+     *     <li>Obnovení obsahu jednotlivých truhel</li>
+     * </ol>
+     * Pokud některý objekt nebo typ nelze obnovit, vypíše se chybové hlášení.
+     * </p>
+     *
+     * @param d objekt {@link SaveData}, načtený z XML souboru
+     */
     private void restoreFromSave(SaveData d) {
         currentMap = d.currentMap;                           // по умолчанию 0, если в XML нет атрибута
         if (d.levelSpawned != null && d.levelSpawned.length == levelSpawned.length) {
@@ -363,6 +417,10 @@ public class gamePanel extends JPanel implements Runnable {
                         case "Boss_Goblin":
                             monster[0][i] = new Boss_Goblin(this);
                             break;
+                        case "Boss_Eye":
+                            monster[1][i] = new Boss_Eye(this);    // 1-я карта = индекс 1
+                            break;
+
                         case "Monster_Slime":
                             monster[currentMap][i] = new Monster_Slime(this);
                             break;
@@ -400,6 +458,12 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Pomocná metoda pro převod seznamu uložených předmětů z {@link SaveData} do interní struktury {@link ChestInventoryManager.ItemData}.
+     *
+     * @param list seznam položek načtený z XML
+     * @return seznam objektů {@link ChestInventoryManager.ItemData} připravený k použití ve hře
+     */
     private List<ChestInventoryManager.ItemData> toItemList(List<SaveData.ItemData> list) {
         List<ChestInventoryManager.ItemData> result = new ArrayList<>();
         if (list != null) {
@@ -415,12 +479,12 @@ public class gamePanel extends JPanel implements Runnable {
 
 
     public gamePanel() {
-        this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-        this.setBackground(Color.BLACK);
-        this.setDoubleBuffered(true);
-        this.addKeyListener(keyH);
-        this.setFocusable(true);
-        this.requestFocusInWindow();
+        this.setPreferredSize(new Dimension(screenWidth, screenHeight));// velikost panelu
+        this.setBackground(Color.BLACK); // pozadí
+        this.setDoubleBuffered(true);// plynulé vykreslování
+        this.addKeyListener(keyH);// ovládání přes klávesy
+        this.setFocusable(true);  // povolit focus
+        this.requestFocusInWindow(); // zaměřit okno pro vstup
 
         playMusic(0);
 
@@ -442,13 +506,25 @@ public class gamePanel extends JPanel implements Runnable {
         titleUi = new TitleScreenUI(this);
         gameState = titleState;
 
-        // Centralized MouseListener for drag-and-drop
+        /**
+         * Centrální zpracování kliknutí myší – inicializace přetahování (drag) a interakce.
+         * <p>
+         * Ošetřuje:
+         * <ul>
+         *   <li>Kliknutí na inventář hráče a výběr předmětu</li>
+         *   <li>Výběr výbavy (armor, weapon)</li>
+         *   <li>Kliknutí do truhly a na předměty v ní</li>
+         *   <li>Přetahování z craftingového stolu</li>
+         *   <li>Craftovací tlačítko (vytvoření SilverKey)</li>
+         * </ul>
+         * Pravé tlačítko slouží k útoku.
+         * </p>
+         */
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                requestFocusInWindow(); // для захвата фокуса клавиатуры
+                requestFocusInWindow();
 
-                // если титульный экран — отправляем событие туда
                 if (gameState == titleState) {
                     titleUi.mousePressed(e.getPoint());
                     return;
@@ -459,7 +535,7 @@ public class gamePanel extends JPanel implements Runnable {
                     return;
                 }
 
-                // Правая кнопка мыши — атака
+
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     if (!chestUI.isShowingInventory() && !craftingTableUI.isShowing()) {
                         if (attackCounter >= ATTACK_COOLDOWN) {
@@ -594,9 +670,18 @@ public class gamePanel extends JPanel implements Runnable {
                 }
             }
 
+            /**
+             * Zpracovává událost uvolnění myši (mouseReleased), zejména při práci s přetahovanými předměty (drag-and-drop).
+             * <p>
+             * Tato metoda určuje, kam byl předmět puštěn – do inventáře hráče, na výbavu, do truhly, do craftingového stolu nebo na mapu (např. na dveře).
+             * </p>
+             *
+             * @param e objekt události {@link MouseEvent}, obsahuje např. souřadnice kliknutí
+             */
             @Override
             public void mouseReleased(MouseEvent e) {
 
+                // Pokud jsme na titulní obrazovce nebo v Game Over stavu, předáváme ovládání do UI titulní obrazovky
                 if (gameState == titleState || gameState == gameOverState) {
                     titleUi.mouseReleased(e.getPoint());
                     return;
@@ -615,6 +700,7 @@ public class gamePanel extends JPanel implements Runnable {
 
                 // Player inventory
                 Rectangle inventoryBounds = playerUI.getPlayerInventoryBounds();
+                // Pokud hráč pustí předmět do svého inventáře (a není to armor), přidáme ho tam
                 if (inventoryBounds != null && inventoryBounds.contains(e.getPoint()) && !playerUI.isArmor(draggedItem)) {
                     player.addItem(draggedItem);
                     removeDraggedItem();
@@ -634,6 +720,7 @@ public class gamePanel extends JPanel implements Runnable {
 
                 // Armor slots
                 Rectangle[] armorBounds = playerUI.getArmorSlotBounds();
+                // Pokud je přetahovaný předmět armor a slot odpovídá, nasadí se – původní kus se vrátí zpět
                 for (int i = 0; i < armorBounds.length; i++) {
                     if (armorBounds[i] != null && armorBounds[i].contains(e.getPoint()) &&
                             !isKeyPart && playerUI.isArmor(draggedItem) && playerUI.getArmorSlotIndex(draggedItem) == i) {
@@ -663,6 +750,7 @@ public class gamePanel extends JPanel implements Runnable {
 
                 // Weapon slot
                 Rectangle weaponBounds = playerUI.getWeaponSlotBounds();
+                // Pokud je to zbraň a hráč ji pustí do zbraňového slotu, nasadí se
                 if (weaponBounds != null && weaponBounds.contains(e.getPoint()) &&
                         playerUI.isWeapon(draggedItem) && !isKeyPart) {
                     GameObject equippedWeapon = player.getEquippedWeapon();
@@ -689,6 +777,7 @@ public class gamePanel extends JPanel implements Runnable {
                 }
 
                 // Chest inventory
+                // Pokud hráč pustí předmět do inventáře truhly, přidá se do jejího seznamu
                 if (chestUI.isShowingInventory()) {
                     Object_Small_Chest activeChest = chestUI.getActiveChest();
                     Rectangle chestBounds = chestUI.getChestBounds();
@@ -710,6 +799,7 @@ public class gamePanel extends JPanel implements Runnable {
                 if (craftingTableUI.isShowing()) {
                     Rectangle[] craftSlotBounds = craftingTableUI.getSlotBounds();
                     for (int i = 0; i < craftSlotBounds.length; i++) {
+                        // Pokud se jedná o klíčovou část a je volný slot v crafting table, nastavíme ho
                         if (craftSlotBounds[i] != null && craftSlotBounds[i].contains(e.getPoint()) && craftingTableUI.getCraftingSlot(i) == null
                                 && craftingTableUI.isKeyPart(draggedItem.getName())
                                 && !craftingTableUI.containsPart(draggedItem.getName())
@@ -728,6 +818,7 @@ public class gamePanel extends JPanel implements Runnable {
                 }
 
                 // Player consumption or door unlock
+                // Pokud je předmět léčivý a puštěn na hráče, použije se
                 Rectangle playerBounds = new Rectangle(player.screenX, player.screenY, tileSize, tileSize);
                 if (playerBounds.contains(e.getPoint()) &&
                         (draggedItem.getName().equals("Apple") ||
@@ -742,7 +833,9 @@ public class gamePanel extends JPanel implements Runnable {
                     clearDrag();
                     repaint();
                     return;
+
                     // Key
+                    // Pokud hráč přetáhne Key nebo SilverKey na dveře, odemknou se
                 } else if (draggedItem.getName().equals("Key") ||
                         draggedItem.getName().equals("SilverKey")) {
 
@@ -794,7 +887,17 @@ public class gamePanel extends JPanel implements Runnable {
         });
 
 
+/**
+ * Reaguje na pohyb a přetahování myši na herním panelu.
+ * <p>
+ * Pomocí {@link MouseMotionAdapter} jsou zachyceny dvě události:
+ * <ul>
+ *   <li>{@code mouseMoved} – slouží k interaktivnímu zvýraznění prvků v titulní obrazovce</li>
+ *   <li>{@code mouseDragged} – aktualizuje vykreslování při přetahování předmětů (drag-and-drop)</li>
+ * </ul>
+ */
         this.addMouseMotionListener(new MouseMotionAdapter() {
+            // Detekuje pohyb kurzoru – slouží k hover efektům v titulní obrazovce nebo Game Over menu
             @Override
             public void mouseMoved(MouseEvent e) {
                 if (gameState == titleState){
@@ -807,6 +910,7 @@ public class gamePanel extends JPanel implements Runnable {
                 }
             }
 
+            // Pokud uživatel přetahuje položku (draggedItem != null), překreslí panel (položka "letí" za myší)
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (draggedItem != null) {
@@ -816,6 +920,9 @@ public class gamePanel extends JPanel implements Runnable {
         });
     }
 
+    /**
+     * Vymaže přetahovaný předmět a resetuje stav přetahování.
+     */
     private void clearDrag() {
         draggedItem = null;
         sourceInventory = null;
@@ -824,6 +931,10 @@ public class gamePanel extends JPanel implements Runnable {
         draggedFromArmor = false;
     }
 
+    /**
+     * Odebere předmět z inventáře nebo truhly podle zdroje (sourceInventory),
+     * přičemž respektuje množství – pokud quantity > 1, jen sníží počet.
+     */
     private void removeDraggedItem() {
         if (sourceInventory == player) {
             if (draggedItemIndex >= 0 && draggedItemIndex < player.getInventory().size()) {
@@ -855,17 +966,34 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Inicializuje objekty a monstra ve hře a nastaví výchozí stav na titulní obrazovku.
+     * <p>
+     * Metoda slouží k počátečnímu nastavení hry – volá {@link AssetSetter#setObg()},
+     * který umisťuje objekty (např. truhly, dveře, crafting table) a následně {@link AssetSetter#setMonster()},
+     * který spawnuje monstra na mapu. Poté se nastaví stav hry na {@code titleState}, čímž se zobrazí úvodní menu.
+     * </p>
+     */
     public void setUpObjects() {
         assetSetter.setObg();
         assetSetter.setMonster();
         gameState = titleState;
     }
 
+    /**
+     * Spustí herní vlákno – volá se po inicializaci okna.
+     */
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
     }
 
+    /**
+     * Hlavní herní smyčka, která běží v samostatném vlákně.
+     * <p>
+     * Smyčka se snaží udržet stabilní FPS (snímky za sekundu) a volá update a repaint.
+     * </p>
+     */
     @Override
     public void run() {
         double drawInterval = (double) 1000000000 / FPS;
@@ -891,12 +1019,21 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Hlavní logika aktualizace hry – zpracovává stav hráče, interakce,
+     * vykreslování zpráv, otevření truhly, dveří a craftingového stolu.
+     * <p>
+     * Tato metoda se volá každým snímkem a reaguje na blízkost objektů a stisky kláves.
+     * </p>
+     */
     public void update() {
 
+        // === 1) Pokud hra není ve stavu ovládání hráče, aktualizace se neprovede ===
         if (gameState != playerState) {
             return;
         }
 
+        // === 2) Aktualizace stavu hráče a kolizní zpráva ===
         player.update();
         if (player.collisionOn && !collisionLogged) {
             System.out.println("Player collided at (" + (player.worldX / tileSize) + ", " + (player.worldY / tileSize) + ")");
@@ -905,9 +1042,11 @@ public class gamePanel extends JPanel implements Runnable {
             collisionLogged = false;
         }
 
+        // === 3) Aktualizace UI ukazatelů (zdraví + obrana) ===
         healthBar.update(player.life);
         defensBar.update(player.getTotalDefense());
 
+        // === 4) Inicializace proměnných pro detekci blízkosti ===
         boolean nearDoor = false;
         Object_DoorSide closestSideDoor = null;
         Object_DoorFront closestFrontDoor = null;
@@ -922,7 +1061,9 @@ public class gamePanel extends JPanel implements Runnable {
         Object_Small_Chest closestChest = null;
         int closestChestDistance = Integer.MAX_VALUE;
 
+        // === 5) Procházení všech objektů na mapě a detekce interakcí ===
         for (int i = 0; i < obj[currentMap].length; i++) {
+            // 5.1) Dveře – boční i čelní
             if (obj[currentMap][i] instanceof Object_DoorSide) {
                 Object_DoorSide door = (Object_DoorSide) obj[currentMap][i];
                 if (door != null) {
@@ -968,6 +1109,7 @@ public class gamePanel extends JPanel implements Runnable {
                     }
                 }
             }
+            // 5.2) Craftingový stůl
             if (obj[currentMap][i] instanceof Object_CraftingTable) {
                 Object_CraftingTable table = (Object_CraftingTable) obj[currentMap][i];
                 if (table != null) {
@@ -984,8 +1126,9 @@ public class gamePanel extends JPanel implements Runnable {
                     }
                 }
             }
-            if (obj[currentMap][i] instanceof Object_Small_Chest) {
 
+            // 5.3) Truhla
+            if (obj[currentMap][i] instanceof Object_Small_Chest) {
                 Object_Small_Chest chest = (Object_Small_Chest) obj[currentMap][i];
                 if (chest != null) {
                     int dx = Math.abs(player.worldX - chest.worldX);
@@ -1011,6 +1154,7 @@ public class gamePanel extends JPanel implements Runnable {
             }
         }
 
+        // === 6) Ovládání interakcí pomocí kláves E a Q ===
         if (keyH.ePressed || keyH.qPressed) {
             if (nearCraftingTable && !chestUI.isShowingInventory() && keyH.qPressed && closestTableDistance <= closestDoorDistance && closestTableDistance <= closestChestDistance) {
                 if (craftingTableUI.isShowing()) {
@@ -1039,6 +1183,7 @@ public class gamePanel extends JPanel implements Runnable {
             }
         }
 
+        // === 7) Zobrazení nápovědy k léčitelným předmětům ===
         boolean hasHealingItem = player.getInventory().stream().anyMatch(item ->
                 item.getName().equals("Apple") || item.getName().equals("blubbery") || item.getName().equals("potion"));
 
@@ -1046,6 +1191,7 @@ public class gamePanel extends JPanel implements Runnable {
             healingHintMessage.show("Drag item onto the player to restore HP", 40, true);
         }
 
+        // === 8) Aktualizace všech monster na mapě ===
         if (gameState == playerState) {
             for (int i = 0; i < monster[currentMap].length; i++) {
                 if (monster[currentMap][i] != null) {
@@ -1057,8 +1203,10 @@ public class gamePanel extends JPanel implements Runnable {
             }
         }
 
+        // === 9) Čítač útoků
         attackCounter++;
 
+        // === 10) Aktualizace zpráv na obrazovce ===
         doorMessage.update();
         doorHintMessage.update();
         chestMessage.update();
@@ -1066,6 +1214,7 @@ public class gamePanel extends JPanel implements Runnable {
         craftingHintMessage.update();
 
 
+        // === 11) Kontrola konce hry (smrt hráče) ===
         if (player.life <= 0) {
             System.out.println("PLAYER DIED!");
             gameState = gameOverState;
@@ -1073,22 +1222,34 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
-    @Override
+/**
+ * Překresluje veškeré vizuální prvky hry na obrazovce.
+ * <p>
+ * Tato metoda je volána automaticky Swingem vždy, když je třeba obnovit nebo znovu vykreslit panel.
+ * Zajišťuje zobrazení titulní obrazovky, mapy, objektů, monster, hráče,
+ * uživatelského rozhraní, drag-and-drop ikony i zpráv.
+ * </p>
+ *
+ * @param g Grafický kontext {@link Graphics}, který se používá pro kreslení
+ */
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
 
-        // TITLE SCREEN
+        // === 1) TITULNÍ OBRAZOVKA ===
         if (gameState == titleState) {
             titleUi.draw(g2d);
             g2d.dispose();
             return;
         }
 
-        // Game Screen
+        // === 2) HERNÍ OBRAZOVKA ===
         else {
+            // 2.1) Vykreslení mapy (dlaždic)
             tileH.draw(g2d);
+
+            // 2.2) Vykreslení objektů (např. dveře, truhly, crafting stůl)
             for (int i = 0; i < obj[currentMap].length; i++) {
                 if (obj[currentMap][i] != null) {
                     int screenX = obj[currentMap][i].worldX - player.worldX + player.screenX;
@@ -1099,32 +1260,39 @@ public class gamePanel extends JPanel implements Runnable {
                     }
                 }
             }
-            // Monsters
+
+            // 2.3) Vykreslení monster (včetně animace smrti a UI)
             for (int i = 0; i < monster[currentMap].length; i++) {
                 if (monster[currentMap][i] != null) {
                     int screenX = monster[currentMap][i].worldX - player.worldX + player.screenX;
                     int screenY = monster[currentMap][i].worldY - player.worldY + player.screenY;
                     if (screenX + tileSize > 0 && screenX < screenWidth &&
                             screenY + tileSize > 0 && screenY < screenHeight) {
-                        monsterUi.draw(g2d, monster[currentMap][i]); // Отрисовка UI монстра (например, полоска здоровья)
+
+                        monsterUi.draw(g2d, monster[currentMap][i]); // Zdravotní panel nad monstrem
+
+                        // Vykreslení samotného monstra (pokud není mrtvé nebo fade-out neskončil)
                         if (!monster[currentMap][i].isDead || monster[currentMap][i].fadeAlpha > 0) {
                             monster[currentMap][i].draw(g2d); // Отрисовка самого монстра
                         }
                     }
-                    // Проверка смерти и обнуление
+                    // Vymazání monstra po dokončení fade animace
                     if (monster[currentMap][i].isDead && monster[currentMap][i].fadeAlpha <= 0) {
                         monster[currentMap][i] = null;
                     }
                 }
             }
-
+            // 2.4) Vykreslení hráče
             player.draw(g2d);
+
+            // 2.5) Vykreslení UI prvků (zdraví, obrana, truhla, crafting, inventář)
             healthBar.draw(g2d);
             defensBar.draw(g2d);
             chestUI.draw(g2d);
             craftingTableUI.draw(g2d);
             playerUI.draw(g2d);
 
+            // 2.6) Vykreslení přetahovaného předmětu (drag and drop)
             if (draggedItem != null) {
                 Point mousePos = getMousePosition();
                 if (mousePos != null) {
@@ -1141,6 +1309,7 @@ public class gamePanel extends JPanel implements Runnable {
                             itemSize, itemSize, null);
                 }
             }
+            // 2.7) Vykreslení dynamických zpráv (např. nápovědy k truhle, dveřím, craftingu...)
             int fontSize = messageFontSize;
             int lineHeight = messageLineHeight;
             int baseX = messageX;
@@ -1184,7 +1353,7 @@ public class gamePanel extends JPanel implements Runnable {
 
             }
 
-            // Game Over
+            // 2.8) Pokud je aktivní obrazovka Game Over, vykreslí se přes ostatní
             if (gameState == gameOverState) {
                 titleUi.drawGameOverScreen(g2d);
                 return;
@@ -1195,16 +1364,29 @@ public class gamePanel extends JPanel implements Runnable {
 
     }
 
+    /**
+     * Spustí hudbu na pozadí podle zvoleného indexu zvukového souboru.
+     * <p>
+     * Tato hudba bude hrát opakovaně.
+     * </p>
+     *
+     * @param i index zvuku ve zvukovém poli (např. 0 = menu, 1 = dungeon...)
+     */
     public void playMusic(int i) {
         sound.setFile(i);
         sound.playSound();
         sound.loopSound();
     }
 
-    public void stopMusic() {
-        sound.StopSound();
-    }
 
+    /**
+     * Přehrává krátký zvukový efekt (např. útok, výběr v menu, otevření truhly).
+     * <p>
+     * Efekt se přehraje jednorázově bez smyčky.
+     * </p>
+     *
+     * @param i index zvukového efektu v poli
+     */
     public void playSE(int i) {
         sound.setFile(i);
         sound.playSound();
@@ -1213,7 +1395,9 @@ public class gamePanel extends JPanel implements Runnable {
 
 
     //NEW GAME
-
+    /**
+     * Inicializuje novou hru: spustí mapu 0, vynuluje vše a nastaví výchozí stavy.
+     */
     public void startNewGame() {
         currentMap = 0;
         Arrays.fill(levelSpawned, false);
@@ -1227,6 +1411,9 @@ public class gamePanel extends JPanel implements Runnable {
         repaint();
     }
 
+    /**
+     * Uloží aktuální stav hry (hráč, mapa, inventář...).
+     */
     public void saveGame() {
         try {
             SaveData d = buildSaveData();
@@ -1247,6 +1434,9 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Načte poslední uložený stav hry ze souboru.
+     */
     public void loadSavedGame() {
         if (!Files.exists(SAVE_PATH)) {
             System.err.println("No save file found at " + SAVE_PATH.toAbsolutePath() + " – starting new game.");

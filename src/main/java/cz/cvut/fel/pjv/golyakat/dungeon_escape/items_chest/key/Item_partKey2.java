@@ -5,6 +5,14 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
+/**
+ * Třída {@code Item_partKey2} reprezentuje druhou část stříbrného klíče,
+ * která se sbírá stejně jako ostatní části a spojuje se do {@link Item_SilverKey}.
+ * <p>
+ * Je nezbytná pro sestavení kompletního klíče v systému craftingu.
+ * </p>
+ */
+
 public class Item_partKey2 extends GameObject {
     public Item_partKey2() {
         name = "Key2";

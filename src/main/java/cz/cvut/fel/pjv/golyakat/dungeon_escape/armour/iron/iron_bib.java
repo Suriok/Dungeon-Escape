@@ -6,9 +6,16 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 import javax.imageio.ImageIO;
 import java.util.Objects;
 
+/**
+ * Třída {@code iron_bib} reprezentuje železný hrudní plát – nejdůležitější část brnění,
+ * která pokrývá trup a poskytuje nejvyšší obranu ze všech částí výstroje.
+ * <p>
+ * jeho obranná hodnota činí 5.
+ * </p>
+ */
+
 public class iron_bib extends GameObject implements Armor {
     private final float defensAmount;
-    public SlotType getSlot() { return SlotType.CHEST; }
 
     public iron_bib() {
         name = "iron_bib";

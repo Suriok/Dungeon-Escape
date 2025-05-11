@@ -6,9 +6,16 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 import javax.imageio.ImageIO;
 import java.util.Objects;
 
+/**
+ * Třída {@code leather_bib} reprezentuje kožený hrudní plát,
+ * který se nasazuje na trup hráče a poskytuje vyšší úroveň ochrany.
+ * <p>
+ * Obranná hodnota hrudního brnění je 4 body. Jedná se o nejdůležitější kus výbavy.
+ * </p>
+ */
+
 public class leather_bib extends GameObject implements Armor {
     private final float defensAmount;
-    public SlotType getSlot() { return SlotType.CHEST; }
 
     public leather_bib() {
         name = "leather_bib";
