@@ -1,6 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.KeyHandler;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Apple;
@@ -213,7 +214,7 @@ public class Player extends Entity {
             if (collisionOn) {
                 worldX = oldX;
                 worldY = oldY;
-                System.out.println("Kolize – návrat na původní pozici: (" + oldX / gp.tileSize + ", " + oldY / gp.tileSize + ")");
+                GameLogger.info("Kolize – návrat na původní pozici: (" + oldX / gp.tileSize + ", " + oldY / gp.tileSize + ")");
             }
 
             spriteCounter++;
@@ -245,9 +246,9 @@ public class Player extends Entity {
                     if (keyItem != null) {
                         door.unlock();
                         inventory.remove(keyItem);
-                        System.out.println("Dveře odemčeny pomocí klíče.");
+                        GameLogger.info("Dveře odemčeny pomocí klíče.");
                     } else {
-                        System.out.println("Chybí klíč pro otevření dveří.");
+                        GameLogger.info("Chybí klíč pro otevření dveří.");
                     }
                 } else {
                     gp.collisionChecker.handleObjectInteraction(this, interactionIndex);
@@ -290,7 +291,7 @@ public class Player extends Entity {
      */
     public void attack() {
         if (equippedWeapon == null) {
-            System.out.println("Hráč se pokusil zaútočit bez vybavené zbraně.");
+            GameLogger.info("Hráč se pokusil zaútočit bez vybavené zbraně.");
             return;
         }
 
@@ -319,9 +320,9 @@ public class Player extends Entity {
         if (target != null) {
             target.life -= attackDamage;
             if (target.life < 0) target.life = 0;
-            System.out.println("Hráč zasáhl " + target.name + " za " + attackDamage + " HP. Zbývá: " + target.life);
+            GameLogger.info("Hráč zasáhl " + target.name + " za " + attackDamage + " HP. Zbývá: " + target.life);
         } else {
-            System.out.println("Hráč útočil, ale nic nezasáhl.");
+            GameLogger.info("Hráč útočil, ale nic nezasáhl.");
         }
     }
 
@@ -340,7 +341,7 @@ public class Player extends Entity {
         isHit = true;
         hitEffectCounter = 60;
 
-        System.out.println("Hráč obdržel " + damage + " poškození (po obraně " + reducedDamage + ")");
+        GameLogger.info("Hráč obdržel " + damage + " poškození (po obraně " + reducedDamage + ")");
     }
 
     /**
@@ -350,7 +351,6 @@ public class Player extends Entity {
      */
     public void addItem(ChestInventoryManager.ItemData item) {
         inventory.add(new ChestInventoryManager.ItemData(item.getName(), 1));
-        System.out.println("Předmět \"" + item.getName() + "\" přidán do inventáře.");
     }
 
     /** @return seznam všech předmětů v hráčově inventáři */
@@ -368,13 +368,13 @@ public class Player extends Entity {
             ChestInventoryManager.ItemData item = inventory.get(index);
             if (item.getQuantity() > 1) {
                 item.setQuantity(item.getQuantity() - 1);
-                System.out.println("Zmenšeno množství položky: " + item.getName());
+                GameLogger.info("Zmenšeno množství položky: " + item.getName());
             } else {
                 inventory.remove(index);
-                System.out.println("Položka \"" + item.getName() + "\" odebrána z inventáře.");
+                GameLogger.info("Položka \"" + item.getName() + "\" odebrána z inventáře.");
             }
         } else {
-            System.err.println("Neplatný index při odebírání položky z inventáře: " + index);
+            GameLogger.error("Neplatný index při odebírání položky z inventáře: " + index);
         }
     }
 
@@ -390,13 +390,13 @@ public class Player extends Entity {
             case "blubbery" -> healAmountFloat = ((Item_Blubbery) item.getItem()).getHealAmount();
             case "potion" -> healAmountFloat = ((Item_HealthePotion) item.getItem()).getHealAmount();
             default -> {
-                System.out.println("Položka " + item.getName() + " není léčivý předmět.");
+                GameLogger.info("Položka " + item.getName() + " není léčivý předmět.");
                 return;
             }
         }
         int healAmount = Math.round(healAmountFloat);
         life = Math.min(life + healAmount, maxLife);
-        System.out.println("Hráč se vyléčil pomocí " + item.getName() + " na " + life + " HP.");
+        GameLogger.info("Hráč se vyléčil pomocí " + item.getName() + " na " + life + " HP.");
     }
 
 
@@ -497,7 +497,7 @@ public class Player extends Entity {
         if (!(armor instanceof Armor)) return;
         if (slot < 0 || slot >= equippedArmor.length) return;
         equippedArmor[slot] = armor;
-        System.out.println("Nasazeno brnění: " + armor.name + " do slotu " + slot);
+        GameLogger.info("Nasazeno brnění: " + armor.name + " do slotu " + slot);
     }
 
     /**
@@ -507,7 +507,7 @@ public class Player extends Entity {
      */
     public void unequipArmor(int slot) {
         if (slot >= 0 && slot < equippedArmor.length) {
-            System.out.println("Sundáno brnění ze slotu " + slot);
+            GameLogger.info("Sundáno brnění ze slotu " + slot);
             equippedArmor[slot] = null;
         }
     }
@@ -531,10 +531,8 @@ public class Player extends Entity {
         for (int i = 0; i < equippedArmor.length; i++) {
             if (equippedArmor[i] instanceof Armor) {
                 float defense = ((Armor) equippedArmor[i]).getDefensAmount();
-                totalDefense += defense;
-                System.out.println(" Brnění ve slotu " + i + " (" + equippedArmor[i].name + ") přidává " + defense + " obrany.");
             } else if (equippedArmor[i] != null) {
-                System.out.println("Předmět ve slotu " + i + " (" + equippedArmor[i].name + ") není brnění.");
+                GameLogger.info("Předmět ve slotu " + i + " (" + equippedArmor[i].name + ") není brnění.");
             }
         }
         return totalDefense;
@@ -543,12 +541,12 @@ public class Player extends Entity {
     /** @param weapon zbraň, která bude nasazena */
     public void equipWeapon(GameObject weapon) {
         this.equippedWeapon = weapon;
-        System.out.println("Nasazena zbraň: " + weapon.name);
+        GameLogger.info("Nasazena zbraň: " + weapon.name);
     }
 
     /** Sundá aktuálně nasazenou zbraň. */
     public void unequipWeapon() {
-        System.out.println("Zbraň byla sundána.");
+        GameLogger.info("Zbraň byla sundána.");
         this.equippedWeapon = null;
     }
 
@@ -560,12 +558,12 @@ public class Player extends Entity {
     /** @param grade vylepšení (grade), které se má nasadit */
     public void equipGrade(GameObject grade) {
         this.equippedGrade = grade;
-        System.out.println("Nasazeno vylepšení: " + (grade != null ? grade.name : "žádné"));
+        GameLogger.info("Nasazeno vylepšení: " + (grade != null ? grade.name : "žádné"));
     }
 
     /** Sundá aktuální vylepšení (grade). */
     public void unequipGrade() {
-        System.out.println("Vylepšení bylo sundáno.");
+        GameLogger.info("Vylepšení bylo sundáno.");
         this.equippedGrade = null;
     }
 
@@ -590,9 +588,9 @@ public class Player extends Entity {
                 if (keyItem != null) {
                     door.unlock();
                     inventory.remove(keyItem);
-                    System.out.println("Dveře byly úspěšně odemčeny.");
+                    GameLogger.info("Dveře byly úspěšně odemčeny.");
                 } else {
-                    System.out.println("Hráč nemá potřebný klíč.");
+                    GameLogger.info("Hráč nemá potřebný klíč.");
                 }
             }
         }

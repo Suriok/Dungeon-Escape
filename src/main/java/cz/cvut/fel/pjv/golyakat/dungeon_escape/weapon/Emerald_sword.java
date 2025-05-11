@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Weapon;
 
@@ -37,7 +38,7 @@ public class Emerald_sword extends GameObject implements Weapon {
             image = ImageIO.read(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/sword/emerald_sword.png"));
         } catch (IOException e) {
-            System.err.println("Error loading image for emerald_sword: " + e.getMessage());
+            GameLogger.error("Error loading image for emerald_sword: " + e.getMessage());
         }
     }
 

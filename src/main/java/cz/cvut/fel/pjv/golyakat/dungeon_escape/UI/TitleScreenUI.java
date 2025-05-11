@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
 import javax.imageio.ImageIO;
@@ -11,35 +12,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Třída {@code TitleScreenUI} slouží k vykreslení úvodní obrazovky a obrazovky Game Over.
- * <p>
- * Obsahuje logiku pro vykreslení pozadí, nadpisu, tlačítek a jejich interakci.
- * </p>
- */
 public class TitleScreenUI {
 
-    /** Odkaz na hlavní panel hry, ze kterého získáváme velikosti, stav hry atd. */
     private final gamePanel gp;
-
-    /** Obrázek pozadí hlavního menu */
     private BufferedImage background;
-
-    /** Průhlednost pozadí tlačítek */
     private static final float BTN_ALPHA = 0.60f;
-
-    /** Tloušťka rámečku tlačítka */
     private static final int BTN_BORDER = 2;
-
-    /** Font používaný pro text tlačítek */
     private static final Font BTN_FONT = new Font("Arial", Font.BOLD, 24);
-
-    /** Font používaný pro hlavní nadpis hry */
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 48);
+    private final Rectangle loggingToggleBounds = new Rectangle(20, 0, 120, 25);
 
-    /**
-     * Vnitřní třída reprezentující jedno tlačítko na obrazovce.
-     */
     private static class UIButton {
         Rectangle bounds;
         String text;
@@ -52,14 +34,9 @@ public class TitleScreenUI {
         }
     }
 
-    /** Seznam všech tlačítek na obrazovce */
     private final List<UIButton> buttons = new ArrayList<>();
+    private final List<UIButton> gameOverButtons = new ArrayList<>();
 
-    /**
-     * Vytvoří novou úvodní obrazovku s tlačítky pro spuštění hry.
-     *
-     * @param gp hlavní instance hry
-     */
     public TitleScreenUI(gamePanel gp) {
         this.gp = gp;
         loadBackground();
@@ -73,14 +50,14 @@ public class TitleScreenUI {
         buttons.add(new UIButton(new Rectangle(centerX, firstY, btnWidth, btnHeight), "Start Game"));
         buttons.add(new UIButton(new Rectangle(centerX, firstY + (btnHeight + gap), btnWidth, btnHeight), "Start Saved Game"));
         buttons.add(new UIButton(new Rectangle(centerX, firstY + 2 * (btnHeight + gap), btnWidth, btnHeight), "Exit"));
+
+        // Game Over buttons (koordináty spočítáme až v draw)
+        gameOverButtons.add(new UIButton(new Rectangle(), "Try Again"));
+        gameOverButtons.add(new UIButton(new Rectangle(), "Exit"));
+
+        loggingToggleBounds.y = gp.screenHeight - 45;
     }
 
-    /**
-     * Načte pozadí pro titulní obrazovku.
-     * <p>
-     * Pokud se nepodaří načíst obrázek, vytvoří se jednoduchý černý obdélník jako záloha.
-     * </p>
-     */
     private void loadBackground() {
         try {
             background = ImageIO.read(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/titel background.png"));
@@ -93,11 +70,6 @@ public class TitleScreenUI {
         }
     }
 
-    /**
-     * Vykreslí hlavní titulní obrazovku včetně pozadí, nadpisu a všech tlačítek.
-     *
-     * @param g2 grafický kontext
-     */
     public void draw(Graphics2D g2) {
         g2.drawImage(background, 0, 0, gp.screenWidth, gp.screenHeight, null);
 
@@ -110,7 +82,7 @@ public class TitleScreenUI {
         int titleY = gp.tileSize * 3;
         g2.drawString(title, titleX, titleY);
 
-        // Tlačítka
+        // Tlačítka hlavního menu
         g2.setFont(BTN_FONT);
         for (UIButton btn : buttons) {
             float scale = btn.hovered ? 1.05f : 1.0f;
@@ -127,21 +99,25 @@ public class TitleScreenUI {
 
             FontMetrics fm = g2.getFontMetrics();
             Rectangle2D strRect = fm.getStringBounds(btn.text, g2);
-            int tx = r.x + (r.width  - (int)strRect.getWidth())  / 2;
-            int ty = r.y + (r.height - (int)strRect.getHeight()) / 2 + fm.getAscent();
+            int tx = r.x + (r.width - (int) strRect.getWidth()) / 2;
+            int ty = r.y + (r.height - (int) strRect.getHeight()) / 2 + fm.getAscent();
             g2.drawString(btn.text, tx, ty);
         }
+
+        // Přepínač logování vlevo dole
+        g2.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2.setColor(new Color(0, 0, 0, 150));
+        g2.fillRect(loggingToggleBounds.x, loggingToggleBounds.y, loggingToggleBounds.width, loggingToggleBounds.height);
+        g2.setColor(Color.WHITE);
+        g2.drawRect(loggingToggleBounds.x, loggingToggleBounds.y, loggingToggleBounds.width, loggingToggleBounds.height);
+        String status = "Logging: " + (GameLogger.isEnabled() ? "ON" : "OFF");
+        g2.drawString(status, loggingToggleBounds.x + 8, loggingToggleBounds.y + 17);
 
         if (gp.gameState == gp.gameOverState) {
             drawGameOverScreen(g2);
         }
     }
 
-    /**
-     * Vykreslí obrazovku Game Over s možnostmi výběru.
-     *
-     * @param g2 grafický kontext
-     */
     public void drawGameOverScreen(Graphics2D g2) {
         g2.setColor(new Color(0, 0, 0, 150));
         g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
@@ -158,46 +134,36 @@ public class TitleScreenUI {
         g2.drawRect(boxX, boxY, boxWidth, boxHeight);
 
         String title = "GAME OVER";
-        String[] options = {"Try Again", "Back to Menu", "Exit"};
-
-        Font titleFont = new Font("Arial", Font.BOLD, 48);
-        Font optionFont = new Font("Arial", Font.PLAIN, 28);
-
-        g2.setFont(titleFont);
+        g2.setFont(new Font("Arial", Font.BOLD, 48));
         FontMetrics titleFM = g2.getFontMetrics();
-        int titleHeight = titleFM.getHeight();
-        int titleWidth = titleFM.stringWidth(title);
-
-        g2.setFont(optionFont);
-        FontMetrics optionFM = g2.getFontMetrics();
-        int optionHeight = optionFM.getHeight();
-
-        int spacing = 10;
-        int totalContentHeight = titleHeight + spacing + options.length * optionHeight + (options.length - 1) * spacing;
-
-        int contentStartY = boxY + (boxHeight - totalContentHeight) / 2;
-
-        int titleX = boxX + (boxWidth - titleWidth) / 2;
-        int titleY = contentStartY + titleFM.getAscent();
-        g2.setFont(titleFont);
+        int titleX = boxX + (boxWidth - titleFM.stringWidth(title)) / 2;
+        int titleY = boxY + titleFM.getAscent() + 30;
         g2.drawString(title, titleX, titleY);
 
-        g2.setFont(optionFont);
-        int optionY = titleY + spacing;
-        for (String opt : options) {
-            optionY += optionHeight + spacing;
-            int x = boxX + (boxWidth - optionFM.stringWidth(opt)) / 2;
-            g2.drawString(opt, x, optionY);
+        // vykresli jednotlivé možnosti
+        g2.setFont(new Font("Arial", Font.PLAIN, 28));
+        FontMetrics optionFM = g2.getFontMetrics();
+        int spacing = 20;
+        int buttonWidth = boxWidth - 60;
+        int buttonHeight = gp.tileSize;
+
+        for (int i = 0; i < gameOverButtons.size(); i++) {
+            UIButton b = gameOverButtons.get(i);
+            int bx = boxX + 30;
+            int by = titleY + 40 + i * (buttonHeight + spacing);
+            b.bounds = new Rectangle(bx, by, buttonWidth, buttonHeight);
+
+            g2.setColor(Color.BLACK);
+            g2.fillRect(bx, by, buttonWidth, buttonHeight);
+            g2.setColor(Color.WHITE);
+            g2.drawRect(bx, by, buttonWidth, buttonHeight);
+
+            int tx = bx + (buttonWidth - optionFM.stringWidth(b.text)) / 2;
+            int ty = by + (buttonHeight - optionFM.getHeight()) / 2 + optionFM.getAscent();
+            g2.drawString(b.text, tx, ty);
         }
     }
 
-    /**
-     * Přepočítá souřadnice tlačítka podle daného měřítka.
-     *
-     * @param src původní obdélník
-     * @param k   škálovací koeficient
-     * @return nový obdélník
-     */
     private static Rectangle scale(Rectangle src, float k) {
         if (k == 1f) return src;
         int newW = Math.round(src.width * k);
@@ -207,30 +173,20 @@ public class TitleScreenUI {
         return new Rectangle(newX, newY, newW, newH);
     }
 
-    /**
-     * Ošetřuje pohyb myši a zajišťuje efekt hover (zvýraznění) tlačítka.
-     *
-     * @param p bod kurzoru myši
-     */
     public void mouseMoved(Point p) {
         for (UIButton b : buttons) b.hovered = b.bounds.contains(p);
     }
 
-    /**
-     * Označí tlačítko jako stisknuté, pokud bylo kliknuto.
-     *
-     * @param p pozice kliknutí myši
-     */
     public void mousePressed(Point p) {
         buttons.forEach(b -> b.pressed = b.bounds.contains(p));
     }
 
-    /**
-     * Ošetřuje uvolnění tlačítka myši – buď v Game Over menu, nebo v hlavní nabídce.
-     *
-     * @param p pozice uvolnění myši
-     */
     public void mouseReleased(Point p) {
+        if (loggingToggleBounds.contains(p)) {
+            GameLogger.setEnabled(!GameLogger.isEnabled());
+            return;
+        }
+
         if (gp.gameState == gp.gameOverState) {
             handleGameOverClick(p);
             return;
@@ -255,30 +211,14 @@ public class TitleScreenUI {
         }
     }
 
-    /**
-     * Zpracuje kliknutí na některé z tlačítek – obecná obálka.
-     *
-     * @param p pozice kliknutí
-     */
-    public void handleClick(Point p) {
-        for (UIButton b : buttons) {
+    public void handleGameOverClick(Point p) {
+        for (UIButton b : gameOverButtons) {
             if (b.bounds.contains(p)) {
                 switch (b.text) {
-                    case "Start Game"       -> gp.startNewGame();
-                    case "Start Saved Game" -> gp.loadSavedGame();
-                    case "Exit"             -> System.exit(0);
+                    case "Try Again" -> gp.startNewGame();
+                    case "Exit" -> System.exit(0);
                 }
-                break;
             }
         }
-    }
-
-    /**
-     * Zpracuje kliknutí na možnosti v obrazovce Game Over.
-     *
-     * @param p pozice kliknutí
-     */
-    public void handleGameOverClick(Point p) {
-        handleClick(p);
     }
 }

@@ -226,14 +226,14 @@ public class Collision {
 
             if (objName.equals("DoorFront") && !((Object_DoorFront) obj).isOpen()) {
                 ((Object_DoorFront) obj).interact();
-                System.out.println("Interacting with front door");
+                GameLogger.info("Interacting with front door");
             } else if (objName.equals("DoorSide") && !((Object_DoorSide) obj).isOpen()) {
                 ((Object_DoorSide) obj).interact();
-                System.out.println("Interacting with side door");
+                GameLogger.info("Interacting with side door");
             } else if (objName.equals("small_chest")) {
                 Object_Small_Chest chest = (Object_Small_Chest) obj;
                 gp.chestUI.openChest(chest);
-                System.out.println("Interacting with chest");
+                GameLogger.info("Interacting with chest");
             }
         }
     }

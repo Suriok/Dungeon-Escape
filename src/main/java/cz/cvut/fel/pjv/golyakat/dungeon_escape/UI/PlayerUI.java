@@ -1,6 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
@@ -65,7 +66,7 @@ public class PlayerUI {
             weaponInventory = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/inventory/weapon_inv.png")));
         } catch (Exception e) {
-            System.out.println("Error loading UI images: " + e.getMessage());
+            GameLogger.info("Error loading UI images: " + e.getMessage());
         }
     }
 
@@ -76,7 +77,7 @@ public class PlayerUI {
      */
     public void draw(Graphics2D g2d) {
         if (playerInventory == null || sideArmor == null || weaponInventory == null) {
-            System.out.println("PlayerUI: Some images are not loaded");
+            GameLogger.info("PlayerUI: Some images are not loaded");
             return;
         }
 

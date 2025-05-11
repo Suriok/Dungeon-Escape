@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
 import javax.imageio.ImageIO;
@@ -31,12 +32,12 @@ public class Object_CraftingTable extends GameObject {
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/crafting_tabel.png"));
 
             if (image == null) {
-                System.err.println("Nepodařilo se načíst crafting_tabel.png pro Object_CraftingTable");
+                GameLogger.error("Nepodařilo se načíst crafting_tabel.png pro Object_CraftingTable");
                 image = createFallbackImage();
             }
 
         } catch (Exception e) {
-            System.err.println("Chyba při načítání obrázku CraftingTable: " + e.getMessage());
+            GameLogger.error("Chyba při načítání obrázku CraftingTable: " + e.getMessage());
             e.printStackTrace();
             image = createFallbackImage();
         }
@@ -79,7 +80,7 @@ public class Object_CraftingTable extends GameObject {
                 g2d.fillRect(screenX, screenY, gp.tileSize, gp.tileSize);
                 g2d.setColor(Color.BLACK);
                 g2d.drawString("CraftingTable", screenX + 5, screenY + gp.tileSize / 2);
-                System.err.println("Nelze vykreslit CraftingTable: obrázek je null");
+                GameLogger.error("Nelze vykreslit CraftingTable: obrázek je null");
             }
         }
     }

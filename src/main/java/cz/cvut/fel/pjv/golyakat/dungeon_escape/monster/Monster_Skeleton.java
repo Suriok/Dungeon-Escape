@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.monster;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
@@ -83,7 +84,7 @@ public class Monster_Skeleton extends Entity {
             right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_left2.png")));
         } catch (Exception e) {
-            System.err.println("Chyba při načítání sprite obrázků kostlivce: " + e.getMessage());
+            GameLogger.error("Chyba při načítání sprite obrázků kostlivce: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -158,7 +159,7 @@ public class Monster_Skeleton extends Entity {
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
-            System.out.println(name + " zaútočil na hráče! HP hráče: " + gp.player.life);
+            GameLogger.info(name + " zaútočil na hráče! HP hráče: " + gp.player.life);
         }
 
         // Animace

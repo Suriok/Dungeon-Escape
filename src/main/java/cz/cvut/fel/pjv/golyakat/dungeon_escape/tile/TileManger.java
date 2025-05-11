@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.tile;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
 import javax.imageio.ImageIO;
@@ -149,9 +150,9 @@ public class TileManger {
             }
         }
 
-        System.out.println("Found " + walkableRegions.size() + " walkable regions:");
+        GameLogger.info("Found " + walkableRegions.size() + " walkable regions:");
         for (int i = 0; i < walkableRegions.size(); i++) {
-            System.out.println("Region " + i + ": " + walkableRegions.get(i).size() + " tiles");
+            GameLogger.info("Region " + i + ": " + walkableRegions.get(i).size() + " tiles");
         }
     }
 
@@ -203,7 +204,7 @@ public class TileManger {
                     try {
                         mapTileNum[map][row][col] = Integer.parseInt(numbers[col]);
                     } catch (NumberFormatException e) {
-                        System.err.println("Invalid number format at row " + row + ", col " + col);
+                        GameLogger.error("Invalid number format at row " + row + ", col " + col);
                         mapTileNum[map][row][col] = 0;
                     }
                 }

@@ -83,14 +83,14 @@ public class KeyHandler implements KeyListener {
         }
         if (code == KeyEvent.VK_E) {
             ePressed = true;
-            System.out.println("E key pressed.");
+            GameLogger.info("E key pressed.");
         }
         if (code == KeyEvent.VK_F) {
             fPressed = true;
         }
         if (code == KeyEvent.VK_Q) {
             qPressed = true;
-            System.out.println("Q key pressed.");
+            GameLogger.info("Q key pressed.");
         }
     }
 

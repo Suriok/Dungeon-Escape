@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
@@ -82,7 +83,7 @@ public class Boss_Eye extends Entity {
             right1 = up1;
             right2 = up2;
         } catch (Exception e) {
-            System.err.println("Chyba při načítání sprite obrázků bosse Eye: " + e.getMessage());
+            GameLogger.error("Chyba při načítání sprite obrázků bosse Eye: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -145,7 +146,7 @@ public class Boss_Eye extends Entity {
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
-            System.out.println(name + " zaútočil na hráče! HP hráče: " + gp.player.life);
+            GameLogger.info(name + " zaútočil na hráče! HP hráče: " + gp.player.life);
         }
 
         spriteCounter++;
@@ -164,7 +165,7 @@ public class Boss_Eye extends Entity {
                 keyItem.setItem(new Item_Key());
                 gp.player.addItem(keyItem);
                 hasDroppedKey = true;
-                System.out.println(name + " byl poražen a upustil klíč!");
+                GameLogger.info(name + " byl poražen a upustil klíč!");
             }
         }
     }

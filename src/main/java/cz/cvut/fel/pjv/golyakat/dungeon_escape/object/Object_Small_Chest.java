@@ -2,6 +2,7 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.AssetSetter;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
 import javax.imageio.ImageIO;
@@ -84,7 +85,7 @@ public class Object_Small_Chest extends GameObject {
             var inventoryStream = getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/inventory/case_inventory.png");
             if (inventoryStream != null) inventoryImage = ImageIO.read(inventoryStream);
         } catch (Exception e) {
-            System.err.println("Chyba při načítání obrázků truhly: " + e.getMessage());
+            GameLogger.error("Chyba při načítání obrázků truhly: " + e.getMessage());
             e.printStackTrace();
         }
     }
