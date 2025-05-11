@@ -1,32 +1,62 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Player;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.ChestUI;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.CraftingTableUI;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.PlayerUI;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.MonsterUI;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.UI.*;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_bib;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_boots;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_helmet;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.iron_pants;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_bib;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_boots;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_helmet;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.leather_pants;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.DefensBar;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.HealthBar;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Apple;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Blubbery;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_HealthePotion;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Key;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Eye;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Goblin;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Skeleton;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Slime;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Zombie;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_CraftingTable;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Emerald_sword;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Iron_sword;
+
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+
+/**
+ * Třída {@code gamePanel} slouží jako hlavní panel hry, který spravuje herní logiku, vykreslování,
+ * herní smyčku, interakce, UI i ukládání a načítání hry.
+ * <p>
+ * Využívá komponenty jako {@link Player}, {@link GameObject}, {@link HealthBar}, {@link MonsterUI}, {@link TileManger} atd.
+ * Obsahuje vlastní herní smyčku pomocí rozhraní {@link Runnable}, sleduje herní stav a zajišťuje přechody mezi scénami.
+ * </p>
+ */
 
 public class gamePanel extends JPanel implements Runnable {
+
+    // SCREEN SETTINGS
     final int originalTileSize = 16;
     final int scale = 3;
 
@@ -36,41 +66,49 @@ public class gamePanel extends JPanel implements Runnable {
     public final int screenWidth = tileSize * maxScreenCol;
     public final int screenHeight = tileSize * maxScreenRow;
 
+    //WORLD SETTINGS
     public final int maxWorldCol = 60;
     public final int maxWorldRow = 60;
+    public final int maxMap = 2; // number of all levels
+    public int currentMap = 0; // current map index
 
+    // FPS
     int FPS = 60;
 
-    TileManger tileH = new TileManger(this);
+    // SYSTEM
+    public TileManger tileH = new TileManger(this);
     public KeyHandler keyH = new KeyHandler();
     Thread gameThread;
     public Collision collisionChecker = new Collision(this);
-    public AssetSetter assetSetter = new AssetSetter(this);
+    public AssetSetter assetSetter;
+    private final TitleScreenUI titleUi;
+    Sound sound = new Sound();
 
+    // ENTITY AND OBJECT
     public Player player = new Player(this, keyH);
-    public GameObject obj[] = new GameObject[11];
+    public GameObject[][] obj = new GameObject[maxMap][11];
     public HealthBar healthBar;
     public DefensBar defensBar;
-    public Entity monster[] = new Entity[20];
+    public Entity[][] monster = new Entity[maxMap][20];
     public MonsterUI monsterUi;
+    /**
+     * Určuje, zda již byla daná mapa inicializována (monstra, objekty).
+     * Slouží k tomu, aby se spawnování provádělo pouze jednou.
+     */
+    public boolean[] levelSpawned = new boolean[maxMap];
 
+    // GAME STATE
     public int gameState;
+    public final int titleState = 0;
     public final int playerState = 1;
-
-    public String doorMessage = "";
-    public int doorMessageCounter = 0;
-    public String doorHintMessage = "";
-    public int doorHintMessageCounter = 0;
-    public String chestMessage = "";
-    public int chestMessageCounter = 0;
-    public String healingHintMessage = "";
-    public int healingHintMessageCounter = 0;
-    public String craftingHintMessage = "";
-    public int craftingHintMessageCounter = 0;
+    public final int gameOverState = 2;
 
     public ChestUI chestUI;
     public CraftingTableUI craftingTableUI;
     public PlayerUI playerUI;
+    /**
+     * Předmět, který je právě přetahován hráčem (drag-and-drop).
+     */
     public ChestInventoryManager chestInventoryManager;
 
     private int attackCounter = 0;
@@ -82,16 +120,373 @@ public class gamePanel extends JPanel implements Runnable {
     private int draggedItemIndex = -1;
     private int dragOffsetX, dragOffsetY;
     private boolean collisionLogged = false;
-    private boolean objectsLogged = false;
     private boolean dragDroppedLogged = false;
+    private boolean draggedFromArmor = false;
+
+    // MESSAGES
+    public HintMessage doorMessage = new HintMessage();
+    public HintMessage doorHintMessage = new HintMessage();
+    public HintMessage chestMessage = new HintMessage();
+    public HintMessage healingHintMessage = new HintMessage();
+    public HintMessage craftingHintMessage = new HintMessage();
+
+    // UI MESSAGE SETTINGS
+    private final int messageFontSize = 20;
+    private final int messageLineHeight = 30;
+    private final int messageX = screenWidth - tileSize * 7; // вправо
+    private final int messageY = 25;
+
+    // HINT MESSAGE
+    public class HintMessage {
+        public String text = "";
+        public int counter = 0;
+        public boolean near = false;
+
+        public void show(String message, int duration, boolean isNear) {
+            this.text = message;
+            this.counter = duration;
+            this.near = isNear;
+        }
+
+        public void update() {
+            if (counter > 0) counter--;
+            if (counter <= 0) text = "";
+        }
+
+        public boolean isVisible() {
+            return !text.isEmpty();
+        }
+    }
+
+    // ---------- SAVE / LOAD ----------
+    private static final Path SAVE_PATH = Path.of("saved_game.xml");
+    private final XmlMapper xml = new XmlMapper();
+
+    /**
+     * Na základě názvu vytvoří a vrátí instanci příslušného herního předmětu nebo výbavy.
+     * <p>
+     * Používá se při obnově hry z uloženého stavu, aby se z názvu (uloženého v XML)
+     * zrekonstruoval správný typ objektu {@link GameObject}.
+     * </p>
+     *
+     * @param name název předmětu podle uložení v save souboru
+     * @return instance objektu odpovídajícího názvu nebo {@code null}, pokud nebyl rozpoznán
+     */
+    private GameObject makeItem(String name) {
+        switch (name) {
+            case "Apple":
+                return new Item_Apple();
+            case "blubbery":
+                return new Item_Blubbery();
+            case "potion":
+                return new Item_HealthePotion();
+            case "Key":
+            case "Key1":
+            case "Key2":
+            case "Key3":
+            case "SilverKey":
+                return new Item_Key();
+            case "leather_helmet":
+                return new leather_helmet();
+            case "leather_bib":
+                return new leather_bib();
+            case "leather_pants":
+                return new leather_pants();
+            case "leather_boots":
+                return new leather_boots();
+            case "iron_helmet":
+                return new iron_helmet();
+            case "iron_bib":
+                return new iron_bib();
+            case "iron_pants":
+                return new iron_pants();
+            case "iron_boots":
+                return new iron_boots();
+            case "iron_sword":
+                return new Iron_sword(2);
+            case "emerald_sword":
+                return new Emerald_sword(3);
+            default:
+                System.err.println("Unknown item: " + name);
+                return null;
+        }
+    }
+
+    /**
+     * Vytvoří objekt {@link SaveData}, který obsahuje kompletní stav hry pro uložení do XML.
+     * <p>
+     * Do výstupního objektu se ukládají:
+     * <ul>
+     *     <li>Pozice a život hráče</li>
+     *     <li>Inventář, brnění, zbraň a vylepšení</li>
+     *     <li>Stav monster na aktuální mapě</li>
+     *     <li>Obsahy truhel</li>
+     *     <li>Informace o tom, které mapy byly již spawnuty</li>
+     * </ul>
+     * </p>
+     *
+     * @return připravený objekt {@link SaveData} pro serializaci do XML
+     */
+    private SaveData buildSaveData() {
+        SaveData data = new SaveData();
+
+        data.player.worldX = player.worldX;
+        data.player.worldY = player.worldY;
+        data.player.life = player.life;
+        System.out.println("Saving player position: (" + player.worldX + ", " + player.worldY + "), HP: " + player.life);
+
+        List<ChestInventoryManager.ItemData> inventory = player.getInventory();
+        if (inventory != null && !inventory.isEmpty()) {
+            inventory.forEach(it -> {
+                if (it != null && it.getName() != null) {
+                    data.player.backpack.add(new SaveData.ItemData(it.getName(), it.getQuantity()));
+                    System.out.println("Saving inventory item: " + it.getName() + " x" + it.getQuantity());
+                }
+            });
+        } else {
+            System.err.println("Player inventory is null or empty");
+        }
+
+        data.currentMap   = currentMap;
+        data.levelSpawned = levelSpawned.clone();
+
+        GameObject[] equippedArmor = player.getEquippedArmor();
+        if (equippedArmor != null) {
+            for (int i = 0; i < equippedArmor.length; i++) {
+                if (equippedArmor[i] != null && equippedArmor[i].name != null) {
+                    data.player.armor.add(new SaveData.ItemData(equippedArmor[i].name, 1));
+                    System.out.println("Saving armor in slot " + i + ": " + equippedArmor[i].name);
+                }
+            }
+        } else {
+            System.err.println("Equipped armor array is null");
+        }
+        if (data.player.armor.isEmpty()) {
+            System.out.println("No equipped armor to save");
+        }
+
+        GameObject weapon = player.getEquippedWeapon();
+        if (weapon != null && weapon.name != null) {
+            data.player.weapon = new SaveData.ItemData(weapon.name, 1);
+            System.out.println("Saving weapon: " + weapon.name);
+        } else {
+            System.out.println("No equipped weapon to save");
+        }
+
+        GameObject grade = player.getEquippedGrade();
+        if (grade != null && grade.name != null) {
+            data.player.grade = new SaveData.ItemData(grade.name, 1);
+            System.out.println("Saving grade: " + grade.name);
+        } else {
+            System.out.println("No equipped grade to save");
+        }
+
+        for (Entity m : monster[currentMap]) {
+            if (m != null) {
+                SaveData.MonsterData md = new SaveData.MonsterData();
+                md.type = m.getClass().getSimpleName();
+                md.worldX = m.worldX;
+                md.worldY = m.worldY;
+                md.life = m.life;
+                md.dead = m.isDead;
+                data.monsters.add(md);
+                System.out.println("Saving monster " + md.type + " at (" + md.worldX + ", " + md.worldY + ")");
+            }
+        }
+
+        chestInventoryManager.forEachChest((id, list) -> {
+            SaveData.ChestData cd = new SaveData.ChestData();
+            cd.id = id;
+            if (list != null) {
+                list.forEach(it -> {
+                    if (it != null && it.getName() != null) {
+                        cd.items.add(new SaveData.ItemData(it.getName(), it.getQuantity()));
+                        System.out.println("Saving chest " + cd.id + " item: " + it.getName() + " x" + it.getQuantity());
+                    }
+                });
+            }
+            data.chests.add(cd);
+        });
+
+        return data;
+    }
+
+    /**
+     * Obnoví celý stav hry ze zadaného objektu {@link SaveData}.
+     * <p>
+     * Provádí následující kroky:
+     * <ol>
+     *     <li>Obnovení aktuální mapy a inicializace prostředí</li>
+     *     <li>Nastavení pozice a životů hráče</li>
+     *     <li>Rekonstrukce inventáře, výbavy, zbraně a vylepšení</li>
+     *     <li>Načtení monster a jejich pozic/stavů</li>
+     *     <li>Obnovení obsahu jednotlivých truhel</li>
+     * </ol>
+     * Pokud některý objekt nebo typ nelze obnovit, vypíše se chybové hlášení.
+     * </p>
+     *
+     * @param d objekt {@link SaveData}, načtený z XML souboru
+     */
+    private void restoreFromSave(SaveData d) {
+        currentMap = d.currentMap;                           // по умолчанию 0, если в XML нет атрибута
+        if (d.levelSpawned != null && d.levelSpawned.length == levelSpawned.length) {
+            levelSpawned = d.levelSpawned.clone();
+        } else {
+            Arrays.fill(levelSpawned, false);
+        }
+
+        /* 2.  Подготовка окружения под нужную карту */
+        assetSetter.setObg();                 // заново раскладываем двери/сундуки/и т.д.
+        tileH.findWalkableRegions();          // пересчёт проходных зон
+
+        if (!levelSpawned[currentMap]) {      // если в этой карте монстры ещё не спавнились
+            assetSetter.setMonster();
+            levelSpawned[currentMap] = true;
+        }
+
+        /* 3.  Сбрасываем сущности игрока НА ОСНОВЕ новой currentMap */
+        player.reset();                       // ставит стартовые координаты для карты
+
+        player.reset();
+        player.worldX = d.player.worldX;
+        player.worldY = d.player.worldY;
+        player.life = d.player.life;
+        System.out.println("Restored player position: (" + player.worldX + ", " + player.worldY + "), HP: " + player.life);
+
+        // Восстановление инвентаря
+        if (d.player.backpack != null && !d.player.backpack.isEmpty()) {
+            d.player.backpack.forEach(it -> {
+                if (it != null && it.name != null) {
+                    player.addItem(new ChestInventoryManager.ItemData(it.name, it.qty));
+                    System.out.println("Restored inventory item: " + it.name + " x" + it.qty);
+                }
+            });
+        } else {
+            System.out.println("No backpack data to restore");
+        }
+
+        if (d.player.armor != null && !d.player.armor.isEmpty()) {
+            for (int i = 0; i < d.player.armor.size() && i < 4; i++) {
+                SaveData.ItemData armorData = d.player.armor.get(i);
+                if (armorData != null && armorData.name != null) {
+                    GameObject armorObj = makeItem(armorData.name);
+                    if (armorObj != null) {
+                        player.equipArmor(armorObj, i);
+                        System.out.println("Restored armor in slot " + i + ": " + armorData.name);
+                    } else {
+                        System.err.println("Failed to restore armor: " + armorData.name);
+                    }
+                }
+            }
+        } else {
+            System.out.println("No armor data to restore");
+        }
+
+        if (d.player.weapon != null && d.player.weapon.name != null) {
+            GameObject weaponObj = makeItem(d.player.weapon.name);
+            if (weaponObj != null) {
+                player.equipWeapon(weaponObj);
+                System.out.println("Restored weapon: " + d.player.weapon.name);
+            } else {
+                System.err.println("Failed to restore weapon: " + d.player.weapon.name);
+            }
+        } else {
+            System.out.println("No weapon data to restore");
+        }
+
+        if (d.player.grade != null && d.player.grade.name != null) {
+            GameObject gradeObj = makeItem(d.player.grade.name);
+            if (gradeObj != null) {
+                player.equipGrade(gradeObj);
+                System.out.println("Restored grade: " + d.player.grade.name);
+            } else {
+                System.err.println("Failed to restore grade: " + d.player.grade.name);
+            }
+        } else {
+            System.out.println("No grade data to restore");
+        }
+
+        for (Entity[] row : monster) {
+            Arrays.fill(row, null);
+        }
+        if (d.monsters != null && !d.monsters.isEmpty()) {
+            for (int i = 0; i < d.monsters.size() && i < monster.length; i++) {
+                SaveData.MonsterData md = d.monsters.get(i);
+                if (md != null && md.type != null) {
+                    switch (md.type) {
+                        case "Boss_Goblin":
+                            monster[0][i] = new Boss_Goblin(this);
+                            break;
+                        case "Boss_Eye":
+                            monster[1][i] = new Boss_Eye(this);    // 1-я карта = индекс 1
+                            break;
+
+                        case "Monster_Slime":
+                            monster[currentMap][i] = new Monster_Slime(this);
+                            break;
+                        case "Monster_Zombie":
+                            monster[currentMap][i] = new Monster_Zombie(this);
+                            break;
+                        case "Monster_Skeleton":
+                            monster[currentMap][i] = new Monster_Skeleton(this);
+                            break;
+                        default:
+                            System.err.println("Unknown monster type: " + md.type);
+                            continue;
+                    }
+                    monster[currentMap][i].worldX = md.worldX;
+                    monster[currentMap][i].worldY = md.worldY;
+                    monster[currentMap][i].life = md.life;
+                    monster[currentMap][i].isDead = md.dead;
+                    System.out.println("Restored monster " + md.type + " at (" + md.worldX + ", " + md.worldY + ")");
+                }
+            }
+        } else {
+            System.out.println("No monster data to restore");
+        }
+
+        chestInventoryManager.resetChestData();
+        if (d.chests != null && !d.chests.isEmpty()) {
+            d.chests.forEach(cd -> {
+                if (cd != null && cd.items != null) {
+                    chestInventoryManager.overrideChest(cd.id, toItemList(cd.items));
+                    System.out.println("Restored chest ID " + cd.id + " with " + cd.items.size() + " items");
+                }
+            });
+        } else {
+            System.out.println("No chest data to restore");
+        }
+    }
+
+    /**
+     * Pomocná metoda pro převod seznamu uložených předmětů z {@link SaveData} do interní struktury {@link ChestInventoryManager.ItemData}.
+     *
+     * @param list seznam položek načtený z XML
+     * @return seznam objektů {@link ChestInventoryManager.ItemData} připravený k použití ve hře
+     */
+    private List<ChestInventoryManager.ItemData> toItemList(List<SaveData.ItemData> list) {
+        List<ChestInventoryManager.ItemData> result = new ArrayList<>();
+        if (list != null) {
+            list.forEach(e -> {
+                if (e != null && e.name != null) {
+                    result.add(new ChestInventoryManager.ItemData(e.name, e.qty));
+                }
+            });
+        }
+        return result;
+    }
+
+
 
     public gamePanel() {
-        this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-        this.setBackground(Color.BLACK);
-        this.setDoubleBuffered(true);
-        this.addKeyListener(keyH);
-        this.setFocusable(true);
-        this.requestFocusInWindow();
+        this.setPreferredSize(new Dimension(screenWidth, screenHeight));// velikost panelu
+        this.setBackground(Color.BLACK); // pozadí
+        this.setDoubleBuffered(true);// plynulé vykreslování
+        this.addKeyListener(keyH);// ovládání přes klávesy
+        this.setFocusable(true);  // povolit focus
+        this.requestFocusInWindow(); // zaměřit okno pro vstup
+
+        playMusic(0);
 
         this.addMouseListener(new MouseAdapter() {
             @Override
@@ -101,18 +496,46 @@ public class gamePanel extends JPanel implements Runnable {
         });
 
         chestInventoryManager = new ChestInventoryManager();
+        assetSetter = new AssetSetter(this);
         healthBar = new HealthBar(this);
         defensBar = new DefensBar(this);
         chestUI = new ChestUI(this);
         craftingTableUI = new CraftingTableUI(this);
         playerUI = new PlayerUI(this);
         monsterUi = new MonsterUI(this);
-        gameState = playerState;
+        titleUi = new TitleScreenUI(this);
+        gameState = titleState;
 
-        // Centralized MouseListener for drag-and-drop
+        /**
+         * Centrální zpracování kliknutí myší – inicializace přetahování (drag) a interakce.
+         * <p>
+         * Ošetřuje:
+         * <ul>
+         *   <li>Kliknutí na inventář hráče a výběr předmětu</li>
+         *   <li>Výběr výbavy (armor, weapon)</li>
+         *   <li>Kliknutí do truhly a na předměty v ní</li>
+         *   <li>Přetahování z craftingového stolu</li>
+         *   <li>Craftovací tlačítko (vytvoření SilverKey)</li>
+         * </ul>
+         * Pravé tlačítko slouží k útoku.
+         * </p>
+         */
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                requestFocusInWindow();
+
+                if (gameState == titleState) {
+                    titleUi.mousePressed(e.getPoint());
+                    return;
+                }
+
+                if (gameState == titleState || gameState == gameOverState) {
+                    titleUi.mousePressed(e.getPoint());
+                    return;
+                }
+
+
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     if (!chestUI.isShowingInventory() && !craftingTableUI.isShowing()) {
                         if (attackCounter >= ATTACK_COOLDOWN) {
@@ -150,6 +573,7 @@ public class gamePanel extends JPanel implements Runnable {
                     if (index >= 0 && index < expandedItems.size()) {
                         draggedItem = new ChestInventoryManager.ItemData(expandedItems.get(index).getName(), 1);
                         sourceInventory = player;
+                        draggedFromArmor = false;
                         draggedItemIndex = player.getInventory().indexOf(
                                 player.getInventory().stream()
                                         .filter(item -> item.getName().equals(draggedItem.getName()))
@@ -171,6 +595,7 @@ public class gamePanel extends JPanel implements Runnable {
                         if (armor != null) {
                             draggedItem = new ChestInventoryManager.ItemData(armor.name, 1);
                             sourceInventory = player;
+                            draggedFromArmor = true;
                             draggedItemIndex = i; // Armor slot index
                             dragOffsetX = e.getX() - armorBounds[i].x;
                             dragOffsetY = e.getY() - armorBounds[i].y;
@@ -245,18 +670,37 @@ public class gamePanel extends JPanel implements Runnable {
                 }
             }
 
+            /**
+             * Zpracovává událost uvolnění myši (mouseReleased), zejména při práci s přetahovanými předměty (drag-and-drop).
+             * <p>
+             * Tato metoda určuje, kam byl předmět puštěn – do inventáře hráče, na výbavu, do truhly, do craftingového stolu nebo na mapu (např. na dveře).
+             * </p>
+             *
+             * @param e objekt události {@link MouseEvent}, obsahuje např. souřadnice kliknutí
+             */
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (draggedItem == null) {
+
+                // Pokud jsme na titulní obrazovce nebo v Game Over stavu, předáváme ovládání do UI titulní obrazovky
+                if (gameState == titleState || gameState == gameOverState) {
+                    titleUi.mouseReleased(e.getPoint());
                     return;
                 }
 
+                if (gameState == titleState) {
+                    titleUi.mouseReleased(e.getPoint());
+                    return;
+                }
+                if (draggedItem == null) {
+                    return;
+                }
                 boolean isKeyPart = draggedItem.getName().equals("Key1") ||
                         draggedItem.getName().equals("Key2") ||
                         draggedItem.getName().equals("Key3");
 
                 // Player inventory
                 Rectangle inventoryBounds = playerUI.getPlayerInventoryBounds();
+                // Pokud hráč pustí předmět do svého inventáře (a není to armor), přidáme ho tam
                 if (inventoryBounds != null && inventoryBounds.contains(e.getPoint()) && !playerUI.isArmor(draggedItem)) {
                     player.addItem(draggedItem);
                     removeDraggedItem();
@@ -276,6 +720,7 @@ public class gamePanel extends JPanel implements Runnable {
 
                 // Armor slots
                 Rectangle[] armorBounds = playerUI.getArmorSlotBounds();
+                // Pokud je přetahovaný předmět armor a slot odpovídá, nasadí se – původní kus se vrátí zpět
                 for (int i = 0; i < armorBounds.length; i++) {
                     if (armorBounds[i] != null && armorBounds[i].contains(e.getPoint()) &&
                             !isKeyPart && playerUI.isArmor(draggedItem) && playerUI.getArmorSlotIndex(draggedItem) == i) {
@@ -305,6 +750,7 @@ public class gamePanel extends JPanel implements Runnable {
 
                 // Weapon slot
                 Rectangle weaponBounds = playerUI.getWeaponSlotBounds();
+                // Pokud je to zbraň a hráč ji pustí do zbraňového slotu, nasadí se
                 if (weaponBounds != null && weaponBounds.contains(e.getPoint()) &&
                         playerUI.isWeapon(draggedItem) && !isKeyPart) {
                     GameObject equippedWeapon = player.getEquippedWeapon();
@@ -331,6 +777,7 @@ public class gamePanel extends JPanel implements Runnable {
                 }
 
                 // Chest inventory
+                // Pokud hráč pustí předmět do inventáře truhly, přidá se do jejího seznamu
                 if (chestUI.isShowingInventory()) {
                     Object_Small_Chest activeChest = chestUI.getActiveChest();
                     Rectangle chestBounds = chestUI.getChestBounds();
@@ -352,6 +799,7 @@ public class gamePanel extends JPanel implements Runnable {
                 if (craftingTableUI.isShowing()) {
                     Rectangle[] craftSlotBounds = craftingTableUI.getSlotBounds();
                     for (int i = 0; i < craftSlotBounds.length; i++) {
+                        // Pokud se jedná o klíčovou část a je volný slot v crafting table, nastavíme ho
                         if (craftSlotBounds[i] != null && craftSlotBounds[i].contains(e.getPoint()) && craftingTableUI.getCraftingSlot(i) == null
                                 && craftingTableUI.isKeyPart(draggedItem.getName())
                                 && !craftingTableUI.containsPart(draggedItem.getName())
@@ -370,6 +818,7 @@ public class gamePanel extends JPanel implements Runnable {
                 }
 
                 // Player consumption or door unlock
+                // Pokud je předmět léčivý a puštěn na hráče, použije se
                 Rectangle playerBounds = new Rectangle(player.screenX, player.screenY, tileSize, tileSize);
                 if (playerBounds.contains(e.getPoint()) &&
                         (draggedItem.getName().equals("Apple") ||
@@ -384,82 +833,84 @@ public class gamePanel extends JPanel implements Runnable {
                     clearDrag();
                     repaint();
                     return;
-                } else if (draggedItem.getName().equals("Key")) {
-                    if (obj[6] != null && obj[6] instanceof Object_DoorSide) {
-                        Object_DoorSide door = (Object_DoorSide) obj[6];
-                        if (door.requiresKey && !door.isOpen()) {
-                            int doorScreenX = obj[6].worldX - player.worldX + player.screenX;
-                            int doorScreenY = obj[6].worldY - player.worldY + player.screenY;
-                            Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
-                            if (doorBounds.contains(e.getPoint())) {
-                                door.unlock();
-                                removeDraggedItem();
-                                doorHintMessage = "";
-                                doorHintMessageCounter = 0;
-                                doorMessage = "Side door unlocked!";
-                                doorMessageCounter = 120;
-                                if (!dragDroppedLogged) {
-                                    System.out.println("Item " + draggedItem.getName() + " dropped to side door");
-                                    dragDroppedLogged = true;
-                                }
-                                clearDrag();
-                                repaint();
-                                return;
-                            }
-                        }
-                    }
-                } else if (draggedItem.getName().equals("SilverKey")) {
-                    if (obj[5] != null && obj[5] instanceof Object_DoorFront) {
-                        Object_DoorFront door = (Object_DoorFront) obj[5];
-                        if (door.requiresKey && !door.isOpen()) {
-                            int doorScreenX = obj[5].worldX - player.worldX + player.screenX;
-                            int doorScreenY = obj[5].worldY - player.worldY + player.screenY;
-                            Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
-                            if (doorBounds.contains(e.getPoint())) {
-                                door.unlock();
-                                removeDraggedItem();
-                                doorHintMessage = "";
-                                doorHintMessageCounter = 0;
-                                doorMessage = "Front door unlocked!";
-                                doorMessageCounter = 120;
-                                if (!dragDroppedLogged) {
-                                    System.out.println("Item " + draggedItem.getName() + " dropped to front door");
-                                    dragDroppedLogged = true;
-                                }
-                                clearDrag();
-                                repaint();
-                                return;
-                            }
-                        }
-                    }
-                }
 
-                // Return to source if invalid drop
-                if (sourceInventory == player) {
-                    if (draggedItemIndex == -2) {
-                        player.equipWeapon(draggedItem.getItem());
-                    } else if (draggedItemIndex >= 0 && draggedItemIndex < 4) {
-                        player.equipArmor(draggedItem.getItem(), draggedItemIndex);
-                    } else {
-                        if (!playerUI.isArmor(draggedItem)) {
-                            player.addItem(draggedItem);
+                    // Key
+                    // Pokud hráč přetáhne Key nebo SilverKey na dveře, odemknou se
+                } else if (draggedItem.getName().equals("Key") ||
+                        draggedItem.getName().equals("SilverKey")) {
+
+                    boolean silver   = draggedItem.getName().equals("SilverKey");
+                    GameObject target = null;
+                    String     label  = "";
+
+                    if (currentMap == 0) {                     // ------- карта 0 -------
+                        if (silver) {                          // SilverKey → передняя
+                            if (obj[0][5] instanceof Object_DoorFront d && d.requiresKey && !d.isOpen()) {
+                                target = obj[0][5];  label = "Front door";
+                            }
+                        } else {                               // Key → боковая
+                            if (obj[0][6] instanceof Object_DoorSide  d && d.requiresKey && !d.isOpen()) {
+                                target = obj[0][6];  label = "Side door";
+                            }
+                        }
+                    } else if (currentMap == 1) {              // ------- карта 1 -------
+                        if (silver) {                          // SilverKey → боковая
+                            if (obj[1][3] instanceof Object_DoorSide  d && d.requiresKey && !d.isOpen()) {
+                                target = obj[1][3];  label = "Side door";
+                            }
+                        } else {                               // Key → передняя
+                            if (obj[1][4] instanceof Object_DoorFront d && d.requiresKey && !d.isOpen()) {
+                                target = obj[1][4];  label = "Front door";
+                            }
                         }
                     }
-                } else if (sourceInventory instanceof Object_Small_Chest) {
-                    ((Object_Small_Chest) sourceInventory).getItems().add(draggedItem);
-                    chestInventoryManager.updateChestData(((Object_Small_Chest) sourceInventory).getId(),
-                            new ChestInventoryManager.ChestData(((Object_Small_Chest) sourceInventory).isOpen(), ((Object_Small_Chest) sourceInventory).getItems()));
-                } else if (sourceInventory == craftingTableUI) {
-                    if (!playerUI.isArmor(draggedItem)) {
-                        player.addItem(draggedItem);
+
+                    if (target != null) {
+                        int sx = target.worldX - player.worldX + player.screenX;
+                        int sy = target.worldY - player.worldY + player.screenY;
+                        Rectangle doorBounds = new Rectangle(sx, sy, tileSize, tileSize);
+
+                        if (doorBounds.contains(e.getPoint())) {
+                            if (target instanceof Object_DoorSide  sd) sd.unlock();
+                            if (target instanceof Object_DoorFront fd) fd.unlock();
+
+                            removeDraggedItem();
+                            doorHintMessage.show("", 0, false);
+                            doorMessage.show(label + " unlocked!", 40, true);
+                            System.out.println("Unlocked " + label + " with " + draggedItem.getName());
+                            clearDrag();
+                            repaint();
+                            return;
+                        }
                     }
-                }
-                clearDrag();
-                repaint();
-            }
+                }}
         });
 
+
+/**
+ * Reaguje na pohyb a přetahování myši na herním panelu.
+ * <p>
+ * Pomocí {@link MouseMotionAdapter} jsou zachyceny dvě události:
+ * <ul>
+ *   <li>{@code mouseMoved} – slouží k interaktivnímu zvýraznění prvků v titulní obrazovce</li>
+ *   <li>{@code mouseDragged} – aktualizuje vykreslování při přetahování předmětů (drag-and-drop)</li>
+ * </ul>
+ */
         this.addMouseMotionListener(new MouseMotionAdapter() {
+            // Detekuje pohyb kurzoru – slouží k hover efektům v titulní obrazovce nebo Game Over menu
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (gameState == titleState){
+                    titleUi.mouseMoved(e.getPoint());
+                }
+
+                if (gameState == titleState || gameState == gameOverState) {
+                    titleUi.mouseMoved(e.getPoint());
+                    return;
+                }
+            }
+
+            // Pokud uživatel přetahuje položku (draggedItem != null), překreslí panel (položka "letí" za myší)
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (draggedItem != null) {
@@ -467,25 +918,23 @@ public class gamePanel extends JPanel implements Runnable {
                 }
             }
         });
-
-        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        if (frame != null) {
-            frame.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosing(WindowEvent e) {
-                    chestInventoryManager.resetChestData();
-                }
-            });
-        }
     }
 
+    /**
+     * Vymaže přetahovaný předmět a resetuje stav přetahování.
+     */
     private void clearDrag() {
         draggedItem = null;
         sourceInventory = null;
         draggedItemIndex = -1;
         dragDroppedLogged = false;
+        draggedFromArmor = false;
     }
 
+    /**
+     * Odebere předmět z inventáře nebo truhly podle zdroje (sourceInventory),
+     * přičemž respektuje množství – pokud quantity > 1, jen sníží počet.
+     */
     private void removeDraggedItem() {
         if (sourceInventory == player) {
             if (draggedItemIndex >= 0 && draggedItemIndex < player.getInventory().size()) {
@@ -515,62 +964,36 @@ public class gamePanel extends JPanel implements Runnable {
                 }
             }
         }
-        // For craftingTableUI, the item is already removed via setCraftingSlot(null)
     }
 
+    /**
+     * Inicializuje objekty a monstra ve hře a nastaví výchozí stav na titulní obrazovku.
+     * <p>
+     * Metoda slouží k počátečnímu nastavení hry – volá {@link AssetSetter#setObg()},
+     * který umisťuje objekty (např. truhly, dveře, crafting table) a následně {@link AssetSetter#setMonster()},
+     * který spawnuje monstra na mapu. Poté se nastaví stav hry na {@code titleState}, čímž se zobrazí úvodní menu.
+     * </p>
+     */
     public void setUpObjects() {
-        Map<String, Integer> chest0Items = new HashMap<>();
-        chest0Items.put("leather_pants", 1);
-        chest0Items.put("leather_helmet", 1);
-        chest0Items.put("iron_sword", 1);
-        obj[0] = new Object_Small_Chest(this, 0, chest0Items);
-        obj[0].worldX = 15 * tileSize;
-        obj[0].worldY = 21 * tileSize;
-
-        Map<String, Integer> chest7Items = new HashMap<>();
-        chest7Items.put("Key1", 1);
-        obj[7] = new Object_Small_Chest(this, 7, chest7Items);
-        obj[7].worldX = 40 * tileSize;
-        obj[7].worldY = 30 * tileSize;
-
-        Map<String, Integer> chest8Items = new HashMap<>();
-        chest8Items.put("Key2", 1);
-        obj[8] = new Object_Small_Chest(this, 8, chest8Items);
-        obj[8].worldX = 25 * tileSize;
-        obj[8].worldY = 13 * tileSize;
-
-        Map<String, Integer> chest9Items = new HashMap<>();
-        chest9Items.put("Key3", 1);
-        obj[9] = new Object_Small_Chest(this, 9, chest9Items);
-        obj[9].worldX = 50 * tileSize;
-        obj[9].worldY = 21 * tileSize;
-
-        obj[10] = new Object_CraftingTable();
-        obj[10].worldX = 38 * tileSize;
-        obj[10].worldY = 14 * tileSize;
-
-        player.worldX = 15 * tileSize;
-        player.worldY = 22 * tileSize;
-
-        if (!objectsLogged) {
-            System.out.println("Objects initialized:");
-            System.out.println("Chest 0 at (" + (obj[0].worldX / tileSize) + ", " + (obj[0].worldY / tileSize) + "): " + chest0Items);
-            System.out.println("Chest 7 at (" + (obj[7].worldX / tileSize) + ", " + (obj[7].worldY / tileSize) + "): " + chest7Items);
-            System.out.println("Chest 8 at (" + (obj[8].worldX / tileSize) + ", " + (obj[8].worldY / tileSize) + "): " + chest8Items);
-            System.out.println("Chest 9 at (" + (obj[9].worldX / tileSize) + ", " + (obj[9].worldY / tileSize) + "): " + chest9Items);
-            System.out.println("Crafting Table at (" + (obj[10].worldX / tileSize) + ", " + (obj[10].worldY / tileSize) + ")");
-            objectsLogged = true;
-        }
-
         assetSetter.setObg();
         assetSetter.setMonster();
+        gameState = titleState;
     }
 
+    /**
+     * Spustí herní vlákno – volá se po inicializaci okna.
+     */
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
     }
 
+    /**
+     * Hlavní herní smyčka, která běží v samostatném vlákně.
+     * <p>
+     * Smyčka se snaží udržet stabilní FPS (snímky za sekundu) a volá update a repaint.
+     * </p>
+     */
     @Override
     public void run() {
         double drawInterval = (double) 1000000000 / FPS;
@@ -596,7 +1019,21 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Hlavní logika aktualizace hry – zpracovává stav hráče, interakce,
+     * vykreslování zpráv, otevření truhly, dveří a craftingového stolu.
+     * <p>
+     * Tato metoda se volá každým snímkem a reaguje na blízkost objektů a stisky kláves.
+     * </p>
+     */
     public void update() {
+
+        // === 1) Pokud hra není ve stavu ovládání hráče, aktualizace se neprovede ===
+        if (gameState != playerState) {
+            return;
+        }
+
+        // === 2) Aktualizace stavu hráče a kolizní zpráva ===
         player.update();
         if (player.collisionOn && !collisionLogged) {
             System.out.println("Player collided at (" + (player.worldX / tileSize) + ", " + (player.worldY / tileSize) + ")");
@@ -605,9 +1042,11 @@ public class gamePanel extends JPanel implements Runnable {
             collisionLogged = false;
         }
 
+        // === 3) Aktualizace UI ukazatelů (zdraví + obrana) ===
         healthBar.update(player.life);
         defensBar.update(player.getTotalDefense());
 
+        // === 4) Inicializace proměnných pro detekci blízkosti ===
         boolean nearDoor = false;
         Object_DoorSide closestSideDoor = null;
         Object_DoorFront closestFrontDoor = null;
@@ -622,9 +1061,11 @@ public class gamePanel extends JPanel implements Runnable {
         Object_Small_Chest closestChest = null;
         int closestChestDistance = Integer.MAX_VALUE;
 
-        for (int i = 0; i < obj.length; i++) {
-            if (obj[i] instanceof Object_DoorSide) {
-                Object_DoorSide door = (Object_DoorSide) obj[i];
+        // === 5) Procházení všech objektů na mapě a detekce interakcí ===
+        for (int i = 0; i < obj[currentMap].length; i++) {
+            // 5.1) Dveře – boční i čelní
+            if (obj[currentMap][i] instanceof Object_DoorSide) {
+                Object_DoorSide door = (Object_DoorSide) obj[currentMap][i];
                 if (door != null) {
                     int dx = Math.abs(player.worldX - door.worldX);
                     int dy = Math.abs(player.worldY - door.worldY);
@@ -637,19 +1078,16 @@ public class gamePanel extends JPanel implements Runnable {
                         closestFrontDoor = null;
                         closestDoorDistance = distance;
                         if (door.isOpen()) {
-                            doorHintMessage = "Door opened!";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("Door opened!", 40, true);
                         } else if (door.requiresKey) {
-                            doorHintMessage = "This door requires a Key to open.";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("This door requires a Key to open.", 40, true);
                         } else {
-                            doorHintMessage = "Press E to open the door";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("Press E to open the door", 40, true);
                         }
                     }
                 }
-            } else if (obj[i] instanceof Object_DoorFront) {
-                Object_DoorFront door = (Object_DoorFront) obj[i];
+            } else if (obj[currentMap][i] instanceof Object_DoorFront) {
+                Object_DoorFront door = (Object_DoorFront) obj[currentMap][i];
                 if (door != null) {
                     int dx = Math.abs(player.worldX - door.worldX);
                     int dy = Math.abs(player.worldY - door.worldY);
@@ -662,20 +1100,18 @@ public class gamePanel extends JPanel implements Runnable {
                         closestFrontDoor = door;
                         closestDoorDistance = distance;
                         if (door.isOpen()) {
-                            doorHintMessage = "Door opened!";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("Door opened!", 40, true);
                         } else if (door.requiresKey) {
-                            doorHintMessage = "This door requires a Silver Key to open.";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("This door requires a Key to open.", 40, true);
                         } else {
-                            doorHintMessage = "Press E to open the door";
-                            doorHintMessageCounter = 80;
+                            doorHintMessage.show("Press E to open the door", 40, true);
                         }
                     }
                 }
             }
-            if (obj[i] instanceof Object_CraftingTable) {
-                Object_CraftingTable table = (Object_CraftingTable) obj[i];
+            // 5.2) Craftingový stůl
+            if (obj[currentMap][i] instanceof Object_CraftingTable) {
+                Object_CraftingTable table = (Object_CraftingTable) obj[currentMap][i];
                 if (table != null) {
                     int dx = Math.abs(player.worldX - table.worldX);
                     int dy = Math.abs(player.worldY - table.worldY);
@@ -686,13 +1122,14 @@ public class gamePanel extends JPanel implements Runnable {
                         nearCraftingTable = true;
                         closestTable = table;
                         closestTableDistance = distance;
-                        craftingHintMessage = "Press Q to open the crafting table";
-                        craftingHintMessageCounter = 80;
+                        craftingHintMessage.show("Press Q to open the crafting table", 40, true);
                     }
                 }
             }
-            if (obj[i] instanceof Object_Small_Chest) {
-                Object_Small_Chest chest = (Object_Small_Chest) obj[i];
+
+            // 5.3) Truhla
+            if (obj[currentMap][i] instanceof Object_Small_Chest) {
+                Object_Small_Chest chest = (Object_Small_Chest) obj[currentMap][i];
                 if (chest != null) {
                     int dx = Math.abs(player.worldX - chest.worldX);
                     int dy = Math.abs(player.worldY - chest.worldY);
@@ -703,13 +1140,21 @@ public class gamePanel extends JPanel implements Runnable {
                         nearChest = true;
                         closestChest = chest;
                         closestChestDistance = distance;
-                        chestMessage = "Press E to open the chest";
-                        chestMessageCounter = 80;
+
+                        if (chest.isOpen()) {
+                            chestMessage.show("Press E to close the chest", 40, true);
+                        } else {
+                            chestMessage.show("Press E to open the chest", 40, true);
+                        }
+
                     }
                 }
+
+
             }
         }
 
+        // === 6) Ovládání interakcí pomocí kláves E a Q ===
         if (keyH.ePressed || keyH.qPressed) {
             if (nearCraftingTable && !chestUI.isShowingInventory() && keyH.qPressed && closestTableDistance <= closestDoorDistance && closestTableDistance <= closestChestDistance) {
                 if (craftingTableUI.isShowing()) {
@@ -720,7 +1165,8 @@ public class gamePanel extends JPanel implements Runnable {
                     System.out.println("Crafting table opened");
                 }
                 keyH.qPressed = false;
-            } else if (nearDoor && !chestUI.isShowingInventory() && !craftingTableUI.isShowing() && keyH.ePressed && closestDoorDistance <= closestChestDistance) {
+            }else if (nearDoor && !chestUI.isShowingInventory() && !craftingTableUI.isShowing()
+                    && keyH.ePressed) {
                 if (closestSideDoor != null) {
                     closestSideDoor.interact();
                 } else if (closestFrontDoor != null) {
@@ -737,168 +1183,285 @@ public class gamePanel extends JPanel implements Runnable {
             }
         }
 
-        if (!nearDoor && doorHintMessageCounter <= 0) {
-            doorHintMessage = "";
-        }
-        if (!nearCraftingTable && craftingHintMessageCounter <= 0) {
-            craftingHintMessage = "";
-        }
-        if (!nearChest && chestMessageCounter <= 0) {
-            chestMessage = "";
-        }
-
+        // === 7) Zobrazení nápovědy k léčitelným předmětům ===
         boolean hasHealingItem = player.getInventory().stream().anyMatch(item ->
                 item.getName().equals("Apple") || item.getName().equals("blubbery") || item.getName().equals("potion"));
+
         if (hasHealingItem) {
-            healingHintMessage = "Drag Apple, Blubbery, or Potion onto the player to restore HP";
-            healingHintMessageCounter = 80;
-        } else if (healingHintMessageCounter <= 0) {
-            healingHintMessage = "";
+            healingHintMessage.show("Drag item onto the player to restore HP", 40, true);
         }
 
+        // === 8) Aktualizace všech monster na mapě ===
         if (gameState == playerState) {
-            for (int i = 0; i < monster.length; i++) {
-                if (monster[i] != null) {
-                    monster[i].update();
-                    if (monster[i].isDead && monster[i].fadeAlpha <= 0) {
-                        monster[i] = null;
+            for (int i = 0; i < monster[currentMap].length; i++) {
+                if (monster[currentMap][i] != null) {
+                    monster[currentMap][i].update();
+                    if (monster[currentMap][i].isDead && monster[currentMap][i].fadeAlpha <= 0) {
+                        monster[currentMap][i] = null;
                     }
                 }
             }
         }
 
+        // === 9) Čítač útoků
         attackCounter++;
 
-        if (doorMessageCounter > 0) {
-            doorMessageCounter--;
-            if (doorMessageCounter <= 0) {
-                doorMessage = "";
-            }
-        }
-        if (doorHintMessageCounter > 0) {
-            doorHintMessageCounter--;
-            if (doorHintMessageCounter <= 0 && !nearDoor) {
-                doorHintMessage = "";
-            }
-        }
-        if (chestMessageCounter > 0) {
-            chestMessageCounter--;
-            if (chestMessageCounter <= 0) {
-                chestMessage = "";
-            }
-        }
-        if (healingHintMessageCounter > 0) {
-            healingHintMessageCounter--;
-            if (healingHintMessageCounter <= 0 && !hasHealingItem) {
-                healingHintMessage = "";
-            }
-        }
-        if (craftingHintMessageCounter > 0) {
-            craftingHintMessageCounter--;
-            if (craftingHintMessageCounter <= 0 && !nearCraftingTable) {
-                craftingHintMessage = "";
-            }
+        // === 10) Aktualizace zpráv na obrazovce ===
+        doorMessage.update();
+        doorHintMessage.update();
+        chestMessage.update();
+        healingHintMessage.update();
+        craftingHintMessage.update();
+
+
+        // === 11) Kontrola konce hry (smrt hráče) ===
+        if (player.life <= 0) {
+            System.out.println("PLAYER DIED!");
+            gameState = gameOverState;
+            return;
         }
     }
 
-    @Override
+/**
+ * Překresluje veškeré vizuální prvky hry na obrazovce.
+ * <p>
+ * Tato metoda je volána automaticky Swingem vždy, když je třeba obnovit nebo znovu vykreslit panel.
+ * Zajišťuje zobrazení titulní obrazovky, mapy, objektů, monster, hráče,
+ * uživatelského rozhraní, drag-and-drop ikony i zpráv.
+ * </p>
+ *
+ * @param g Grafický kontext {@link Graphics}, který se používá pro kreslení
+ */
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        tileH.draw(g2d);
 
-        for (int i = 0; i < obj.length; i++) {
-            if (obj[i] != null) {
-                int screenX = obj[i].worldX - player.worldX + player.screenX;
-                int screenY = obj[i].worldY - player.worldY + player.screenY;
-                if (screenX + tileSize > 0 && screenX < screenWidth &&
-                        screenY + tileSize > 0 && screenY < screenHeight) {
-                    obj[i].draw(g2d, this);
-                }
-            }
+        // === 1) TITULNÍ OBRAZOVKA ===
+        if (gameState == titleState) {
+            titleUi.draw(g2d);
+            g2d.dispose();
+            return;
         }
 
-        for (int i = 0; i < monster.length; i++) {
-            if (monster[i] != null) {
-                int screenX = monster[i].worldX - player.worldX + player.screenX;
-                int screenY = monster[i].worldY - player.worldY + player.screenY;
-                if (screenX + tileSize > 0 && screenX < screenWidth &&
-                        screenY + tileSize > 0 && screenY < screenHeight) {
-                    monsterUi.draw(g2d, monster[i]);
-                    if (!monster[i].isDead || monster[i].fadeAlpha > 0) {
-                        monster[i].draw(g2d);
+        // === 2) HERNÍ OBRAZOVKA ===
+        else {
+            // 2.1) Vykreslení mapy (dlaždic)
+            tileH.draw(g2d);
+
+            // 2.2) Vykreslení objektů (např. dveře, truhly, crafting stůl)
+            for (int i = 0; i < obj[currentMap].length; i++) {
+                if (obj[currentMap][i] != null) {
+                    int screenX = obj[currentMap][i].worldX - player.worldX + player.screenX;
+                    int screenY = obj[currentMap][i].worldY - player.worldY + player.screenY;
+                    if (screenX + tileSize > 0 && screenX < screenWidth &&
+                            screenY + tileSize > 0 && screenY < screenHeight) {
+                        obj[currentMap][i].draw(g2d, this);
                     }
                 }
             }
-        }
 
-        player.draw(g2d);
+            // 2.3) Vykreslení monster (včetně animace smrti a UI)
+            for (int i = 0; i < monster[currentMap].length; i++) {
+                if (monster[currentMap][i] != null) {
+                    int screenX = monster[currentMap][i].worldX - player.worldX + player.screenX;
+                    int screenY = monster[currentMap][i].worldY - player.worldY + player.screenY;
+                    if (screenX + tileSize > 0 && screenX < screenWidth &&
+                            screenY + tileSize > 0 && screenY < screenHeight) {
 
-        healthBar.draw(g2d);
-        defensBar.draw(g2d);
+                        monsterUi.draw(g2d, monster[currentMap][i]); // Zdravotní panel nad monstrem
 
-        chestUI.draw(g2d);
-        craftingTableUI.draw(g2d);
-
-        playerUI.draw(g2d);
-
-        if (draggedItem != null) {
-            Point mousePos = getMousePosition();
-            if (mousePos != null) {
-                int itemSize = tileSize;
-                boolean isKeyPart = draggedItem.getName().equals("Key1") ||
-                        draggedItem.getName().equals("Key2") ||
-                        draggedItem.getName().equals("Key3");
-                if (isKeyPart) {
-                    itemSize = (int)(tileSize * 0.6667f);
+                        // Vykreslení samotného monstra (pokud není mrtvé nebo fade-out neskončil)
+                        if (!monster[currentMap][i].isDead || monster[currentMap][i].fadeAlpha > 0) {
+                            monster[currentMap][i].draw(g2d); // Отрисовка самого монстра
+                        }
+                    }
+                    // Vymazání monstra po dokončení fade animace
+                    if (monster[currentMap][i].isDead && monster[currentMap][i].fadeAlpha <= 0) {
+                        monster[currentMap][i] = null;
+                    }
                 }
-                g2d.drawImage(draggedItem.getItem().image,
-                        mousePos.x - dragOffsetX,
-                        mousePos.y - dragOffsetY,
-                        itemSize, itemSize, null);
             }
+            // 2.4) Vykreslení hráče
+            player.draw(g2d);
+
+            // 2.5) Vykreslení UI prvků (zdraví, obrana, truhla, crafting, inventář)
+            healthBar.draw(g2d);
+            defensBar.draw(g2d);
+            chestUI.draw(g2d);
+            craftingTableUI.draw(g2d);
+            playerUI.draw(g2d);
+
+            // 2.6) Vykreslení přetahovaného předmětu (drag and drop)
+            if (draggedItem != null) {
+                Point mousePos = getMousePosition();
+                if (mousePos != null) {
+                    int itemSize = tileSize;
+                    boolean isKeyPart = draggedItem.getName().equals("Key1") ||
+                            draggedItem.getName().equals("Key2") ||
+                            draggedItem.getName().equals("Key3");
+                    if (isKeyPart) {
+                        itemSize = (int) (tileSize * 0.6667f);
+                    }
+                    g2d.drawImage(draggedItem.getItem().image,
+                            mousePos.x - dragOffsetX,
+                            mousePos.y - dragOffsetY,
+                            itemSize, itemSize, null);
+                }
+            }
+            // 2.7) Vykreslení dynamických zpráv (např. nápovědy k truhle, dveřím, craftingu...)
+            int fontSize = messageFontSize;
+            int lineHeight = messageLineHeight;
+            int baseX = messageX;
+            int baseY = messageY;
+
+            g2d.setFont(new Font("Arial", Font.PLAIN, fontSize));
+            g2d.setColor(Color.WHITE);
+
+            ArrayList<String> lines = new ArrayList<>();
+            if (chestMessage.isVisible()) lines.add("Chest: " + chestMessage.text);
+            if (doorMessage.isVisible()) lines.add("Door: " + doorMessage.text);
+            if (doorHintMessage.isVisible()) lines.add("Hint: " + doorHintMessage.text);
+            if (healingHintMessage.isVisible()) lines.add("Heal: " + healingHintMessage.text);
+            if (craftingHintMessage.isVisible()) lines.add("Craft: " + craftingHintMessage.text);
+
+            FontMetrics fm = g2d.getFontMetrics();
+            int maxWidth = screenWidth - baseX;
+
+            int currentY = baseY;
+
+            for (String originalLine : lines) {
+                String[] words = originalLine.split(" ");
+                StringBuilder currentLine = new StringBuilder();
+
+                for (String word : words) {
+                    String testLine = currentLine + word + " ";
+                    if (fm.stringWidth(testLine) > maxWidth) {
+                        g2d.drawString(currentLine.toString(), baseX, currentY);
+                        currentY += lineHeight;
+                        currentLine = new StringBuilder(word + " ");
+                    } else {
+                        currentLine.append(word).append(" ");
+                    }
+                }
+
+                if (!currentLine.toString().isEmpty()) {
+                    g2d.drawString(currentLine.toString(), baseX, currentY);
+                    currentY += lineHeight;
+                }
+
+
+            }
+
+            // 2.8) Pokud je aktivní obrazovka Game Over, vykreslí se přes ostatní
+            if (gameState == gameOverState) {
+                titleUi.drawGameOverScreen(g2d);
+                return;
+            }
+
+            g2d.dispose();
         }
 
-        g2d.setFont(new Font("Arial", Font.PLAIN, 20));
-        g2d.setColor(Color.WHITE);
+    }
 
-        int baseMessageY = 30;
-        int rightMargin = tileSize;
+    /**
+     * Spustí hudbu na pozadí podle zvoleného indexu zvukového souboru.
+     * <p>
+     * Tato hudba bude hrát opakovaně.
+     * </p>
+     *
+     * @param i index zvuku ve zvukovém poli (např. 0 = menu, 1 = dungeon...)
+     */
+    public void playMusic(int i) {
+        sound.setFile(i);
+        sound.playSound();
+        sound.loopSound();
+    }
 
-        if (!chestMessage.isEmpty()) {
-            int chestMessageY = baseMessageY;
-            int chestMessageX = screenWidth - g2d.getFontMetrics().stringWidth(chestMessage) - rightMargin;
-            g2d.drawString(chestMessage, chestMessageX, chestMessageY);
+
+    /**
+     * Přehrává krátký zvukový efekt (např. útok, výběr v menu, otevření truhly).
+     * <p>
+     * Efekt se přehraje jednorázově bez smyčky.
+     * </p>
+     *
+     * @param i index zvukového efektu v poli
+     */
+    public void playSE(int i) {
+        sound.setFile(i);
+        sound.playSound();
+    }
+
+
+
+    //NEW GAME
+    /**
+     * Inicializuje novou hru: spustí mapu 0, vynuluje vše a nastaví výchozí stavy.
+     */
+    public void startNewGame() {
+        currentMap = 0;
+        Arrays.fill(levelSpawned, false);
+        levelSpawned[currentMap] = true;
+        player.reset();
+        chestInventoryManager.resetChestData();
+
+        setUpObjects();
+
+        gameState = playerState;
+        repaint();
+    }
+
+    /**
+     * Uloží aktuální stav hry (hráč, mapa, inventář...).
+     */
+    public void saveGame() {
+        try {
+            SaveData d = buildSaveData();
+            Path parent = SAVE_PATH.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            xml.writerWithDefaultPrettyPrinter().writeValue(SAVE_PATH.toFile(), d);
+            System.out.println("Game saved to " + SAVE_PATH.toAbsolutePath());
+            if (Files.exists(SAVE_PATH)) {
+                System.out.println("Save file confirmed at " + SAVE_PATH.toAbsolutePath());
+            } else {
+                System.err.println("Save file not found after saving!");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Failed to save game: " + ex.getMessage());
         }
+    }
 
-        if (!doorMessage.isEmpty()) {
-            int doorMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30);
-            int doorMessageX = screenWidth - g2d.getFontMetrics().stringWidth(doorMessage) - rightMargin;
-            g2d.drawString(doorMessage, doorMessageX, doorMessageY);
+    /**
+     * Načte poslední uložený stav hry ze souboru.
+     */
+    public void loadSavedGame() {
+        if (!Files.exists(SAVE_PATH)) {
+            System.err.println("No save file found at " + SAVE_PATH.toAbsolutePath() + " – starting new game.");
+            doorMessage.show("No saved game found. Starting a new game.", 120, false);
+            startNewGame();
+            return;
         }
-
-        if (!doorHintMessage.isEmpty()) {
-            int doorHintMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30) + (doorMessage.isEmpty() ? 0 : 30);
-            int doorHintMessageX = screenWidth - g2d.getFontMetrics().stringWidth(doorHintMessage) - rightMargin;
-            g2d.drawString(doorHintMessage, doorHintMessageX, doorHintMessageY);
+        try {
+            SaveData d = xml.readValue(SAVE_PATH.toFile(), SaveData.class);
+            restoreFromSave(d);
+            gameState = playerState;
+            repaint();
+            System.out.println("Save loaded successfully from " + SAVE_PATH.toAbsolutePath() + ":");
+            System.out.println(" - Player HP: " + player.life);
+            System.out.println(" - Inventory items: " + d.player.backpack.size());
+            System.out.println(" - Armor slots: " + d.player.armor.size());
+            System.out.println(" - Weapon: " + (d.player.weapon != null ? d.player.weapon.name : "none"));
+            System.out.println(" - Grade: " + (d.player.grade != null ? d.player.grade.name : "none"));
+            System.out.println(" - Chests: " + d.chests.size());
+            doorMessage.show("Game loaded successfully!", 120, false);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Failed to load save from " + SAVE_PATH.toAbsolutePath() + " – starting new game.");
+            doorMessage.show("Failed to load saved game. Starting a new game.", 120, false);
+            startNewGame();
         }
-
-        if (!healingHintMessage.isEmpty()) {
-            int healingHintMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30) +
-                    (doorMessage.isEmpty() ? 0 : 30) + (doorHintMessage.isEmpty() ? 0 : 30);
-            int healingHintMessageX = screenWidth - g2d.getFontMetrics().stringWidth(healingHintMessage) - rightMargin;
-            g2d.drawString(healingHintMessage, healingHintMessageX, healingHintMessageY);
-        }
-
-        if (!craftingHintMessage.isEmpty()) {
-            int craftingHintMessageY = baseMessageY + (chestMessage.isEmpty() ? 0 : 30) +
-                    (doorMessage.isEmpty() ? 0 : 30) + (doorHintMessage.isEmpty() ? 0 : 30) +
-                    (healingHintMessage.isEmpty() ? 0 : 30);
-            int craftingHintMessageX = screenWidth - g2d.getFontMetrics().stringWidth(craftingHintMessage) - rightMargin;
-            g2d.drawString(craftingHintMessage, craftingHintMessageX, craftingHintMessageY);
-        }
-
-        g2d.dispose();
     }
 }

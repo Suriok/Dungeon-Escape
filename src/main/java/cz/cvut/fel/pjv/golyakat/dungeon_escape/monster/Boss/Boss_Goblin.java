@@ -13,24 +13,66 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-public class Boss_Goblin extends Entity {
-    private gamePanel gp;
-    public int actionLockCounter = 0;
-    private static final int DETECTION_RANGE = 5 * 48; // 5 tiles (assuming tileSize = 48)
-    private static final int ATTACK_RANGE = 48; // 1 tile
-    private static final int ATTACK_COOLDOWN = 60; // 1 second at 60 FPS
-    private int attackCounter = 0;
-    private static final int ATTACK_DAMAGE = 5;
+/**
+ * Třída {@code Boss_Goblin} reprezentuje hlavního bosse typu Goblin ve hře.
+ * <p>
+ * Goblin kombinuje fyzický útok a střelbu ohnivých koulí (fireball).
+ * Sleduje hráče, reaguje na jeho pozici a po smrti upouští klíč nutný k postupu.
+ * </p>
+ *
+ * Klíčové vlastnosti:
+ * <ul>
+ *   <li>Má animaci pohybu a útoků.</li>
+ *   <li>Střílí firebally na dálku.</li>
+ *   <li>Při smrti spustí fade-out efekt a přidá hráči klíč.</li>
+ * </ul>
+ */
 
-    // Fireball attack properties
-    private static final int FIREBALL_COOLDOWN = 10 * 60; // 30 seconds at 60 FPS
+public class Boss_Goblin extends Entity {
+    /** Odkaz na hlavní herní panel pro přístup k hráči, mapě a zvukům. */
+    private gamePanel gp;
+
+    /** Počítadlo, které určuje, kdy může goblin změnit směr. */
+    public int actionLockCounter = 0;
+
+    /** Maximální vzdálenost, ve které goblin detekuje hráče (v pixelech). */
+    private static final int DETECTION_RANGE = 5 * 48;
+
+    /** Dosah fyzického útoku goblina (v pixelech). */
+    private static final int ATTACK_RANGE = 48;
+
+    /** Počet snímků mezi dvěma útoky (60 = 1 sekunda). */
+    private static final int ATTACK_COOLDOWN = 60;
+
+    /** Počítadlo snímků od posledního útoku. */
+    private int attackCounter = 0;
+
+    /** Množství poškození způsobené přímým útokem goblina. */
+    private static final int ATTACK_DAMAGE = 9;
+
+    /** Cooldown mezi dvěma ohnivými koulemi (např. 600 = 10 sekund). */
+    private static final int FIREBALL_COOLDOWN = 600;
+
+    /** Počítadlo cooldownu pro ohnivou kouli. */
     private int fireballCounter = 0;
+
+    /** Rychlost pohybu ohnivé koule. */
     private static final int FIREBALL_SPEED = 5;
+
+    /** Poškození způsobené ohnivou koulí při zásahu. */
     private static final int FIREBALL_DAMAGE = 2;
+
+    /**
+     * Seznam všech aktivních ohnivých koulí vystřelených bossem.
+     * <p>Každá ohnivá koule má vlastní pozici a rychlost.</p>
+     */
     private List<Fireball> fireballs = new ArrayList<>();
+
+    /** Obrázek reprezentující grafiku ohnivé koule. */
     private BufferedImage fireballImage;
 
-    private boolean hasDroppedKey = false; // Flag to ensure the key is dropped only once
+    /** Příznak určující, zda již goblin upustil klíč (aby to neudělal opakovaně). */
+    private boolean hasDroppedKey = false;
 
     public Boss_Goblin(gamePanel gp) {
         super(gp);
@@ -64,6 +106,9 @@ public class Boss_Goblin extends Entity {
         }
     }
 
+    /**
+     * Načte sprite obrázky pro goblina podle směru a animace.
+     */
     public void getImage() {
         try {
             up1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin.png")));
@@ -80,6 +125,13 @@ public class Boss_Goblin extends Entity {
         }
     }
 
+    /**
+     * Určuje chování bosse v závislosti na vzdálenosti od hráče.
+     * <ul>
+     *   <li>Při blízkosti hráče: sleduje hráče.</li>
+     *   <li>Jinak: náhodný pohyb.</li>
+     * </ul>
+     */
     public void setAction() {
         actionLockCounter++;
 
@@ -114,6 +166,9 @@ public class Boss_Goblin extends Entity {
         }
     }
 
+    /**
+     * Vystřelí ohnivou kouli směrem k hráči, pokud je v dosahu.
+     */
     private void shootFireball() {
         int dx = gp.player.worldX - worldX;
         int dy = gp.player.worldY - worldY;
@@ -126,6 +181,12 @@ public class Boss_Goblin extends Entity {
         }
     }
 
+    /**
+     * Hlavní update metoda bosse – volaná každým snímkem hry.
+     * <p>
+     * Zpracovává: pohyb, kolize, útok, střelbu, animaci, smrt, upuštění klíče.
+     * </p>
+     */
     public void update() {
         if (isDead) {
             super.update(); // Handle fade-out
@@ -234,6 +295,12 @@ public class Boss_Goblin extends Entity {
         }
     }
 
+
+    /**
+     * Vykreslí goblina na obrazovku a následně i jeho ohnivé koule.
+     *
+     * @param g2d grafický kontext
+     */
     @Override
     public void draw(Graphics2D g2d) {
         if (isDead && fadeAlpha <= 0) {
@@ -285,10 +352,15 @@ public class Boss_Goblin extends Entity {
                 g2d.drawImage(fireballImage, fireballScreenX, fireballScreenY, gp.tileSize / 2, gp.tileSize / 2, null);
             }
         }
-        // Health bar and fade effect are handled by MonsterUi
     }
 
-    // Inner class to represent a fireball projectile
+    /**
+     * Vnitřní třída {@code Fireball} představuje jednu ohnivou kouli vystřelenou bossem.
+     * <p>
+     * Uchovává pozici a rychlost a má jednoduchou metodu {@code update()} pro pohyb.
+     * </p>
+     */
+
     private class Fireball {
         double x, y;
         double speedX, speedY;
@@ -300,6 +372,7 @@ public class Boss_Goblin extends Entity {
             this.speedY = speedY;
         }
 
+/** Posune kouli o její rychlost (1 snímek)*/
         void update() {
             x += speedX;
             y += speedY;

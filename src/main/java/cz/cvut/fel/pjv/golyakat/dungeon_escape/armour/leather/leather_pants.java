@@ -6,8 +6,18 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 import javax.imageio.ImageIO;
 import java.util.Objects;
 
+/**
+ * Třída {@code leather_pants} představuje kožené kalhoty,
+ * které chrání dolní část těla hráče.
+ * <p>
+ * Brnění má obrannou hodnotu 2 body.
+ * Ikona je načítána z interního resource souboru.
+ * </p>
+ */
+
 public class leather_pants extends GameObject implements Armor {
     private final float defensAmount;
+
 
     public leather_pants() {
         name = "leather_pants";

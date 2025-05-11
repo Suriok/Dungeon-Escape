@@ -9,29 +9,51 @@ import java.awt.image.BufferedImage;
 import java.util.Objects;
 import java.util.Random;
 
-// Třída reprezentující příšeru "Slime"
+/**
+ * Třída {@code Monster_Slime} reprezentuje nepřátelskou příšeru typu Slime.
+ * <p>
+ * Obsahuje logiku pro náhodný pohyb nebo sledování hráče, útok na hráče,
+ * detekci kolizí a jednoduchou animaci pohybu.
+ * </p>
+ */
 public class Monster_Slime extends Entity {
-    private gamePanel gp; // Odkaz na herní panel
+
+    /** Odkaz na hlavní herní panel. */
+    private gamePanel gp;
+
+    /** Počítadlo pro určení, kdy změnit akci nebo směr pohybu. */
     public int actionLockCounter = 0;
-    private static final int DETECTION_RANGE = 5 * 48; // 5 tiles (assuming tileSize = 48)
-    private static final int ATTACK_RANGE = 32; // 1 tile
-    private static final int ATTACK_COOLDOWN = 60; // 1 second at 60 FPS
+
+    /** Maximální vzdálenost, na kterou slime detekuje hráče (v pixelech). */
+    private static final int DETECTION_RANGE = 5 * 48;
+
+    /** Maximální vzdálenost útoku na hráče. */
+    private static final int ATTACK_RANGE = 32;
+
+    /** Počet snímků čekání mezi útoky (cooldown). */
+    private static final int ATTACK_COOLDOWN = 60;
+
+    /** Počítadlo pro cooldown útoků. */
     private int attackCounter = 0;
+
+    /** Množství poškození, které slime způsobí hráči. */
     private static final int ATTACK_DAMAGE = 4;
 
-    // Konstruktor příšery Slime
+    /**
+     * Vytváří novou instanci Slime s výchozím nastavením.
+     *
+     * @param gp herní panel, do kterého slime patří
+     */
     public Monster_Slime(gamePanel gp) {
         super(gp);
         this.gp = gp;
 
-        name = "Slime"; // Název příšery
-        speed = 1; // Rychlost pohybu
-        maxLife = 2; // Maximální životy
-        life = maxLife; // Aktuální životy
+        name = "Slime";
+        speed = 1;
+        maxLife = 2;
+        life = maxLife;
+        direction = "down";
 
-        direction = "down"; // Výchozí směr
-
-        // Nastavení kolizní oblasti (hitbox)
         solidArea = new Rectangle();
         solidArea.x = 3;
         solidArea.y = 10;
@@ -40,95 +62,83 @@ public class Monster_Slime extends Entity {
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
 
-        // Načtení obrázků pro animace příšery
         getImage();
     }
 
-    // Metoda pro načtení obrázků příšery
+    /**
+     * Načte obrázky (sprite) pro jednotlivé směry pohybu a animace Slime.
+     */
     public void getImage() {
         try {
-            // Načítáme jednotlivé snímky animace pro různé směry
             up1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/slime_2.png")));
             up2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/slime_3.png")));
-            down1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/slime_2.png")));
-            down2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/slime_3.png")));
-            right1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/slime_2.png")));
-            right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/slime_3.png")));
-            left1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/slime_2.png")));
-            left2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/slime_3.png")));
+            down1 = up1;
+            down2 = up2;
+            left1 = up1;
+            left2 = up2;
+            right1 = up1;
+            right2 = up2;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // Logika pro nastavení směru pohybu příšery
+    /**
+     * Určuje chování příšery podle vzdálenosti od hráče.
+     * <ul>
+     *     <li>Pokud je hráč blízko, slime ho následuje.</li>
+     *     <li>Jinak se pohybuje náhodně.</li>
+     * </ul>
+     */
     public void setAction() {
         actionLockCounter++;
 
-        // Calculate distance to player
         int dx = gp.player.worldX - worldX;
         int dy = gp.player.worldY - worldY;
         double distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance <= DETECTION_RANGE && !isDead) {
-            // Move toward player
             if (Math.abs(dx) > Math.abs(dy)) {
                 direction = dx > 0 ? "right" : "left";
             } else {
                 direction = dy > 0 ? "down" : "up";
             }
         } else {
-            // Random movement if player is out of range
             if (actionLockCounter >= 120) {
                 Random random = new Random();
                 int i = random.nextInt(100) + 1;
-                if (i <= 25) {
-                    direction = "up";
-                } else if (i <= 50) {
-                    direction = "down";
-                } else if (i <= 75) {
-                    direction = "left";
-                } else {
-                    direction = "right";
-                }
+                if (i <= 25) direction = "up";
+                else if (i <= 50) direction = "down";
+                else if (i <= 75) direction = "left";
+                else direction = "right";
                 actionLockCounter = 0;
             }
         }
     }
 
-    // Aktualizace stavu příšery každý snímek
+    /**
+     * Aktualizuje stav Slime každý snímek: pohyb, kolize, útok, animaci a kontrolu smrti.
+     */
     public void update() {
         if (isDead) {
-            super.update(); // Handle fade-out
+            super.update(); // Fade efekt
             return;
         }
 
         setAction();
 
-        if (direction == null) {
-            direction = "down";
-        }
+        if (direction == null) direction = "down";
 
         int oldX = worldX;
         int oldY = worldY;
 
-        // Move toward player or randomly
         switch (direction) {
-            case "up":
-                worldY -= speed;
-                break;
-            case "down":
-                worldY += speed;
-                break;
-            case "left":
-                worldX -= speed;
-                break;
-            case "right":
-                worldX += speed;
-                break;
+            case "up" -> worldY -= speed;
+            case "down" -> worldY += speed;
+            case "left" -> worldX -= speed;
+            case "right" -> worldX += speed;
         }
 
-        // Check collision with tiles and objects
         collisionOn = false;
         gp.collisionChecker.checkTiles(this);
         if (collisionOn) {
@@ -137,7 +147,7 @@ public class Monster_Slime extends Entity {
             actionLockCounter = 120;
         }
 
-        // Check for player collision and attack
+        // Útok na hráče
         attackCounter++;
         int dx = gp.player.worldX - worldX;
         int dy = gp.player.worldY - worldY;
@@ -145,17 +155,16 @@ public class Monster_Slime extends Entity {
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
-            System.out.println(name + " attacked player! Player HP: " + gp.player.life);
+            System.out.println(name + " zaútočil na hráče! HP: " + gp.player.life);
         }
 
-        // Animation
+        // Animace
         spriteCounter++;
         if (spriteCounter > 15) {
             spriteNum = (spriteNum == 1) ? 2 : 1;
             spriteCounter = 0;
         }
 
-        // Check if dead
         if (life <= 0) {
             isDead = true;
             fadeAlpha = 1.0f;
@@ -163,41 +172,29 @@ public class Monster_Slime extends Entity {
         }
     }
 
+    /**
+     * Vykreslí Slime na obrazovku pomocí správného obrázku podle směru a fáze animace.
+     *
+     * @param g2d grafický kontext
+     */
     @Override
     public void draw(Graphics2D g2d) {
-        if (isDead && fadeAlpha <= 0) {
-            return; // Skip drawing if fully faded
-        }
+        if (isDead && fadeAlpha <= 0) return;
 
-        if (direction == null) {
-            direction = "down";
-        }
+        if (direction == null) direction = "down";
 
-        BufferedImage imageToDraw = null;
-        switch (direction) {
-            case "up":
-                imageToDraw = (spriteNum == 1) ? up1 : up2;
-                break;
-            case "down":
-                imageToDraw = (spriteNum == 1) ? down1 : down2;
-                break;
-            case "left":
-                imageToDraw = (spriteNum == 1) ? left1 : left2;
-                break;
-            case "right":
-                imageToDraw = (spriteNum == 1) ? right1 : right2;
-                break;
-            default:
-                imageToDraw = down1;
-                break;
-        }
+        BufferedImage imageToDraw = switch (direction) {
+            case "up" -> (spriteNum == 1) ? up1 : up2;
+            case "down" -> (spriteNum == 1) ? down1 : down2;
+            case "left" -> (spriteNum == 1) ? left1 : left2;
+            case "right" -> (spriteNum == 1) ? right1 : right2;
+            default -> down1;
+        };
 
         this.image = imageToDraw;
 
-        // Draw the monster with fade effect
         if (!isDead) {
-            super.draw(g2d); // Normal drawing
+            super.draw(g2d);
         }
-        // Health bar and fade effect are handled by MonsterUi
     }
 }

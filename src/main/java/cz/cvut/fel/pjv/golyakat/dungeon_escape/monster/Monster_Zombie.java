@@ -9,28 +9,54 @@ import java.awt.image.BufferedImage;
 import java.util.Objects;
 import java.util.Random;
 
+/**
+ * Třída {@code Monster_Zombie} reprezentuje nepřátelskou entitu zombie.
+ * <p>
+ * Obsahuje logiku pohybu, útoku, detekce hráče, animace a vizuální efekt po smrti.
+ * Dědí od třídy {@link Entity}, čímž získává základní schopnosti entity ve hře.
+ * </p>
+ */
 public class Monster_Zombie extends Entity {
-    private gamePanel gp; // Odkaz na herní panel
+
+    /** Odkaz na hlavní herní panel. */
+    private gamePanel gp;
+
+    /** Počítadlo akcí pro řízení změn směru. */
     public int actionLockCounter = 0;
-    private static final int DETECTION_RANGE = 5 * 48; // 5 tiles (assuming tileSize = 48)
-    private static final int ATTACK_RANGE = 32; // 1 tile
-    private static final int ATTACK_COOLDOWN = 60; // 1 second at 60 FPS
+
+    /**
+     * Maximální vzdálenost, na kterou může zombie detekovat hráče.
+     * Jednotky odpovídají pixelům (5 tile = 240 px).
+     */
+    private static final int DETECTION_RANGE = 5 * 48;
+
+    /** Vzdálenost, na kterou může zombie zaútočit na hráče. */
+    private static final int ATTACK_RANGE = 32;
+
+    /** Doba mezi jednotlivými útoky ve snímcích (při 60 FPS = 1s). */
+    private static final int ATTACK_COOLDOWN = 60;
+
+    /** Počítadlo cooldownu mezi útoky. */
     private int attackCounter = 4;
+
+    /** Množství poškození, které zombie způsobí hráči. */
     private static final int ATTACK_DAMAGE = 5;
 
-    // Konstruktor příšery Slime
+    /**
+     * Konstruktor vytvoří novou zombie a nastaví výchozí atributy včetně obrázků a kolize.
+     *
+     * @param gp hlavní panel hry
+     */
     public Monster_Zombie(gamePanel gp) {
         super(gp);
         this.gp = gp;
 
-        name = "Zombie"; // Název příšery
-        speed = 2; // Rychlost pohybu
-        maxLife = 5; // Maximální životy
-        life = maxLife; // Aktuální životy
+        name = "Zombie";
+        speed = 2;
+        maxLife = 5;
+        life = maxLife;
+        direction = "down";
 
-        direction = "down"; // Výchozí směr
-
-        // Nastavení kolizní oblasti (hitbox)
         solidArea = new Rectangle();
         solidArea.x = 3;
         solidArea.y = 10;
@@ -39,96 +65,90 @@ public class Monster_Zombie extends Entity {
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
 
-        // Načtení obrázků pro animace příšery
         getImage();
     }
 
-    // Metoda pro načtení obrázků příšery
+    /**
+     * Načte sprite obrázky zombie pro animace pohybu ve všech směrech.
+     */
     public void getImage() {
         try {
-            // Načítáme jednotlivé snímky animace pro různé směry
-            up1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_up1.png")));
-            up2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_up2.png")));
-            down1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_front1.png")));
-            down2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_front2.png")));
-            left1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_left1.png")));
-            left2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_left2.png")));
-            right1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_rigth1.png")));
-            right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_right2.png")));
+            up1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_up1.png")));
+            up2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_up2.png")));
+            down1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_front1.png")));
+            down2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_front2.png")));
+            left1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_left1.png")));
+            left2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_left2.png")));
+            right1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_rigth1.png")));
+            right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_right2.png")));
         } catch (Exception e) {
-            System.err.println("Error loading zombie sprites: " + e.getMessage());
+            System.err.println("Chyba při načítání sprite obrázků zombie: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // Logika pro nastavení směru pohybu příšery
+    /**
+     * Nastavuje akci zombie – buď se náhodně pohybuje, nebo pronásleduje hráče,
+     * pokud je v dosahu detekce.
+     */
     public void setAction() {
         actionLockCounter++;
 
-        // Calculate distance to player
         int dx = gp.player.worldX - worldX;
         int dy = gp.player.worldY - worldY;
         double distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance <= DETECTION_RANGE && !isDead) {
-            // Move toward player
+            // Směr k hráči
             if (Math.abs(dx) > Math.abs(dy)) {
                 direction = dx > 0 ? "right" : "left";
             } else {
                 direction = dy > 0 ? "down" : "up";
             }
         } else {
-            // Random movement if player is out of range
+            // Náhodný pohyb
             if (actionLockCounter >= 120) {
                 Random random = new Random();
                 int i = random.nextInt(100) + 1;
-                if (i <= 25) {
-                    direction = "up";
-                } else if (i <= 50) {
-                    direction = "down";
-                } else if (i <= 75) {
-                    direction = "left";
-                } else {
-                    direction = "right";
-                }
+                if (i <= 25) direction = "up";
+                else if (i <= 50) direction = "down";
+                else if (i <= 75) direction = "left";
+                else direction = "right";
                 actionLockCounter = 0;
             }
         }
     }
 
-    // Aktualizace stavu příšery každý snímek
+    /**
+     * Aktualizuje stav zombie – pohyb, kolize, útok a animace.
+     */
     public void update() {
         if (isDead) {
-            super.update(); // Handle fade-out
+            super.update(); // fade efekt
             return;
         }
 
         setAction();
-
-        if (direction == null) {
-            direction = "down";
-        }
+        if (direction == null) direction = "down";
 
         int oldX = worldX;
         int oldY = worldY;
 
-        // Move toward player or randomly
         switch (direction) {
-            case "up":
-                worldY -= speed;
-                break;
-            case "down":
-                worldY += speed;
-                break;
-            case "left":
-                worldX -= speed;
-                break;
-            case "right":
-                worldX += speed;
-                break;
+            case "up"    -> worldY -= speed;
+            case "down"  -> worldY += speed;
+            case "left"  -> worldX -= speed;
+            case "right" -> worldX += speed;
         }
 
-        // Check collision with tiles and objects
         collisionOn = false;
         gp.collisionChecker.checkTiles(this);
         if (collisionOn) {
@@ -137,25 +157,23 @@ public class Monster_Zombie extends Entity {
             actionLockCounter = 120;
         }
 
-        // Check for player collision and attack
         attackCounter++;
         int dx = gp.player.worldX - worldX;
         int dy = gp.player.worldY - worldY;
         double distance = Math.sqrt(dx * dx + dy * dy);
+
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
-            System.out.println(name + " attacked player! Player HP: " + gp.player.life);
+            System.out.println(name + " zaútočil na hráče! HP hráče: " + gp.player.life);
         }
 
-        // Animation
         spriteCounter++;
         if (spriteCounter > 15) {
             spriteNum = (spriteNum == 1) ? 2 : 1;
             spriteCounter = 0;
         }
 
-        // Check if dead
         if (life <= 0) {
             isDead = true;
             fadeAlpha = 1.0f;
@@ -163,41 +181,30 @@ public class Monster_Zombie extends Entity {
         }
     }
 
+    /**
+     * Vykreslí zombie pomocí správného sprite dle směru a fáze animace.
+     *
+     * @param g2d grafický kontext
+     */
     @Override
     public void draw(Graphics2D g2d) {
-        if (isDead && fadeAlpha <= 0) {
-            return; // Skip drawing if fully faded
-        }
+        if (isDead && fadeAlpha <= 0) return;
 
-        if (direction == null) {
-            direction = "down";
-        }
+        if (direction == null) direction = "down";
 
-        BufferedImage imageToDraw = null;
-        switch (direction) {
-            case "up":
-                imageToDraw = (spriteNum == 1) ? up1 : up2;
-                break;
-            case "down":
-                imageToDraw = (spriteNum == 1) ? down1 : down2;
-                break;
-            case "left":
-                imageToDraw = (spriteNum == 1) ? left1 : left2;
-                break;
-            case "right":
-                imageToDraw = (spriteNum == 1) ? right1 : right2;
-                break;
-            default:
-                imageToDraw = down1;
-                break;
-        }
+        BufferedImage imageToDraw = switch (direction) {
+            case "up"    -> (spriteNum == 1) ? up1 : up2;
+            case "down"  -> (spriteNum == 1) ? down1 : down2;
+            case "left"  -> (spriteNum == 1) ? left1 : left2;
+            case "right" -> (spriteNum == 1) ? right1 : right2;
+            default      -> down1;
+        };
 
         this.image = imageToDraw;
 
-        // Draw the monster with fade effect
         if (!isDead) {
-            super.draw(g2d); // Normal drawing
+            super.draw(g2d);
         }
-        // Health bar and fade effect are handled by MonsterUi
+        // Fade & health bar handled elsewhere (e.g. MonsterUI)
     }
 }

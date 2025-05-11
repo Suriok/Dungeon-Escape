@@ -1,35 +1,76 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
-import javax.swing.JFrame;
+import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-// Hlavní spouštěcí třída hry
+/**
+ * Hlavní spouštěcí třída hry Dungeon Escape.
+ * <p>
+ * Vytváří hlavní okno aplikace, inicializuje herní panel,
+ * nastavuje zavírací logiku a spouští hlavní herní smyčku.
+ * </p>
+ */
 public class main {
+
+    /**
+     * Hlavní vstupní metoda – spuštění celé hry.
+     * <p>
+     * Běží v kontextu Event Dispatch Threadu (EDT), jak doporučuje Swing API.
+     * </p>
+     *
+     * @param args argumenty z příkazové řádky (nevyužité)
+     */
     public static void main(String[] args) {
-        // 1. Vytvoření hlavního okna aplikace
-        JFrame window = new JFrame();
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Při zavření okna se aplikace ukončí
-        window.setResizable(false); // Okno nebude možné měnit velikost
-        window.setTitle("Dungeon Escape"); // Název okna
+        // Vše spustíme na EDT – Swing komponenty nejsou thread-safe
+        SwingUtilities.invokeLater(() -> {
 
-        // 2. Vytvoření instance herního panelu
-        gamePanel gamePanel = new gamePanel();
+            /**
+             * 1) Vytvoření hlavního okna hry (instance JFrame).
+             * Okno je pojmenováno a zablokována možnost změny velikosti.
+             */
+            JFrame window = new JFrame("Dungeon Escape");
+            window.setResizable(false);
 
-        // 3. Přidání herního panelu do okna
-        window.add(gamePanel);
+            /**
+             * 2) Vytvoření instance herního panelu {@link gamePanel} a jeho připojení do okna.
+             * Panel obsahuje veškerou grafiku, logiku hry i hlavní smyčku.
+             */
+            gamePanel gp = new gamePanel();
+            window.add(gp);
 
-        // 4. Automaticky nastaví velikost okna podle preferované velikosti komponenty (gamePanel)
-        window.pack();
+            /**
+             * 3) Nastavení velikosti okna podle preferované velikosti herního panelu.
+             * Také umístíme okno doprostřed obrazovky.
+             */
+            window.pack();
+            window.setLocationRelativeTo(null);
 
-        // 5. Umístí okno na střed obrazovky
-        window.setLocationRelativeTo(null);
+            /**
+             * 4) Vlastní ošetření zavření okna – nejprve se uloží hra pomocí {@link gamePanel#saveGame()},
+             * poté se ukončí program přes {@link System#exit(int)}.
+             */
+            window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            window.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    gp.saveGame();   // Uložení aktuálního stavu hry do XML
+                    System.exit(0);  // Ukončení aplikace
+                    System.out.println("windowClosing → saveGame()"); // Debug zpráva
+                }
+            });
 
-        // 6. Zobrazí okno
-        window.setVisible(true);
+            /**
+             * 5) Zviditelnění herního okna.
+             */
+            window.setVisible(true);
 
-        // 7. Inicializace herních objektů (truhly, dveře, monstra atd.)
-        gamePanel.setUpObjects();
-
-        // 8. Spustí herní smyčku (game loop)
-        gamePanel.startGameThread();
+            /**
+             * 6) Inicializace objektů na mapě pomocí {@link gamePanel#setUpObjects()} a spuštění
+             * herní smyčky pomocí {@link gamePanel#startGameThread()}.
+             */
+            gp.setUpObjects();
+            gp.startGameThread();
+        });
     }
 }
