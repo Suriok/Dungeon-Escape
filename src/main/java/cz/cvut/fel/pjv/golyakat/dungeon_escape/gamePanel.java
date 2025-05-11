@@ -60,7 +60,7 @@ public class gamePanel extends JPanel implements Runnable {
     public final int maxWorldCol = 60;
     public final int maxWorldRow = 60;
     public final int maxMap = 2; // number of all levels
-    public int currentMap = 1; // current map index
+    public int currentMap = 0; // current map index
 
     // FPS
     int FPS = 60;
@@ -743,92 +743,56 @@ public class gamePanel extends JPanel implements Runnable {
                     repaint();
                     return;
                     // Key
-                } else if (draggedItem.getName().equals("Key")) {
+                } else if (draggedItem.getName().equals("Key") ||
+                        draggedItem.getName().equals("SilverKey")) {
+
+                    boolean silver   = draggedItem.getName().equals("SilverKey");
                     GameObject target = null;
-                    String label = "";
+                    String     label  = "";
 
-                    if (obj[0][6] instanceof Object_DoorSide && currentMap == 0) {
-                        target = obj[0][6];
-                        label = "Side door";
-                    } else if (obj[1][4] instanceof Object_DoorSide && currentMap == 1) {
-                        target = obj[1][4];
-                        label = "Side door";
-                    }
-
-                    if (target != null) {
-                        boolean requires = false;
-                        boolean opened = true;
-
-                        if (target instanceof Object_DoorSide door) {
-                            requires = door.requiresKey;
-                            opened = door.isOpen();
+                    if (currentMap == 0) {                     // ------- карта 0 -------
+                        if (silver) {                          // SilverKey → передняя
+                            if (obj[0][5] instanceof Object_DoorFront d && d.requiresKey && !d.isOpen()) {
+                                target = obj[0][5];  label = "Front door";
+                            }
+                        } else {                               // Key → боковая
+                            if (obj[0][6] instanceof Object_DoorSide  d && d.requiresKey && !d.isOpen()) {
+                                target = obj[0][6];  label = "Side door";
+                            }
                         }
-
-                        if (requires && !opened) {
-                            int doorScreenX = target.worldX - player.worldX + player.screenX;
-                            int doorScreenY = target.worldY - player.worldY + player.screenY;
-                            Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
-                            if (doorBounds.contains(e.getPoint())) {
-                                if (target instanceof Object_DoorSide d) d.unlock();
-
-                                removeDraggedItem();
-                                doorHintMessage.show("", 0, false);
-                                doorMessage.show(label + " unlocked!", 40, true);
-                                if (!dragDroppedLogged) {
-                                    System.out.println("Item " + draggedItem.getName() + " dropped to " + label);
-                                    dragDroppedLogged = true;
-                                }
-                                clearDrag();
-                                repaint();
-                                return;
+                    } else if (currentMap == 1) {              // ------- карта 1 -------
+                        if (silver) {                          // SilverKey → боковая
+                            if (obj[1][3] instanceof Object_DoorSide  d && d.requiresKey && !d.isOpen()) {
+                                target = obj[1][3];  label = "Side door";
+                            }
+                        } else {                               // Key → передняя
+                            if (obj[1][4] instanceof Object_DoorFront d && d.requiresKey && !d.isOpen()) {
+                                target = obj[1][4];  label = "Front door";
                             }
                         }
                     }
-                }
-
-                else if (draggedItem.getName().equals("SilverKey")) {
-                    GameObject target = null;
-                    String label = "";
-
-                    if (obj[0][5] instanceof Object_DoorFront && currentMap == 0) {
-                        target = obj[0][5];
-                        label = "Front door";
-                    } else if (obj[1][3] instanceof Object_DoorFront && currentMap == 1) { // ← исправлено!
-                        target = obj[1][3];
-                        label = "Front door";
-                    }
 
                     if (target != null) {
-                        boolean requires = false;
-                        boolean opened = true;
+                        int sx = target.worldX - player.worldX + player.screenX;
+                        int sy = target.worldY - player.worldY + player.screenY;
+                        Rectangle doorBounds = new Rectangle(sx, sy, tileSize, tileSize);
 
-                        if (target instanceof Object_DoorFront door) {
-                            requires = door.requiresKey;
-                            opened = door.isOpen();
-                        }
+                        if (doorBounds.contains(e.getPoint())) {
+                            if (target instanceof Object_DoorSide  sd) sd.unlock();
+                            if (target instanceof Object_DoorFront fd) fd.unlock();
 
-                        if (requires && !opened) {
-                            int doorScreenX = target.worldX - player.worldX + player.screenX;
-                            int doorScreenY = target.worldY - player.worldY + player.screenY;
-                            Rectangle doorBounds = new Rectangle(doorScreenX, doorScreenY, tileSize, tileSize);
-                            if (doorBounds.contains(e.getPoint())) {
-                                if (target instanceof Object_DoorFront d) d.unlock();
-
-                                removeDraggedItem();
-                                doorHintMessage.show("", 0, false);
-                                doorMessage.show(label + " unlocked!", 40, true);
-                                if (!dragDroppedLogged) {
-                                    System.out.println("Item " + draggedItem.getName() + " dropped to " + label);
-                                    dragDroppedLogged = true;
-                                }
-                                clearDrag();
-                                repaint();
-                                return;
-                            }
+                            removeDraggedItem();
+                            doorHintMessage.show("", 0, false);
+                            doorMessage.show(label + " unlocked!", 40, true);
+                            System.out.println("Unlocked " + label + " with " + draggedItem.getName());
+                            clearDrag();
+                            repaint();
+                            return;
                         }
                     }
                 }}
-            });
+        });
+
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -1057,7 +1021,8 @@ public class gamePanel extends JPanel implements Runnable {
                     System.out.println("Crafting table opened");
                 }
                 keyH.qPressed = false;
-            } else if (nearDoor && !chestUI.isShowingInventory() && !craftingTableUI.isShowing() && keyH.ePressed && closestDoorDistance <= closestChestDistance) {
+            }else if (nearDoor && !chestUI.isShowingInventory() && !craftingTableUI.isShowing()
+                    && keyH.ePressed) {
                 if (closestSideDoor != null) {
                     closestSideDoor.interact();
                 } else if (closestFrontDoor != null) {

@@ -101,13 +101,15 @@ public class AssetSetter {
 
         gp.obj[1][3] = new Object_DoorSide();
         gp.obj[1][3].worldX = 39 * gp.tileSize;
-        gp.obj[1][3].worldY = 28 * gp.tileSize;
-        ((Object_DoorSide) gp.obj[1][3]).requiresKey = true; // This door requires  a Silver Key
+        gp.obj[1][3].worldY = 29 * gp.tileSize;
+        ((Object_DoorSide) gp.obj[1][3]).requiresKey = true; // This door requires a Silver Key
+
 
         gp.obj[1][4] = new Object_DoorFront();
         gp.obj[1][4].worldX = 44 * gp.tileSize;
         gp.obj[1][4].worldY = 21 * gp.tileSize;
-        ((Object_DoorFront) gp.obj[1][4]).requiresKey = true; // This door requires a  Key
+        (( Object_DoorFront) gp.obj[1][4]).requiresKey = true; // This door requires a key
+
 
         gp.obj[1][5] = new Object_DoorFront();
         gp.obj[1][5].worldX = 34 * gp.tileSize;
