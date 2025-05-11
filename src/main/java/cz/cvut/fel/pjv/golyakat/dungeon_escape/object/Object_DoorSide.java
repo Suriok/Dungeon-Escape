@@ -1,5 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
@@ -48,7 +50,7 @@ public class Object_DoorSide extends GameObject {
             BufferedImage tempClosed = ImageIO.read(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side.png"));
             if (tempClosed == null) {
-                System.err.println("door_side.png nenalezen – používá se záložní prázdný obrázek.");
+                GameLogger.error("door_side.png nenalezen – používá se záložní prázdný obrázek.");
                 tempClosed = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             }
             closedImage = tempClosed;
@@ -57,7 +59,7 @@ public class Object_DoorSide extends GameObject {
             BufferedImage tempOpen = ImageIO.read(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side_open.png"));
             if (tempOpen == null) {
-                System.err.println("door_side_open.png nenalezen – použije se zavřený obrázek.");
+                GameLogger.error("door_side_open.png nenalezen – použije se zavřený obrázek.");
                 tempOpen = closedImage;
             }
             openImage = tempOpen;
@@ -66,14 +68,14 @@ public class Object_DoorSide extends GameObject {
             image = closedImage;
 
         } catch (Exception e) {
-            System.err.println("Chyba při načítání obrázků dveří: " + e.getMessage());
+            GameLogger.error("Chyba při načítání obrázků dveří: " + e.getMessage());
             e.printStackTrace();
             closedImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             openImage = closedImage;
             image = closedImage;
         }
 
-        System.out.println("Object_DoorSide inicializován: requiresKey=" + requiresKey + ", isOpen=" + isOpen);
+        GameLogger.info("Object_DoorSide inicializován: requiresKey=" + requiresKey + ", isOpen=" + isOpen);
     }
 
     /**
@@ -88,9 +90,9 @@ public class Object_DoorSide extends GameObject {
             isOpen = true;
             image = openImage;
             Collision = false;
-            System.out.println("DoorSide byl otevřen hráčem.");
+            GameLogger.info("DoorSide byl otevřen hráčem.");
         } else {
-            System.out.println("Tyto dveře vyžadují klíč.");
+            GameLogger.info("Tyto dveře vyžadují klíč.");
         }
     }
 
@@ -101,7 +103,7 @@ public class Object_DoorSide extends GameObject {
         isOpen = true;
         image = openImage;
         Collision = false;
-        System.out.println("DoorSide byl odemčen pomocí klíče!");
+        GameLogger.info("DoorSide byl odemčen pomocí klíče!");
     }
 
     /**

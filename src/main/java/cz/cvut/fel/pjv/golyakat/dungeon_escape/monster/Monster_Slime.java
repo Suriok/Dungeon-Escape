@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.monster;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
@@ -155,7 +156,7 @@ public class Monster_Slime extends Entity {
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
-            System.out.println(name + " zaútočil na hráče! HP: " + gp.player.life);
+            GameLogger.info(name + " zaútočil na hráče! HP: " + gp.player.life);
         }
 
         // Animace

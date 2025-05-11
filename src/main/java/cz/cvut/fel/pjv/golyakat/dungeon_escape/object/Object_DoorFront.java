@@ -1,5 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
@@ -47,7 +49,7 @@ public class Object_DoorFront extends GameObject {
             BufferedImage tempClosed = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_front.png")));
             if (tempClosed == null) {
-                System.err.println("Nepodařilo se načíst door_front.png");
+                GameLogger.error("Nepodařilo se načíst door_front.png");
                 tempClosed = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             }
             closedImage = tempClosed;
@@ -56,14 +58,14 @@ public class Object_DoorFront extends GameObject {
             BufferedImage tempOpen = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side.png")));
             if (tempOpen == null) {
-                System.err.println("Nepodařilo se načíst door_side.png pro otevřené dveře");
+                GameLogger.error("Nepodařilo se načíst door_side.png pro otevřené dveře");
                 tempOpen = closedImage;
             }
             openImage = tempOpen;
 
             image = closedImage;
         } catch (Exception e) {
-            System.err.println("Chyba při načítání obrázků pro dveře: " + e.getMessage());
+            GameLogger.error("Chyba při načítání obrázků pro dveře: " + e.getMessage());
             closedImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             openImage = closedImage;
             image = closedImage;
@@ -82,9 +84,9 @@ public class Object_DoorFront extends GameObject {
             isOpen = true;
             image = openImage;
             Collision = false;
-            System.out.println("DoorFront otevřen!");
+            GameLogger.info("DoorFront otevřen!");
         } else if (requiresKey && !isOpen) {
-            System.out.println("Tyto dveře vyžadují Silver Key.");
+            GameLogger.info("Tyto dveře vyžadují Silver Key.");
         }
     }
 
@@ -108,7 +110,7 @@ public class Object_DoorFront extends GameObject {
             isOpen = true;
             image = openImage;
             Collision = false;
-            System.out.println("DoorFront byl odemčen pomocí Silver Key.");
+            GameLogger.info("DoorFront byl odemčen pomocí Silver Key.");
         }
     }
 }

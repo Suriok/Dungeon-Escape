@@ -1,6 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
 
@@ -99,7 +100,7 @@ public class ChestUI {
 
         BufferedImage inventoryImage = activeChest.getInventoryImage();
         if (inventoryImage == null) {
-            System.out.println("ChestUI: No image found");
+            GameLogger.info("ChestUI: No image found");
             return;
         }
 

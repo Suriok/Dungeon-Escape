@@ -1,6 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
@@ -64,13 +65,13 @@ public class CraftingTableUI {
     /** Zobrazí okno craftování. */
     public void open() {
         isShowing = true;
-        System.out.println("CraftingTableUI: Opened");
+        GameLogger.info("CraftingTableUI: Opened");
     }
 
     /** Skryje okno craftování. */
     public void close() {
         isShowing = false;
-        System.out.println("CraftingTableUI: Closed");
+        GameLogger.info("CraftingTableUI: Closed");
     }
 
     /** @return zda je právě okno craftingu zobrazeno */
@@ -160,7 +161,7 @@ public class CraftingTableUI {
         }
 
         gp.player.addItem(new ChestInventoryManager.ItemData("SilverKey", 1));
-        System.out.println("CraftingTableUI: Crafted SilverKey and added to player inventory");
+        GameLogger.info("CraftingTableUI: Crafted SilverKey and added to player inventory");
 
         for (int i = 0; i < craftingSlots.length; i++) {
             craftingSlots[i] = null;

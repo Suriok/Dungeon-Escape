@@ -189,11 +189,12 @@ public class AssetSetter {
         List<List<Point>> availableRegions = new ArrayList<>(gp.tileH.walkableRegions);
 
         if (availableRegions.isEmpty()) {
-            System.out.println("No regions available for monster spawning.");
+            GameLogger.info("No regions available for monster spawning.");
             return;
         }
 
-        int monstersToSpawn = 14; // Místo pro bosse
+        int monstersToSpawn = 14; // Reduced by 1 to make room for the boss
+        List<Point> spawnedPositions = new ArrayList<>();
 
         if (gp.currentMap == 0) {
             gp.monster[0][0] = new Boss_Goblin(gp);
@@ -205,6 +206,79 @@ public class AssetSetter {
             gp.monster[1][0].worldY = 25 * gp.tileSize;
         }
 
-        // Zakomentovaný kód pro spawn běžných monster (Slime, Zombie, Skeleton)
+        // Spawn other monsters
+        for (int i = 1; i < monstersToSpawn; i++) {
+            List<Point> region = availableRegions.get(i % availableRegions.size());
+
+            if (region.isEmpty()) {
+                GameLogger.info("Region " + (i % availableRegions.size()) + " is empty, skipping monster spawn.");
+                continue;
+            }
+
+            Point spawnPoint = null;
+            int maxAttempts = 50;
+
+            for (int attempt = 0; attempt < maxAttempts; attempt++) {
+                Point candidate = region.get(random.nextInt(region.size()));
+                int col = candidate.y;
+                int row = candidate.x;
+                int spawnX = col * gp.tileSize;
+                int spawnY = row * gp.tileSize;
+
+                // Не спавним в прямоугольнике 5x5 тайлов вокруг игрока
+                Rectangle monsterRect = new Rectangle(spawnX, spawnY, gp.tileSize, gp.tileSize);
+                Rectangle safeZone = new Rectangle(
+                        gp.player.worldX - gp.tileSize * 2,
+                        gp.player.worldY - gp.tileSize * 2,
+                        gp.tileSize * 10,
+                        gp.tileSize * 10
+                );
+
+                if (monsterRect.intersects(safeZone)) {
+                    continue;
+                }
+
+                boolean tooClose = false;
+                for (Point existing : spawnedPositions) {
+                    int dx = Math.abs(existing.y - col);
+                    int dy = Math.abs(existing.x - row);
+                    if (dx < 5 && dy < 5) {
+                        tooClose = true;
+                        break;
+                    }
+                }
+
+                if (!tooClose) {
+                    spawnPoint = candidate;
+                    break;
+                }
+            }
+
+            if (spawnPoint == null) {
+                System.out.printf("Failed to spawn monster %d after %d attempts.%n", i, maxAttempts);
+                continue;
+            }
+
+            int col = spawnPoint.y;
+            int row = spawnPoint.x;
+            int spawnX = col * gp.tileSize;
+            int spawnY = row * gp.tileSize;
+
+
+            Entity monster = switch (random.nextInt(3)) {
+                case 0 -> new Monster_Slime(gp);
+                case 1 -> new Monster_Zombie(gp);
+                case 2 -> new Monster_Skeleton(gp);
+                default -> throw new IllegalStateException("Unexpected monster type");
+            };
+
+            monster.worldX = spawnX;
+            monster.worldY = spawnY;
+            gp.monster[gp.currentMap][i] = monster;
+            spawnedPositions.add(new Point(row, col));
+
+            System.out.printf("Spawned %s %d at col: %d, row: %d%n", monster.name, i, col, row);
+        }
     }
 }
+

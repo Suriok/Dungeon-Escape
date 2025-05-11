@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
 import java.awt.*;
@@ -89,10 +90,10 @@ public abstract class GameObject {
             if (image != null) {
                 g2d.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
             } else {
-                System.err.println("Nelze vykreslit objekt '" + name + "': obrázek je null");
+                GameLogger.error("Nelze vykreslit objekt '" + name + "': obrázek je null");
             }
         } else {
-            System.out.println(name + " se nachází mimo viditelnou oblast.");
+            GameLogger.info(name + " se nachází mimo viditelnou oblast.");
         }
     }
 

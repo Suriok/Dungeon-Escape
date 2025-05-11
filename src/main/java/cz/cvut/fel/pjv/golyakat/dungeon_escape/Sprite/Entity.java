@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
@@ -126,7 +127,7 @@ public class Entity extends GameObject {
      * Provede útok entity – standardně útočí na hráče.
      */
     public void attack() {
-        System.out.println("DEBUG: " + name + " útočí na hráče s poškozením " + attackDamage);
+        GameLogger.info("DEBUG: " + name + " útočí na hráče s poškozením " + attackDamage);
         gp.player.receiveDamage(attackDamage);
     }
 

@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import javax.imageio.ImageIO;
@@ -18,13 +19,13 @@ public class Item_partKey3 extends GameObject {
         try {
             BufferedImage tempImage = ImageIO.read(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/key_part/silver_key_3.png"));
             if (tempImage == null) {
-                System.err.println("Failed to load silver_key_3.png for Item_partKey3");
+                GameLogger.error("Failed to load silver_key_3.png for Item_partKey3");
                 // Create a 1x1 transparent pixel as fallback
                 tempImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             }
             image = tempImage; // Assign to the image field
         } catch (Exception e) {
-            System.err.println("Error loading Item_partKey1 image: " + e.getMessage());
+            GameLogger.error("Error loading Item_partKey1 image: " + e.getMessage());
             e.printStackTrace();
         }
     }

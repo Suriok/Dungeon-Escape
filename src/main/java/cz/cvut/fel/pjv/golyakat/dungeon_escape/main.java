@@ -56,7 +56,7 @@ public class main {
                 public void windowClosing(WindowEvent e) {
                     gp.saveGame();   // Uložení aktuálního stavu hry do XML
                     System.exit(0);  // Ukončení aplikace
-                    System.out.println("windowClosing → saveGame()"); // Debug zpráva
+                    GameLogger.info("windowClosing → saveGame()"); // Debug zpráva
                 }
             });
 

@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
@@ -101,7 +102,7 @@ public class Boss_Goblin extends Entity {
         try {
             fireballImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Fireball/FB001.png")));
         } catch (Exception e) {
-            System.err.println("Error loading fireball image: " + e.getMessage());
+            GameLogger.error("Error loading fireball image: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -120,7 +121,7 @@ public class Boss_Goblin extends Entity {
             right1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin.png")));
             right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Boss/Goblin_1.png")));
         } catch (Exception e) {
-            System.err.println("Error loading skeleton sprites: " + e.getMessage());
+            GameLogger.error("Error loading skeleton sprites: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -177,7 +178,7 @@ public class Boss_Goblin extends Entity {
             double speedX = (dx / distance) * FIREBALL_SPEED;
             double speedY = (dy / distance) * FIREBALL_SPEED;
             fireballs.add(new Fireball(worldX + gp.tileSize, worldY + gp.tileSize, speedX, speedY));
-            System.out.println(name + " shot a fireball!");
+            GameLogger.info(name + " shot a fireball!");
         }
     }
 
@@ -235,7 +236,7 @@ public class Boss_Goblin extends Entity {
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
-            System.out.println(name + " attacked player! Player HP: " + gp.player.life);
+            GameLogger.info(name + " attacked player! Player HP: " + gp.player.life);
         }
 
         // Handle fireball attack
@@ -258,7 +259,7 @@ public class Boss_Goblin extends Entity {
             if (fireballDistance <= gp.tileSize / 2) {
                 gp.player.receiveDamage(FIREBALL_DAMAGE);
                 fireballsToRemove.add(fireball);
-                System.out.println(name + "'s fireball hit player! Player HP: " + gp.player.life);
+                GameLogger.info(name + "'s fireball hit player! Player HP: " + gp.player.life);
                 continue;
             }
             // Remove fireballs that go off-screen
@@ -290,7 +291,7 @@ public class Boss_Goblin extends Entity {
                 keyItem.setItem(key);
                 gp.player.addItem(keyItem);
                 hasDroppedKey = true;
-                System.out.println(name + " has been defeated and dropped a key!");
+                GameLogger.info(name + " has been defeated and dropped a key!");
             }
         }
     }

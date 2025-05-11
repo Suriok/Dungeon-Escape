@@ -101,7 +101,6 @@ public class ChestInventoryManager {
             this.name = name;
             this.quantity = quantity;
             this.item = createItemFromName(name);
-            System.out.println("Created ItemData: name=" + name + ", quantity=" + quantity + ", item=" + (this.item != null ? this.item.name : "null"));
         }
 
         /** @return název položky */
@@ -139,7 +138,6 @@ public class ChestInventoryManager {
      * @return odpovídající instance {@link GameObject}, nebo {@code null}, pokud není známý
      */
     private static GameObject createItemFromName(String name) {
-        System.out.println("Attempting to create item: " + name);
         switch (name) {
             case "Apple": return new Item_Apple();
             case "blubbery": return new Item_Blubbery();
@@ -150,6 +148,7 @@ public class ChestInventoryManager {
             case "leather_boots": return new leather_boots();
             case "iron_pants": return new iron_pants();
             case "iron_helmet": return new iron_helmet();
+            case "iron_boots": return new iron_boots();
             case "iron_bib": return new iron_bib();
             case "iron_sword": return new Iron_sword(2);
             case "emerald_sword": return new Emerald_sword(3);
@@ -159,7 +158,7 @@ public class ChestInventoryManager {
             case "Key3": return new Item_partKey3();
             case "SilverKey": return new Item_SilverKey();
             default:
-                System.err.println("Unknown item name: " + name);
+                GameLogger.error("Unknown item name: " + name);
                 return null;
         }
     }
@@ -204,9 +203,9 @@ public class ChestInventoryManager {
     public void saveChestData() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("chest_data.xml"))) {
             oos.writeObject(chestDataMap);
-            System.out.println("Chest data saved successfully.");
+            GameLogger.info("Chest data saved successfully.");
         } catch (IOException e) {
-            System.err.println("Error saving chest data: " + e.getMessage());
+            GameLogger.error("Error saving chest data: " + e.getMessage());
         }
     }
 
@@ -215,7 +214,7 @@ public class ChestInventoryManager {
      * <p>V budoucnu bude číst z uloženého souboru.</p>
      */
     private void loadChestData() {
-        System.out.println("Starting fresh, no previous chest data loaded.");
+        GameLogger.info("Starting fresh, no previous chest data loaded.");
     }
 
     /**

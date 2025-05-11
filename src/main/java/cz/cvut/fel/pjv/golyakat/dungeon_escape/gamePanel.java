@@ -115,7 +115,7 @@ public class gamePanel extends JPanel implements Runnable {
     private static final int ATTACK_COOLDOWN = 30;
 
     // Drag-and-drop variables
-    private ChestInventoryManager.ItemData draggedItem = null;
+    public ChestInventoryManager.ItemData draggedItem = null;
     private Object sourceInventory = null; // Player, Chest, CraftingTableUI
     private int draggedItemIndex = -1;
     private int dragOffsetX, dragOffsetY;
@@ -207,7 +207,7 @@ public class gamePanel extends JPanel implements Runnable {
             case "emerald_sword":
                 return new Emerald_sword(3);
             default:
-                System.err.println("Unknown item: " + name);
+                GameLogger.error("Unknown item: " + name);
                 return null;
         }
     }
@@ -227,24 +227,24 @@ public class gamePanel extends JPanel implements Runnable {
      *
      * @return připravený objekt {@link SaveData} pro serializaci do XML
      */
-    private SaveData buildSaveData() {
+    public SaveData buildSaveData() {
         SaveData data = new SaveData();
 
         data.player.worldX = player.worldX;
         data.player.worldY = player.worldY;
         data.player.life = player.life;
-        System.out.println("Saving player position: (" + player.worldX + ", " + player.worldY + "), HP: " + player.life);
+        GameLogger.info("Saving player position: (" + player.worldX + ", " + player.worldY + "), HP: " + player.life);
 
         List<ChestInventoryManager.ItemData> inventory = player.getInventory();
         if (inventory != null && !inventory.isEmpty()) {
             inventory.forEach(it -> {
                 if (it != null && it.getName() != null) {
                     data.player.backpack.add(new SaveData.ItemData(it.getName(), it.getQuantity()));
-                    System.out.println("Saving inventory item: " + it.getName() + " x" + it.getQuantity());
+                    GameLogger.info("Saving inventory item: " + it.getName() + " x" + it.getQuantity());
                 }
             });
         } else {
-            System.err.println("Player inventory is null or empty");
+            GameLogger.info("Player inventory is null or empty");
         }
 
         data.currentMap   = currentMap;
@@ -255,30 +255,30 @@ public class gamePanel extends JPanel implements Runnable {
             for (int i = 0; i < equippedArmor.length; i++) {
                 if (equippedArmor[i] != null && equippedArmor[i].name != null) {
                     data.player.armor.add(new SaveData.ItemData(equippedArmor[i].name, 1));
-                    System.out.println("Saving armor in slot " + i + ": " + equippedArmor[i].name);
+                    GameLogger.info("Saving armor in slot " + i + ": " + equippedArmor[i].name);
                 }
             }
         } else {
-            System.err.println("Equipped armor array is null");
+            GameLogger.info("Equipped armor array is null");
         }
         if (data.player.armor.isEmpty()) {
-            System.out.println("No equipped armor to save");
+            GameLogger.info("No equipped armor to save");
         }
 
         GameObject weapon = player.getEquippedWeapon();
         if (weapon != null && weapon.name != null) {
             data.player.weapon = new SaveData.ItemData(weapon.name, 1);
-            System.out.println("Saving weapon: " + weapon.name);
+            GameLogger.info("Saving weapon: " + weapon.name);
         } else {
-            System.out.println("No equipped weapon to save");
+            GameLogger.info("No equipped weapon to save");
         }
 
         GameObject grade = player.getEquippedGrade();
         if (grade != null && grade.name != null) {
             data.player.grade = new SaveData.ItemData(grade.name, 1);
-            System.out.println("Saving grade: " + grade.name);
+            GameLogger.info("Saving grade: " + grade.name);
         } else {
-            System.out.println("No equipped grade to save");
+            GameLogger.info("No equipped grade to save");
         }
 
         for (Entity m : monster[currentMap]) {
@@ -290,7 +290,7 @@ public class gamePanel extends JPanel implements Runnable {
                 md.life = m.life;
                 md.dead = m.isDead;
                 data.monsters.add(md);
-                System.out.println("Saving monster " + md.type + " at (" + md.worldX + ", " + md.worldY + ")");
+                GameLogger.info("Saving monster " + md.type + " at (" + md.worldX + ", " + md.worldY + ")");
             }
         }
 
@@ -301,7 +301,7 @@ public class gamePanel extends JPanel implements Runnable {
                 list.forEach(it -> {
                     if (it != null && it.getName() != null) {
                         cd.items.add(new SaveData.ItemData(it.getName(), it.getQuantity()));
-                        System.out.println("Saving chest " + cd.id + " item: " + it.getName() + " x" + it.getQuantity());
+                        GameLogger.info("Saving chest " + cd.id + " item: " + it.getName() + " x" + it.getQuantity());
                     }
                 });
             }
@@ -351,18 +351,18 @@ public class gamePanel extends JPanel implements Runnable {
         player.worldX = d.player.worldX;
         player.worldY = d.player.worldY;
         player.life = d.player.life;
-        System.out.println("Restored player position: (" + player.worldX + ", " + player.worldY + "), HP: " + player.life);
+        GameLogger.info("Restored player position: (" + player.worldX + ", " + player.worldY + "), HP: " + player.life);
 
         // Восстановление инвентаря
         if (d.player.backpack != null && !d.player.backpack.isEmpty()) {
             d.player.backpack.forEach(it -> {
                 if (it != null && it.name != null) {
                     player.addItem(new ChestInventoryManager.ItemData(it.name, it.qty));
-                    System.out.println("Restored inventory item: " + it.name + " x" + it.qty);
+                    GameLogger.info("Restored inventory item: " + it.name + " x" + it.qty);
                 }
             });
         } else {
-            System.out.println("No backpack data to restore");
+            GameLogger.info("No backpack data to restore");
         }
 
         if (d.player.armor != null && !d.player.armor.isEmpty()) {
@@ -372,38 +372,38 @@ public class gamePanel extends JPanel implements Runnable {
                     GameObject armorObj = makeItem(armorData.name);
                     if (armorObj != null) {
                         player.equipArmor(armorObj, i);
-                        System.out.println("Restored armor in slot " + i + ": " + armorData.name);
+                        GameLogger.info("Restored armor in slot " + i + ": " + armorData.name);
                     } else {
-                        System.err.println("Failed to restore armor: " + armorData.name);
+                        GameLogger.error("Failed to restore armor: " + armorData.name);
                     }
                 }
             }
         } else {
-            System.out.println("No armor data to restore");
+            GameLogger.info("No armor data to restore");
         }
 
         if (d.player.weapon != null && d.player.weapon.name != null) {
             GameObject weaponObj = makeItem(d.player.weapon.name);
             if (weaponObj != null) {
                 player.equipWeapon(weaponObj);
-                System.out.println("Restored weapon: " + d.player.weapon.name);
+                GameLogger.info("Restored weapon: " + d.player.weapon.name);
             } else {
-                System.err.println("Failed to restore weapon: " + d.player.weapon.name);
+                GameLogger.error("Failed to restore weapon: " + d.player.weapon.name);
             }
         } else {
-            System.out.println("No weapon data to restore");
+            GameLogger.info("No weapon data to restore");
         }
 
         if (d.player.grade != null && d.player.grade.name != null) {
             GameObject gradeObj = makeItem(d.player.grade.name);
             if (gradeObj != null) {
                 player.equipGrade(gradeObj);
-                System.out.println("Restored grade: " + d.player.grade.name);
+                GameLogger.info("Restored grade: " + d.player.grade.name);
             } else {
-                System.err.println("Failed to restore grade: " + d.player.grade.name);
+                GameLogger.error("Failed to restore grade: " + d.player.grade.name);
             }
         } else {
-            System.out.println("No grade data to restore");
+            GameLogger.info("No grade data to restore");
         }
 
         for (Entity[] row : monster) {
@@ -431,18 +431,18 @@ public class gamePanel extends JPanel implements Runnable {
                             monster[currentMap][i] = new Monster_Skeleton(this);
                             break;
                         default:
-                            System.err.println("Unknown monster type: " + md.type);
+                            GameLogger.error("Unknown monster type: " + md.type);
                             continue;
                     }
                     monster[currentMap][i].worldX = md.worldX;
                     monster[currentMap][i].worldY = md.worldY;
                     monster[currentMap][i].life = md.life;
                     monster[currentMap][i].isDead = md.dead;
-                    System.out.println("Restored monster " + md.type + " at (" + md.worldX + ", " + md.worldY + ")");
+                    GameLogger.info("Restored monster " + md.type + " at (" + md.worldX + ", " + md.worldY + ")");
                 }
             }
         } else {
-            System.out.println("No monster data to restore");
+            GameLogger.info("No monster data to restore");
         }
 
         chestInventoryManager.resetChestData();
@@ -450,11 +450,11 @@ public class gamePanel extends JPanel implements Runnable {
             d.chests.forEach(cd -> {
                 if (cd != null && cd.items != null) {
                     chestInventoryManager.overrideChest(cd.id, toItemList(cd.items));
-                    System.out.println("Restored chest ID " + cd.id + " with " + cd.items.size() + " items");
+                    GameLogger.info("Restored chest ID " + cd.id + " with " + cd.items.size() + " items");
                 }
             });
         } else {
-            System.out.println("No chest data to restore");
+            GameLogger.info("No chest data to restore");
         }
     }
 
@@ -705,7 +705,7 @@ public class gamePanel extends JPanel implements Runnable {
                     player.addItem(draggedItem);
                     removeDraggedItem();
                     if (!dragDroppedLogged) {
-                        System.out.println("Item " + draggedItem.getName() + " dropped to player inventory");
+                        GameLogger.info("Item " + draggedItem.getName() + " dropped to player inventory");
                         dragDroppedLogged = true;
                     }
                     clearDrag();
@@ -739,7 +739,7 @@ public class gamePanel extends JPanel implements Runnable {
                         player.equipArmor(draggedItem.getItem(), i);
                         removeDraggedItem();
                         if (!dragDroppedLogged) {
-                            System.out.println("Item " + draggedItem.getName() + " dropped to armor slot");
+                            GameLogger.info("Item " + draggedItem.getName() + " dropped to armor slot");
                             dragDroppedLogged = true;
                         }
                         clearDrag();
@@ -768,7 +768,7 @@ public class gamePanel extends JPanel implements Runnable {
                     player.equipWeapon(draggedItem.getItem());
                     removeDraggedItem();
                     if (!dragDroppedLogged) {
-                        System.out.println("Item " + draggedItem.getName() + " dropped to weapon slot");
+                        GameLogger.info("Item " + draggedItem.getName() + " dropped to weapon slot");
                         dragDroppedLogged = true;
                     }
                     clearDrag();
@@ -786,7 +786,7 @@ public class gamePanel extends JPanel implements Runnable {
                         removeDraggedItem();
                         chestInventoryManager.updateChestData(activeChest.getId(), new ChestInventoryManager.ChestData(activeChest.isOpen(), activeChest.getItems()));
                         if (!dragDroppedLogged) {
-                            System.out.println("Item " + draggedItem.getName() + " dropped to chest");
+                            GameLogger.info("Item " + draggedItem.getName() + " dropped to chest");
                             dragDroppedLogged = true;
                         }
                         clearDrag();
@@ -807,7 +807,7 @@ public class gamePanel extends JPanel implements Runnable {
                             craftingTableUI.setCraftingSlot(i, draggedItem);
                             removeDraggedItem();
                             if (!dragDroppedLogged) {
-                                System.out.println("Item " + draggedItem.getName() + " dropped to crafting slot");
+                                GameLogger.info("Item " + draggedItem.getName() + " dropped to crafting slot");
                                 dragDroppedLogged = true;
                             }
                             clearDrag();
@@ -827,7 +827,7 @@ public class gamePanel extends JPanel implements Runnable {
                     player.consumeHealingItem(draggedItem);
                     removeDraggedItem();
                     if (!dragDroppedLogged) {
-                        System.out.println("Item " + draggedItem.getName() + " dropped to player");
+                        GameLogger.info("Item " + draggedItem.getName() + " dropped to player");
                         dragDroppedLogged = true;
                     }
                     clearDrag();
@@ -877,7 +877,7 @@ public class gamePanel extends JPanel implements Runnable {
                             removeDraggedItem();
                             doorHintMessage.show("", 0, false);
                             doorMessage.show(label + " unlocked!", 40, true);
-                            System.out.println("Unlocked " + label + " with " + draggedItem.getName());
+                            GameLogger.info("Unlocked " + label + " with " + draggedItem.getName());
                             clearDrag();
                             repaint();
                             return;
@@ -1036,7 +1036,7 @@ public class gamePanel extends JPanel implements Runnable {
         // === 2) Aktualizace stavu hráče a kolizní zpráva ===
         player.update();
         if (player.collisionOn && !collisionLogged) {
-            System.out.println("Player collided at (" + (player.worldX / tileSize) + ", " + (player.worldY / tileSize) + ")");
+            GameLogger.info("Player collided at (" + (player.worldX / tileSize) + ", " + (player.worldY / tileSize) + ")");
             collisionLogged = true;
         } else if (!player.collisionOn) {
             collisionLogged = false;
@@ -1159,10 +1159,10 @@ public class gamePanel extends JPanel implements Runnable {
             if (nearCraftingTable && !chestUI.isShowingInventory() && keyH.qPressed && closestTableDistance <= closestDoorDistance && closestTableDistance <= closestChestDistance) {
                 if (craftingTableUI.isShowing()) {
                     craftingTableUI.close();
-                    System.out.println("Crafting table closed");
+                    GameLogger.info("Crafting table closed");
                 } else {
                     craftingTableUI.open();
-                    System.out.println("Crafting table opened");
+                    GameLogger.info("Crafting table opened");
                 }
                 keyH.qPressed = false;
             }else if (nearDoor && !chestUI.isShowingInventory() && !craftingTableUI.isShowing()
@@ -1175,7 +1175,7 @@ public class gamePanel extends JPanel implements Runnable {
                 keyH.ePressed = false;
             } else if (nearChest && !craftingTableUI.isShowing() && keyH.ePressed) {
                 chestUI.openChest(closestChest);
-                System.out.println("Chest opened at (" + (closestChest.worldX / tileSize) + ", " + (closestChest.worldY / tileSize) + ")");
+                GameLogger.info("Chest opened at (" + (closestChest.worldX / tileSize) + ", " + (closestChest.worldY / tileSize) + ")");
                 keyH.ePressed = false;
             } else {
                 keyH.ePressed = false;
@@ -1216,7 +1216,7 @@ public class gamePanel extends JPanel implements Runnable {
 
         // === 11) Kontrola konce hry (smrt hráče) ===
         if (player.life <= 0) {
-            System.out.println("PLAYER DIED!");
+            GameLogger.info("PLAYER DIED!");
             gameState = gameOverState;
             return;
         }
@@ -1422,15 +1422,15 @@ public class gamePanel extends JPanel implements Runnable {
                 Files.createDirectories(parent);
             }
             xml.writerWithDefaultPrettyPrinter().writeValue(SAVE_PATH.toFile(), d);
-            System.out.println("Game saved to " + SAVE_PATH.toAbsolutePath());
+            GameLogger.info("Game saved to " + SAVE_PATH.toAbsolutePath());
             if (Files.exists(SAVE_PATH)) {
-                System.out.println("Save file confirmed at " + SAVE_PATH.toAbsolutePath());
+                GameLogger.info("Save file confirmed at " + SAVE_PATH.toAbsolutePath());
             } else {
-                System.err.println("Save file not found after saving!");
+                GameLogger.error("Save file not found after saving!");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.err.println("Failed to save game: " + ex.getMessage());
+            GameLogger.error("Failed to save game: " + ex.getMessage());
         }
     }
 
@@ -1439,7 +1439,7 @@ public class gamePanel extends JPanel implements Runnable {
      */
     public void loadSavedGame() {
         if (!Files.exists(SAVE_PATH)) {
-            System.err.println("No save file found at " + SAVE_PATH.toAbsolutePath() + " – starting new game.");
+            GameLogger.error("No save file found at " + SAVE_PATH.toAbsolutePath() + " – starting new game.");
             doorMessage.show("No saved game found. Starting a new game.", 120, false);
             startNewGame();
             return;
@@ -1449,17 +1449,17 @@ public class gamePanel extends JPanel implements Runnable {
             restoreFromSave(d);
             gameState = playerState;
             repaint();
-            System.out.println("Save loaded successfully from " + SAVE_PATH.toAbsolutePath() + ":");
-            System.out.println(" - Player HP: " + player.life);
-            System.out.println(" - Inventory items: " + d.player.backpack.size());
-            System.out.println(" - Armor slots: " + d.player.armor.size());
-            System.out.println(" - Weapon: " + (d.player.weapon != null ? d.player.weapon.name : "none"));
-            System.out.println(" - Grade: " + (d.player.grade != null ? d.player.grade.name : "none"));
-            System.out.println(" - Chests: " + d.chests.size());
+            GameLogger.info("Save loaded successfully from " + SAVE_PATH.toAbsolutePath() + ":");
+            GameLogger.info(" - Player HP: " + player.life);
+            GameLogger.info(" - Inventory items: " + d.player.backpack.size());
+            GameLogger.info(" - Armor slots: " + d.player.armor.size());
+            GameLogger.info(" - Weapon: " + (d.player.weapon != null ? d.player.weapon.name : "none"));
+            GameLogger.info(" - Grade: " + (d.player.grade != null ? d.player.grade.name : "none"));
+            GameLogger.info(" - Chests: " + d.chests.size());
             doorMessage.show("Game loaded successfully!", 120, false);
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.err.println("Failed to load save from " + SAVE_PATH.toAbsolutePath() + " – starting new game.");
+            GameLogger.error("Failed to load save from " + SAVE_PATH.toAbsolutePath() + " – starting new game.");
             doorMessage.show("Failed to load saved game. Starting a new game.", 120, false);
             startNewGame();
         }
