@@ -1530,6 +1530,8 @@ public class gamePanel extends JPanel implements Runnable {
         Arrays.fill(levelSpawned, false);
         levelSpawned[currentMap] = true;
         player.reset();
+        Iron_sword starterSword = new Iron_sword(2);
+        player.equipWeapon(starterSword);
         chestInventoryManager.resetChestData();
 
         setUpObjects();
