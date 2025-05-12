@@ -494,10 +494,10 @@ public class Player extends Entity {
      * @param slot index slotu (0–3: helma, vesta, kalhoty, boty)
      */
     public void equipArmor(GameObject armor, int slot) {
-        if (!(armor instanceof Armor)) return;
-        if (slot < 0 || slot >= equippedArmor.length) return;
-        equippedArmor[slot] = armor;
-        GameLogger.info("Nasazeno brnění: " + armor.name + " do slotu " + slot);
+        if (slot >= 0 && slot < equippedArmor.length) {
+            equippedArmor[slot] = armor;
+            GameLogger.info("Equipped armor: " + armor.name + " in slot " + slot);
+        }
     }
 
     /**
@@ -507,7 +507,7 @@ public class Player extends Entity {
      */
     public void unequipArmor(int slot) {
         if (slot >= 0 && slot < equippedArmor.length) {
-            GameLogger.info("Sundáno brnění ze slotu " + slot);
+            GameLogger.info("Unequipped armor from slot " + slot);
             equippedArmor[slot] = null;
         }
     }
@@ -531,8 +531,8 @@ public class Player extends Entity {
         for (int i = 0; i < equippedArmor.length; i++) {
             if (equippedArmor[i] instanceof Armor) {
                 float defense = ((Armor) equippedArmor[i]).getDefensAmount();
+                totalDefense += defense;
             } else if (equippedArmor[i] != null) {
-                GameLogger.info("Předmět ve slotu " + i + " (" + equippedArmor[i].name + ") není brnění.");
             }
         }
         return totalDefense;
