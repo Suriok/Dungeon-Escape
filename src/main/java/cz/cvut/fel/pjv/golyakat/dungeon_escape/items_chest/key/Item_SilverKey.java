@@ -15,6 +15,15 @@ import java.awt.image.BufferedImage;
  */
 public class Item_SilverKey extends GameObject {
 
+    /**
+     * Constructs a new SilverKey item.
+     * <p>
+     * Sets the item name and attempts to load its image from the resource path
+     * <code>/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/key_part/silver_key.png</code>.
+     * If the image cannot be found or loaded, logs an error via {@link GameLogger} and
+     * falls back to a 1×1 transparent placeholder.
+     * </p>
+     */
     public Item_SilverKey() {
         name = "SilverKey";
         try {

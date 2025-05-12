@@ -57,39 +57,89 @@ import java.awt.event.MouseMotionAdapter;
 public class gamePanel extends JPanel implements Runnable {
 
     // SCREEN SETTINGS
+
+    /** The base tile size in pixels before scaling. */
     final int originalTileSize = 16;
+
+    /** The factor by which the base tile size is multiplied for rendering. */
     final int scale = 3;
 
+    /** The size of a single tile in pixels after scaling. */
     public final int tileSize = originalTileSize * scale;
+
+    /** The number of horizontal tiles visible on screen. */
     public final int maxScreenCol = 20;
+
+    /** The number of vertical tiles visible on screen. */
     public final int maxScreenRow = 12;
+
+    /** The total width of the game panel in pixels. */
     public final int screenWidth = tileSize * maxScreenCol;
+
+    /** The total height of the game panel in pixels. */
     public final int screenHeight = tileSize * maxScreenRow;
 
     //WORLD SETTINGS
+
+    /** The number of columns in the world map grid. */
     public final int maxWorldCol = 60;
+
+    /** The number of rows in the world map grid. */
     public final int maxWorldRow = 60;
+
+    /** The total number of distinct maps (levels) in the game. */
     public final int maxMap = 2; // number of all levels
+
+    /** The index of the currently active map (0-based). */
     public int currentMap = 0; // current map index
 
     // FPS
+
+    /** The target frames per second for the game loop. */
     int FPS = 60;
 
     // SYSTEM
+
+    /** Manages tile loading and rendering logic. */
     public TileManger tileH = new TileManger(this);
+
+    /** Handles keyboard input events. */
     public KeyHandler keyH = new KeyHandler();
+
+    /** The main thread running the game loop. */
     Thread gameThread;
+
+    /** Checks for and resolves collisions between entities and tiles. */
     public Collision collisionChecker = new Collision(this);
+
+    /** Responsible for placing objects and monsters in the world. */
     public AssetSetter assetSetter;
+
+    /** UI handler for the title screen overlay. */
     private final TitleScreenUI titleUi;
+
+    /** Manages game audio playback. */
     Sound sound = new Sound();
 
     // ENTITY AND OBJECT
+
+    /** The player character instance. */
     public Player player = new Player(this, keyH);
+
+    /** Array of interactive world objects per map. */
     public GameObject[][] obj = new GameObject[maxMap][11];
+
+
+    /** UI element showing the player's health bar. */
     public HealthBar healthBar;
+
+    /** UI element showing the player's defense bar. */
     public DefensBar defensBar;
+
+    /** Array of monsters per map. */
     public Entity[][] monster = new Entity[maxMap][20];
+
+    /** UI element displaying monster health/info. */
     public MonsterUI monsterUi;
     /**
      * Determines whether a given map has already been initialized (monsters, objects).
@@ -98,61 +148,135 @@ public class gamePanel extends JPanel implements Runnable {
     public boolean[] levelSpawned = new boolean[maxMap];
 
     // GAME STATE
+
+    /** The current primary state of the game (title, playing, game over). */
     public int gameState;
+
+    /** State constant for the title screen. */
     public final int titleState = 0;
+
+    /** State constant for active gameplay. */
     public final int playerState = 1;
+
+    /** State constant for the game-over screen. */
     public final int gameOverState = 2;
 
+    // UI MANAGERS
+
+    /** UI for displaying and interacting with chests. */
     public ChestUI chestUI;
+
+    /** UI for the crafting table. */
     public CraftingTableUI craftingTableUI;
+
+    /** UI for the player inventory and equipped items. */
     public PlayerUI playerUI;
-    /**
-     * The item currently being dragged by the player (drag-and-drop).
-     */
+
+    /** Manages chest inventory data and drag-and-drop operations. */
     public ChestInventoryManager chestInventoryManager;
 
+    // COMBAT
+
+    /** Counter to enforce attack cooldown between clicks. */
     private int attackCounter = 0;
+
+    /** Number of update ticks required between attacks. */
     private static final int ATTACK_COOLDOWN = 30;
 
     // Drag-and-drop variables
+
+    /** The item currently being dragged by the player. */
     public ChestInventoryManager.ItemData draggedItem = null;
+
+    /** The source container (player, chest, or crafting table) of the dragged item. */
     private Object sourceInventory = null; // Player, Chest, CraftingTableUI
+
+    /** The index of the dragged item within its source container. */
     private int draggedItemIndex = -1;
+
+    /** X offset between mouse pointer and top-left of dragged item sprite. */
     private int dragOffsetX, dragOffsetY;
+
+    /** Whether the collision event has been logged this drag operation. */
     private boolean collisionLogged = false;
+
+    /** Whether the drop event has been logged this drag operation. */
     private boolean dragDroppedLogged = false;
+
+    /** Whether the dragged item originated from an armor slot. */
     private boolean draggedFromArmor = false;
 
     // MESSAGES
+    /** Hint message shown when near a door. */
     public HintMessage doorMessage = new HintMessage();
+
+    /** Hint message shown specifically for door unlock hints. */
     public HintMessage doorHintMessage = new HintMessage();
+
+    /** Hint message shown when near a chest. */
     public HintMessage chestMessage = new HintMessage();
+
+    /** Hint message shown when near a healing station or item. */
     public HintMessage healingHintMessage = new HintMessage();
+
+    /** Hint message shown when near the crafting table. */
     public HintMessage craftingHintMessage = new HintMessage();
 
     // UI MESSAGE SETTINGS
+
+    /** Font size used for on-screen messages. */
     private final int messageFontSize = 20;
+
+    /** Line height (vertical spacing) between message lines. */
     private final int messageLineHeight = 30;
-    private final int messageX = screenWidth - tileSize * 7; // вправо
+
+    /** X coordinate at which messages are drawn (from the left). */
+    private final int messageX = screenWidth - tileSize * 7;
+
+    /** Y coordinate at which the first line of messages is drawn. */
     private final int messageY = 25;
 
     // HINT MESSAGE
+
+    /**
+     * Represents a transient on-screen hint message with a timer and proximity flag.
+     */
     public class HintMessage {
+        /** The text content of the hint. */
         public String text = "";
+
+        /** Remaining ticks before the hint is cleared. */
         public int counter = 0;
+
+        /** Whether the related object (door, chest, etc.) is near the player. */
         public boolean near = false;
 
+        /**
+         * Shows a new hint message for a specified duration.
+         *
+         * @param message the hint text to display
+         * @param duration number of ticks the hint remains visible
+         * @param isNear whether the player is near the related object
+         */
         public void show(String message, int duration, boolean isNear) {
             this.text = message;
             this.counter = duration;
             this.near = isNear;
         }
 
+        /**
+         * Updates the visibility timer and clears text when expired.
+         */
         public void update() {
             if (counter > 0) counter--;
             if (counter <= 0) text = "";
         }
 
+        /**
+         * Checks if the hint message is currently visible.
+         *
+         * @return true if the text is non-empty; false otherwise
+         */
         public boolean isVisible() {
             return !text.isEmpty();
         }

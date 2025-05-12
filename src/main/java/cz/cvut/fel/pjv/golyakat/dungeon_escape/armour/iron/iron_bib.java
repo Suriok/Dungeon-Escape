@@ -18,6 +18,12 @@ import java.util.Objects;
 public class iron_bib extends GameObject implements Armor {
     private final float defensAmount;
 
+    /**
+     * Constructs a new {@code iron_bib} armor piece.
+     * <p>
+     * Initializes the item name, defense amount, and loads the corresponding image resource.
+     * </p>
+     */
     public iron_bib() {
         name = "iron_bib";
         defensAmount = 5;

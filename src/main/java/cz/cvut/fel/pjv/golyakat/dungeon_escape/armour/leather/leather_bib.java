@@ -13,10 +13,15 @@ import java.util.Objects;
  * The defense value of the chest armor is 4 points. This is the most important piece of equipment.
  * </p>
  */
-
 public class leather_bib extends GameObject implements Armor {
     private final float defensAmount;
 
+    /**
+     * Constructs a new {@code leather_bib} armor piece.
+     * <p>
+     * Initializes the item name, defense amount, and loads the corresponding image resource.
+     * </p>
+     */
     public leather_bib() {
         name = "leather_bib";
         defensAmount = 4;

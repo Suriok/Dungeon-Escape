@@ -75,6 +75,15 @@ public class Boss_Goblin extends Entity {
     /** Flag indicating whether the goblin has already dropped a key (to prevent multiple drops). */
     private boolean hasDroppedKey = false;
 
+    /**
+     * Constructs a new Boss Goblin enemy.
+     * <p>
+     * Initializes position, movement speed, health values, collision bounds,
+     * and loads the sprite and fireball images.
+     * </p>
+     *
+     * @param gp the main game panel instance for context and asset loading
+     */
     public Boss_Goblin(gamePanel gp) {
         super(gp);
         this.gp = gp;
@@ -98,6 +107,14 @@ public class Boss_Goblin extends Entity {
         loadFireballImage();
     }
 
+    /**
+     * Loads the fireball projectile image for the Boss Goblin's attack.
+     * <p>
+     * Attempts to read the image resource at
+     * <code>/cz/cvut/fel/pjv/golyakat/dungeon_escape/Fireball/FB001.png</code>.
+     * Logs an error via {@link GameLogger} if loading fails.
+     * </p>
+     */
     private void loadFireballImage() {
         try {
             fireballImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/Fireball/FB001.png")));

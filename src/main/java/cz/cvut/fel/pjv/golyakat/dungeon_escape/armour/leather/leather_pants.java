@@ -19,7 +19,12 @@ import java.util.Objects;
 public class leather_pants extends GameObject implements Armor {
     private final float defensAmount;
 
-
+    /**
+     * Constructs a new {@code leather_pants} armor piece.
+     * <p>
+     * Initializes the item name, defense amount, and loads the corresponding image resource.
+     * </p>
+     */
     public leather_pants() {
         name = "leather_pants";
         defensAmount = 2;

@@ -26,12 +26,21 @@ public class TitleScreenUI {
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 48);
     private final Rectangle loggingToggleBounds = new Rectangle(20, 0, 120, 25);
 
+    /**
+     * Represents a clickable UI button with bounds, label text, and hover/press state.
+     */
     private static class UIButton {
         Rectangle bounds;
         String text;
         boolean hovered = false;
         boolean pressed = false;
 
+        /**
+         * Creates a new UIButton with the given bounds and label.
+         *
+         * @param b the bounding rectangle for click detection and drawing
+         * @param t the text label for this button
+         */
         UIButton(Rectangle b, String t) {
             this.bounds = b;
             this.text = t;

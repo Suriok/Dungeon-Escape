@@ -15,6 +15,12 @@ import java.util.Objects;
 public class iron_boots extends GameObject implements Armor {
     private final float defensAmount;
 
+    /**
+     * Constructs a new {@code iron_boots} armor piece.
+     * <p>
+     * Initializes the item name, defense amount, and loads the corresponding image resource.
+     * </p>
+     */
     public iron_boots() {
         name = "iron_boots";
         defensAmount = 2;
