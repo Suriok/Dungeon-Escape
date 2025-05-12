@@ -3,27 +3,27 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape.tile;
 import java.awt.image.BufferedImage;
 
 /**
- * Třída {@code Tile} reprezentuje jednu dlaždici (tile) na mapě herního světa.
+ * The {@code Tile} class represents a single tile on the game world map.
  * <p>
- * Obsahuje grafický obrázek dlaždice a příznak, zda se přes tuto dlaždici
- * může entita (např. hráč nebo monstrum) pohybovat.
+ * It contains the tile's image and a flag indicating whether
+ * an entity (e.g., player or monster) can move through it.
  * </p>
  */
 public class Tile {
 
     /**
-     * Obrázek představující vizuální podobu dlaždice.
+     * The image representing the visual appearance of the tile.
      * <p>
-     * Tento obrázek je vykreslován při vykreslování mapy.
+     * This image is rendered when the map is drawn.
      * </p>
      */
     public BufferedImage image;
 
     /**
-     * Příznak, zda je dlaždice kolizní.
+     * Flag indicating whether the tile is collidable.
      * <ul>
-     *     <li>{@code true} – entita nemůže dlaždicí projít (např. zeď)</li>
-     *     <li>{@code false} – průchozí dlaždice (např. podlaha)</li>
+     *     <li>{@code true} – the entity cannot pass through the tile (e.g., a wall)</li>
+     *     <li>{@code false} – passable tile (e.g., floor)</li>
      * </ul>
      */
     public boolean collision = false;

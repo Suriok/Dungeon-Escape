@@ -11,39 +11,39 @@ import java.util.Objects;
 import java.util.Random;
 
 /**
- * Třída {@code Monster_Slime} reprezentuje nepřátelskou příšeru typu Slime.
+ * The {@code Monster_Slime} class represents an enemy monster of type Slime.
  * <p>
- * Obsahuje logiku pro náhodný pohyb nebo sledování hráče, útok na hráče,
- * detekci kolizí a jednoduchou animaci pohybu.
+ * Contains logic for random movement or player tracking, player attacks,
+ * collision detection, and simple movement animation.
  * </p>
  */
 public class Monster_Slime extends Entity {
 
-    /** Odkaz na hlavní herní panel. */
+    /** Reference to the main game panel. */
     private gamePanel gp;
 
-    /** Počítadlo pro určení, kdy změnit akci nebo směr pohybu. */
+    /** Counter to determine when to change action or movement direction. */
     public int actionLockCounter = 0;
 
-    /** Maximální vzdálenost, na kterou slime detekuje hráče (v pixelech). */
+    /** Maximum distance at which the slime detects the player (in pixels). */
     private static final int DETECTION_RANGE = 5 * 48;
 
-    /** Maximální vzdálenost útoku na hráče. */
+    /** Maximum attack range on the player. */
     private static final int ATTACK_RANGE = 32;
 
-    /** Počet snímků čekání mezi útoky (cooldown). */
+    /** Number of frames to wait between attacks (cooldown). */
     private static final int ATTACK_COOLDOWN = 60;
 
-    /** Počítadlo pro cooldown útoků. */
+    /** Counter for attack cooldown. */
     private int attackCounter = 0;
 
-    /** Množství poškození, které slime způsobí hráči. */
+    /** Amount of damage the slime deals to the player. */
     private static final int ATTACK_DAMAGE = 4;
 
     /**
-     * Vytváří novou instanci Slime s výchozím nastavením.
+     * Creates a new instance of Slime with default settings.
      *
-     * @param gp herní panel, do kterého slime patří
+     * @param gp game panel to which the slime belongs
      */
     public Monster_Slime(gamePanel gp) {
         super(gp);
@@ -67,7 +67,7 @@ public class Monster_Slime extends Entity {
     }
 
     /**
-     * Načte obrázky (sprite) pro jednotlivé směry pohybu a animace Slime.
+     * Loads images (sprites) for different movement directions and Slime animations.
      */
     public void getImage() {
         try {
@@ -85,10 +85,10 @@ public class Monster_Slime extends Entity {
     }
 
     /**
-     * Určuje chování příšery podle vzdálenosti od hráče.
+     * Determines the monster's behavior based on distance from the player.
      * <ul>
-     *     <li>Pokud je hráč blízko, slime ho následuje.</li>
-     *     <li>Jinak se pohybuje náhodně.</li>
+     *     <li>If the player is nearby, the slime follows them.</li>
+     *     <li>Otherwise, it moves randomly.</li>
      * </ul>
      */
     public void setAction() {
@@ -118,11 +118,11 @@ public class Monster_Slime extends Entity {
     }
 
     /**
-     * Aktualizuje stav Slime každý snímek: pohyb, kolize, útok, animaci a kontrolu smrti.
+     * Updates the Slime's state each frame: movement, collision, attack, animation, and death check.
      */
     public void update() {
         if (isDead) {
-            super.update(); // Fade efekt
+            super.update(); // Fade effect
             return;
         }
 
@@ -148,7 +148,7 @@ public class Monster_Slime extends Entity {
             actionLockCounter = 120;
         }
 
-        // Útok na hráče
+        // Attack on player
         attackCounter++;
         int dx = gp.player.worldX - worldX;
         int dy = gp.player.worldY - worldY;
@@ -156,10 +156,10 @@ public class Monster_Slime extends Entity {
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
-            GameLogger.info(name + " zaútočil na hráče! HP: " + gp.player.life);
+            GameLogger.info(name + " attacked the player! HP: " + gp.player.life);
         }
 
-        // Animace
+        // Animation
         spriteCounter++;
         if (spriteCounter > 15) {
             spriteNum = (spriteNum == 1) ? 2 : 1;
@@ -174,9 +174,9 @@ public class Monster_Slime extends Entity {
     }
 
     /**
-     * Vykreslí Slime na obrazovku pomocí správného obrázku podle směru a fáze animace.
+     * Renders the Slime on screen using the correct image based on direction and animation phase.
      *
-     * @param g2d grafický kontext
+     * @param g2d graphics context
      */
     @Override
     public void draw(Graphics2D g2d) {

@@ -15,42 +15,42 @@ import java.util.Objects;
 import java.util.Random;
 
 /**
- * Třída {@code Boss_Eye} reprezentuje jednoho z hlavních bossů ve hře – Oko.
+ * The {@code Boss_Eye} class represents one of the main bosses in the game - the Eye.
  * <p>
- * Tento boss má vyšší zdraví, způsobuje silné poškození a sleduje hráče v daném dosahu.
- * Po porážce upouští klíč nezbytný pro další postup ve hře.
+ * This boss has higher health, deals strong damage, and tracks the player within a certain range.
+ * When defeated, it drops a key necessary for further progress in the game.
  * </p>
  */
 public class Boss_Eye extends Entity {
 
-    /** Odkaz na hlavní herní panel. */
+    /** Reference to the main game panel. */
     private gamePanel gp;
 
-    /** Počítadlo blokující časté změny směru. */
+    /** Counter preventing frequent direction changes. */
     public int actionLockCounter = 0;
 
-    /** Vzdálenost, na kterou boss detekuje hráče. */
+    /** Distance at which the boss detects the player. */
     private static final int DETECTION_RANGE = 5 * 48;
 
-    /** Vzdálenost, na kterou boss útočí na hráče. */
+    /** Distance at which the boss attacks the player. */
     private static final int ATTACK_RANGE = 48;
 
-    /** Počet snímků, které musí uběhnout mezi útoky (cooldown). */
+    /** Number of frames that must pass between attacks (cooldown). */
     private static final int ATTACK_COOLDOWN = 60;
 
-    /** Interní počítadlo cooldownu útoků. */
+    /** Internal counter for attack cooldown. */
     private int attackCounter = 0;
 
-    /** Poškození způsobené útokem. */
+    /** Damage dealt by the attack. */
     private static final int ATTACK_DAMAGE = 15;
 
-    /** Příznak označující, že boss již upustil klíč (zabraňuje opakovanému dropu). */
+    /** Flag indicating that the boss has already dropped a key (prevents multiple drops). */
     private boolean hasDroppedKey = false;
 
     /**
-     * Konstruktor inicializuje bosse, nastavuje zdraví, rychlost, obrázky a kolize.
+     * Constructor initializes the boss, sets health, speed, images, and collisions.
      *
-     * @param gp odkaz na {@link gamePanel}
+     * @param gp reference to {@link gamePanel}
      */
     public Boss_Eye(gamePanel gp) {
         super(gp);
@@ -70,7 +70,7 @@ public class Boss_Eye extends Entity {
     }
 
     /**
-     * Načítá sprite obrázky pro různé směry pohybu bosse.
+     * Loads sprite images for different boss movement directions.
      */
     public void getImage() {
         try {
@@ -83,13 +83,13 @@ public class Boss_Eye extends Entity {
             right1 = up1;
             right2 = up2;
         } catch (Exception e) {
-            GameLogger.error("Chyba při načítání sprite obrázků bosse Eye: " + e.getMessage());
+            GameLogger.error("Error loading Eye boss sprite images: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
-     * Určuje směr bosse podle polohy hráče nebo náhodně, pokud je hráč mimo dosah.
+     * Determines the boss's direction based on player position or randomly if the player is out of range.
      */
     public void setAction() {
         actionLockCounter++;
@@ -109,12 +109,12 @@ public class Boss_Eye extends Entity {
     }
 
     /**
-     * Hlavní metoda aktualizace – volá se v každém snímku hry.
-     * Zahrnuje pohyb, útok, kolize, animace a smrt bosse.
+     * Main update method - called every game frame.
+     * Includes movement, attack, collisions, animations, and boss death.
      */
     public void update() {
         if (isDead) {
-            super.update(); // fade efekt
+            super.update(); // fade effect
             return;
         }
 
@@ -146,7 +146,7 @@ public class Boss_Eye extends Entity {
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
-            GameLogger.info(name + " zaútočil na hráče! HP hráče: " + gp.player.life);
+            GameLogger.info(name + " attacked the player! Player HP: " + gp.player.life);
         }
 
         spriteCounter++;
@@ -165,15 +165,15 @@ public class Boss_Eye extends Entity {
                 keyItem.setItem(new Item_Key());
                 gp.player.addItem(keyItem);
                 hasDroppedKey = true;
-                GameLogger.info(name + " byl poražen a upustil klíč!");
+                GameLogger.info(name + " was defeated and dropped a key!");
             }
         }
     }
 
     /**
-     * Vykreslí bosse Eye na obrazovku podle směru a stavu.
+     * Renders the Eye boss on screen according to direction and state.
      *
-     * @param g2d grafický kontext
+     * @param g2d graphics context
      */
     @Override
     public void draw(Graphics2D g2d) {

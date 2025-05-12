@@ -5,69 +5,69 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 /**
- * Hlavní spouštěcí třída hry Dungeon Escape.
+ * Main launching class of the Dungeon Escape game.
  * <p>
- * Vytváří hlavní okno aplikace, inicializuje herní panel,
- * nastavuje zavírací logiku a spouští hlavní herní smyčku.
+ * Creates the main application window, initializes the game panel,
+ * sets up the closing logic, and starts the main game loop.
  * </p>
  */
 public class main {
 
     /**
-     * Hlavní vstupní metoda – spuštění celé hry.
+     * Main entry method – launches the entire game.
      * <p>
-     * Běží v kontextu Event Dispatch Threadu (EDT), jak doporučuje Swing API.
+     * Runs in the context of the Event Dispatch Thread (EDT), as recommended by the Swing API.
      * </p>
      *
-     * @param args argumenty z příkazové řádky (nevyužité)
+     * @param args command-line arguments (unused)
      */
     public static void main(String[] args) {
-        // Vše spustíme na EDT – Swing komponenty nejsou thread-safe
+        // Run everything on the EDT – Swing components are not thread-safe
         SwingUtilities.invokeLater(() -> {
 
             /**
-             * 1) Vytvoření hlavního okna hry (instance JFrame).
-             * Okno je pojmenováno a zablokována možnost změny velikosti.
+             * 1) Creation of the main game window (JFrame instance).
+             * The window is named, and resizing is disabled.
              */
             JFrame window = new JFrame("Dungeon Escape");
             window.setResizable(false);
 
             /**
-             * 2) Vytvoření instance herního panelu {@link gamePanel} a jeho připojení do okna.
-             * Panel obsahuje veškerou grafiku, logiku hry i hlavní smyčku.
+             * 2) Creation of an instance of the game panel {@link gamePanel} and attaching it to the window.
+             * The panel contains all graphics, game logic, and the main loop.
              */
             gamePanel gp = new gamePanel();
             window.add(gp);
 
             /**
-             * 3) Nastavení velikosti okna podle preferované velikosti herního panelu.
-             * Také umístíme okno doprostřed obrazovky.
+             * 3) Setting the window size based on the preferred size of the game panel.
+             * Also centers the window on the screen.
              */
             window.pack();
             window.setLocationRelativeTo(null);
 
             /**
-             * 4) Vlastní ošetření zavření okna – nejprve se uloží hra pomocí {@link gamePanel#saveGame()},
-             * poté se ukončí program přes {@link System#exit(int)}.
+             * 4) Custom handling of window closing – first saves the game using {@link gamePanel#saveGame()},
+             * then terminates the program via {@link System#exit(int)}.
              */
             window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             window.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    gp.saveGame();   // Uložení aktuálního stavu hry do XML
-                    System.exit(0);  // Ukončení aplikace
-                    GameLogger.info("windowClosing → saveGame()"); // Debug zpráva
+                    gp.saveGame();   // Saving the current game state to XML
+                    System.exit(0);  // Terminating the application
+                    GameLogger.info("windowClosing → saveGame()"); // Debug message
                 }
             });
 
             /**
-             * 5) Zviditelnění herního okna.
+             * 5) Making the game window visible.
              */
             window.setVisible(true);
 
             /**
-             * 6) Inicializace objektů na mapě pomocí {@link gamePanel#setUpObjects()} a spuštění
-             * herní smyčky pomocí {@link gamePanel#startGameThread()}.
+             * 6) Initialization of objects on the map using {@link gamePanel#setUpObjects()} and starting
+             * the game loop using {@link gamePanel#startGameThread()}.
              */
             gp.setUpObjects();
             gp.startGameThread();

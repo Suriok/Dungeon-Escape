@@ -22,83 +22,80 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Třída {@code Player} reprezentuje hlavní postavu ovládanou hráčem.
+ * The {@code Player} class represents the main character controlled by the player.
  * <p>
- * Obsahuje logiku pohybu, útoku, vybavení, interakcí a vykreslování hráče,
- * včetně podpory drag-and-drop mechanismu a výměny map.
+ * It contains logic for movement, attacking, equipment, interaction, and rendering,
+ * including support for drag-and-drop mechanics and map switching.
  * </p>
  */
 public class Player extends Entity {
 
-    /** Odkaz na hlavní herní panel. */
+    /** Reference to the main game panel. */
     gamePanel gp;
 
-    /** Ovladač klávesnice pro pohyb a akce. */
+    /** Keyboard handler for movement and actions. */
     KeyHandler keyH;
 
-    /** Souřadnice hráče na obrazovce (vždy uprostřed). */
+    /** Player's position on the screen (always centered). */
     public final int screenX;
     public final int screenY;
 
-    /** Sprite obrázky pro animaci pohybu ve všech směrech. */
+    /** Sprite images for movement animation in all directions. */
     public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
 
-    /** Aktuální směr pohybu (např. "up", "down"). */
+    /** Current movement direction (e.g., "up", "down"). */
     public String direction;
 
-    /** Počítadlo snímků pro střídání sprite animace. */
+    /** Frame counter for sprite animation. */
     public int spriteCounter = 0;
 
-    /** Index aktuálně zobrazeného sprite obrázku. */
+    /** Index of the currently displayed sprite image. */
     public int spriteNum = 1;
 
-    // === BOJ & ANIMACE ===
+    // === COMBAT & ANIMATION ===
 
-    /** Příznak, zda hráč právě útočí. */
+    /** Flag indicating whether the player is currently attacking. */
     private boolean isAttacking = false;
 
-    /** Počítadlo snímků útoku. */
+    /** Counter for attack animation frames. */
     private int attackAnimationCounter = 0;
 
-    /** Délka trvání útoku v počtu snímků. */
+    /** Duration of an attack in frames. */
     private static final int ATTACK_ANIMATION_DURATION = 20;
 
-    // === INVENTÁŘ & VYBAVENÍ ===
+    // === INVENTORY & EQUIPMENT ===
 
-    /** Inventář hráče – seznam předmětů s množstvím. */
+    /** Player's inventory – list of items with quantity. */
     private List<ChestInventoryManager.ItemData> inventory;
 
-    /** Pole vybaveného brnění (helmet, bib, pants, boots). */
+    /** Array of equipped armor pieces (helmet, bib, pants, boots). */
     private GameObject[] equippedArmor;
 
-    /** Aktuálně vybavená zbraň hráče. */
+    /** Currently equipped weapon. */
     private GameObject equippedWeapon;
 
-    /** Speciální slot pro vylepšení (grade). */
+    /** Special slot for grade/upgrades. */
     private GameObject equippedGrade;
 
-    /** Maximální vzdálenost, na kterou hráč může zaútočit. */
+    /** Maximum distance the player can attack. */
     private static final int ATTACK_RANGE = 96; // 2 tiles
 
-    /** Příznak, zda hráč právě obdržel poškození. */
+    /** Flag indicating whether the player has just been hit. */
     public boolean isHit = false;
 
-    /** Počítadlo trvání zobrazení efektu zásahu. */
+    /** Counter for displaying the hit effect. */
     private int hitEffectCounter = 0;
 
-    /** Číselné označení dlaždice s žebříkem pro přechod mezi mapami. */
+    /** Tile ID representing the ladder used for switching maps. */
     private static final int LADDER_TILE = 10;
 
-    // === KONSTRUKTOR ===
+    // === CONSTRUCTOR ===
 
     /**
-     * Vytváří nového hráče s referencí na panel a ovladač klávesnice.
+     * Creates a new player with references to the game panel and keyboard handler.
      * <p>
-     * Nastavuje výchozí hodnoty, načítá obrázky a inicializuje inventář a vybavení.
+     * Sets default values, loads sprites, and initializes inventory and equipment.
      * </p>
-     *
-     * @param gp   herní panel
-     * @param keyH ovladač klávesnice
      */
     public Player(gamePanel gp, KeyHandler keyH) {
         super(gp);
@@ -122,7 +119,7 @@ public class Player extends Entity {
     }
 
     /**
-     * Nastaví výchozí pozici, rychlost a zdraví hráče podle aktuální mapy.
+     * Sets the default position, speed, and health of the player based on the current map.
      */
     public void setDefaulteValues() {
         if (gp.currentMap == 0) {
@@ -141,7 +138,7 @@ public class Player extends Entity {
     }
 
     /**
-     * Načte obrázky (sprite) pro animace pohybu ve čtyřech směrech.
+     * Loads sprite images for movement animation in four directions.
      */
     public void getPlayerImage() {
         try {
@@ -167,9 +164,9 @@ public class Player extends Entity {
     }
 
     /**
-     * Aktualizuje stav hráče – pohyb, kolize, animace, interakce a stav zdraví.
+     * Updates the player's state – movement, collision, animation, interaction, and health.
      * <p>
-     * Tato metoda se volá v hlavní herní smyčce při každém snímku.
+     * This method is called every frame in the main game loop.
      * </p>
      */
     public void update() {
@@ -177,7 +174,7 @@ public class Player extends Entity {
         int oldX = worldX;
         int oldY = worldY;
 
-        // === Pohyb podle stisknutých kláves ===
+        // === Movement based on pressed keys ===
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
             if (keyH.upPressed) direction = "up";
             else if (keyH.downPressed) direction = "down";
@@ -194,7 +191,7 @@ public class Player extends Entity {
             gp.collisionChecker.checkTiles(this);
             gp.collisionChecker.checkObject(this, true);
 
-            // === Přechod na jinou mapu, pokud hráč vstoupí na žebřík ===
+            // === Switch to another map if the player steps on a ladder ===
             int col = (worldX + solidArea.x) / gp.tileSize;
             int row = (worldY + solidArea.y) / gp.tileSize;
             int currentTile = gp.tileH.mapTileNum[gp.currentMap][row][col];
@@ -210,7 +207,7 @@ public class Player extends Entity {
                 worldY += gp.tileSize;
             }
 
-            // === Detekce kolizí ===
+            // === Collision detection ===
             if (collisionOn) {
                 worldX = oldX;
                 worldY = oldY;
@@ -224,7 +221,7 @@ public class Player extends Entity {
             }
         }
 
-        // === Animace útoku ===
+        // === Attack animation ===
         attackCounter++;
         if (isAttacking) {
             attackAnimationCounter++;
@@ -234,7 +231,7 @@ public class Player extends Entity {
             }
         }
 
-        // === Interakce s objekty pomocí klávesy E ===
+        // === Attack animation ===
         int interactionIndex = gp.collisionChecker.checkObjectForInteraction(this, true);
         if (keyH.ePressed && interactionIndex != 999 && gp.obj[gp.currentMap][interactionIndex] != null) {
             if (gp.obj[gp.currentMap][interactionIndex].name.equals("DoorSide")) {
@@ -261,7 +258,8 @@ public class Player extends Entity {
             keyH.ePressed = false;
         }
 
-        // === Použití předmětu k léčení pomocí klávesy F ===
+        // === Use item to heal using key F ===
+
         if (keyH.fPressed && !inventory.isEmpty()) {
             ChestInventoryManager.ItemData item = inventory.get(0);
             consumeHealingItem(item);
@@ -269,7 +267,8 @@ public class Player extends Entity {
             keyH.fPressed = false;
         }
 
-        // === Efekt zásahu ===
+        // === Use item to heal using key F ===
+
         if (isHit) {
             hitEffectCounter--;
             if (hitEffectCounter <= 0) {
@@ -277,16 +276,17 @@ public class Player extends Entity {
             }
         }
 
-        // === Konec hry, pokud hráč ztratil všechny životy ===
+        // === Use item to heal using key F ===
+
         if (life <= 0) {
             gp.gameState = gp.gameOverState;
         }
     }
 
     /**
-     * Provede útok hráče – aplikuje zranění nejbližšímu monstru v dosahu.
+     * Executes a player attack – applies damage to the nearest monster within range.
      * <p>
-     * Používá aktuálně vybavenou zbraň a spustí animaci útoku.
+     * Uses the currently equipped weapon and starts the attack animation.
      * </p>
      */
     public void attack() {

@@ -16,31 +16,31 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Třída {@code AssetSetter} je zodpovědná za umísťování objektů a monster
- * do herního světa při inicializaci nebo načítání úrovně.
+ * The {@code AssetSetter} class is responsible for placing objects and monsters
+ * in the game world during initialization or level loading.
  */
 public class AssetSetter {
 
     /**
-     * Instance správce truhlic {@link ChestInventoryManager}, který se používá
-     * pro naplnění obsahu jednotlivých truhlic.
+     * Instance of the chest inventory manager {@link ChestInventoryManager}, used
+     * to populate the contents of individual chests.
      */
     public ChestInventoryManager chestInventoryManager;
 
     /**
-     * Odkaz na hlavní herní panel, kde se nachází mapa, objekty, potvory atd.
+     * Reference to the main game panel, which contains the map, objects, monsters, etc.
      */
     gamePanel gp;
 
     /**
-     * Generátor náhodných čísel pro výběr náhodných monster nebo pozic.
+     * Random number generator for selecting random monsters or positions.
      */
     Random random;
 
     /**
-     * Vytvoří nový {@code AssetSetter} pro daný herní panel.
+     * Creates a new {@code AssetSetter} for the given game panel.
      *
-     * @param gp hlavní panel hry
+     * @param gp the main game panel
      */
     public AssetSetter(gamePanel gp) {
         this.gp = gp;
@@ -49,15 +49,15 @@ public class AssetSetter {
     }
 
     /**
-     * Nastavuje objekty (dveře, truhly, crafting table) na všech mapách.
+     * Places objects (doors, chests, crafting table) on all maps.
      * <p>
-     * Rozděleno podle úrovně mapy (0 a 1). Používá se ruční rozmístění.
+     * Divided by map level (0 and 1). Uses manual placement.
      * </p>
      */
     public void setObg() {
-        // ————— 1. ÚROVEŇ —————
+        // ————— LEVEL 1 —————
 
-        // Přidání dveří na mapu 0
+        // Adding doors to map 0
         gp.obj[0][1] = new Object_DoorSide();
         gp.obj[0][1].worldX = 20 * gp.tileSize;
         gp.obj[0][1].worldY = 22 * gp.tileSize;
@@ -84,7 +84,7 @@ public class AssetSetter {
         gp.obj[0][6].worldY = 7 * gp.tileSize;
         ((Object_DoorSide) gp.obj[0][6]).requiresKey = true;
 
-        // Přidání truhlic s obsahem (ručně)
+        // Adding chests with contents (manually)
         Map<String, Integer> chest0Items = new HashMap<>();
         chest0Items.put("leather_pants", 1);
         chest0Items.put("leather_helmet", 1);
@@ -93,7 +93,7 @@ public class AssetSetter {
         gp.obj[0][0].worldX = 15 * gp.tileSize;
         gp.obj[0][0].worldY = 21 * gp.tileSize;
 
-        // Další truhly s částmi klíče
+        // Additional chests with key parts
         Map<String, Integer> chest7Items = new HashMap<>();
         chest7Items.put("Key1", 1);
         gp.obj[0][7] = new Object_Small_Chest(this, 7, chest7Items);
@@ -114,14 +114,14 @@ public class AssetSetter {
         gp.obj[0][9].worldX = 50 * gp.tileSize;
         gp.obj[0][9].worldY = 21 * gp.tileSize;
 
-        // Craftovací stůl
+        // Crafting table
         gp.obj[0][10] = new Object_CraftingTable();
         gp.obj[0][10].worldX = 38 * gp.tileSize;
         gp.obj[0][10].worldY = 14 * gp.tileSize;
 
-        // ————— 2. ÚROVEŇ —————
+        // ————— LEVEL 2 —————
 
-        // Dveře
+        // Doors
         gp.obj[1][1] = new Object_DoorSide();
         gp.obj[1][1].worldX = 15 * gp.tileSize;
         gp.obj[1][1].worldY = 19 * gp.tileSize;
@@ -144,7 +144,7 @@ public class AssetSetter {
         gp.obj[1][5].worldX = 34 * gp.tileSize;
         gp.obj[1][5].worldY = 17 * gp.tileSize;
 
-        // Truhly
+        // Chests
         Map<String, Integer> chest10Items = new HashMap<>();
         chest10Items.put("iron_bib", 1);
         chest10Items.put("iron_pants", 1);
@@ -179,10 +179,10 @@ public class AssetSetter {
     }
 
     /**
-     * Umístí boss monstra na aktuální mapu.
+     * Places boss monsters on the current map.
      * <p>
-     * Podle mapy spawne buď {@link Boss_Goblin} (mapa 0), nebo {@link Boss_Eye} (mapa 1).
-     * Ostatní spawnování monster je zakomentováno.
+     * Depending on the map, spawns either {@link Boss_Goblin} (map 0) or {@link Boss_Eye} (map 1).
+     * Other monster spawning is commented out.
      * </p>
      */
     public void setMonster() {
@@ -225,7 +225,7 @@ public class AssetSetter {
                 int spawnX = col * gp.tileSize;
                 int spawnY = row * gp.tileSize;
 
-                // Не спавним в прямоугольнике 5x5 тайлов вокруг игрока
+                // Do not spawn in a 5x5 tile rectangle around the player
                 Rectangle monsterRect = new Rectangle(spawnX, spawnY, gp.tileSize, gp.tileSize);
                 Rectangle safeZone = new Rectangle(
                         gp.player.worldX - gp.tileSize * 2,
@@ -264,7 +264,6 @@ public class AssetSetter {
             int spawnX = col * gp.tileSize;
             int spawnY = row * gp.tileSize;
 
-
             Entity monster = switch (random.nextInt(3)) {
                 case 0 -> new Monster_Slime(gp);
                 case 1 -> new Monster_Zombie(gp);
@@ -281,4 +280,3 @@ public class AssetSetter {
         }
     }
 }
-

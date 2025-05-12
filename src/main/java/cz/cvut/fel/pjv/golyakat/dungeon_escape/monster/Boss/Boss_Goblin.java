@@ -15,64 +15,64 @@ import java.util.Objects;
 import java.util.Random;
 
 /**
- * Třída {@code Boss_Goblin} reprezentuje hlavního bosse typu Goblin ve hře.
+ * The {@code Boss_Goblin} class represents the main Goblin-type boss in the game.
  * <p>
- * Goblin kombinuje fyzický útok a střelbu ohnivých koulí (fireball).
- * Sleduje hráče, reaguje na jeho pozici a po smrti upouští klíč nutný k postupu.
+ * The Goblin combines physical attacks and fireball shooting.
+ * Tracks the player, responds to their position, and drops a key upon death for progression.
  * </p>
  *
- * Klíčové vlastnosti:
+ * Key features:
  * <ul>
- *   <li>Má animaci pohybu a útoků.</li>
- *   <li>Střílí firebally na dálku.</li>
- *   <li>Při smrti spustí fade-out efekt a přidá hráči klíč.</li>
+ *   <li>Has movement and attack animations.</li>
+ *   <li>Shoots fireballs at range.</li>
+ *   <li>Triggers fade-out effect on death and adds a key to the player's inventory.</li>
  * </ul>
  */
 
 public class Boss_Goblin extends Entity {
-    /** Odkaz na hlavní herní panel pro přístup k hráči, mapě a zvukům. */
+    /** Reference to the main game panel for access to player, map, and sounds. */
     private gamePanel gp;
 
-    /** Počítadlo, které určuje, kdy může goblin změnit směr. */
+    /** Counter that determines when the goblin can change direction. */
     public int actionLockCounter = 0;
 
-    /** Maximální vzdálenost, ve které goblin detekuje hráče (v pixelech). */
+    /** Maximum distance at which the goblin detects the player (in pixels). */
     private static final int DETECTION_RANGE = 5 * 48;
 
-    /** Dosah fyzického útoku goblina (v pixelech). */
+    /** Range of the goblin's physical attack (in pixels). */
     private static final int ATTACK_RANGE = 48;
 
-    /** Počet snímků mezi dvěma útoky (60 = 1 sekunda). */
+    /** Number of frames between attacks (60 = 1 second). */
     private static final int ATTACK_COOLDOWN = 60;
 
-    /** Počítadlo snímků od posledního útoku. */
+    /** Frame counter since the last attack. */
     private int attackCounter = 0;
 
-    /** Množství poškození způsobené přímým útokem goblina. */
+    /** Amount of damage dealt by the goblin's direct attack. */
     private static final int ATTACK_DAMAGE = 9;
 
-    /** Cooldown mezi dvěma ohnivými koulemi (např. 600 = 10 sekund). */
+    /** Cooldown between two fireballs (e.g., 600 = 10 seconds). */
     private static final int FIREBALL_COOLDOWN = 600;
 
-    /** Počítadlo cooldownu pro ohnivou kouli. */
+    /** Counter for fireball cooldown. */
     private int fireballCounter = 0;
 
-    /** Rychlost pohybu ohnivé koule. */
+    /** Movement speed of the fireball. */
     private static final int FIREBALL_SPEED = 5;
 
-    /** Poškození způsobené ohnivou koulí při zásahu. */
+    /** Damage dealt by the fireball on hit. */
     private static final int FIREBALL_DAMAGE = 2;
 
     /**
-     * Seznam všech aktivních ohnivých koulí vystřelených bossem.
-     * <p>Každá ohnivá koule má vlastní pozici a rychlost.</p>
+     * List of all active fireballs shot by the boss.
+     * <p>Each fireball has its own position and velocity.</p>
      */
     private List<Fireball> fireballs = new ArrayList<>();
 
-    /** Obrázek reprezentující grafiku ohnivé koule. */
+    /** Image representing the fireball graphics. */
     private BufferedImage fireballImage;
 
-    /** Příznak určující, zda již goblin upustil klíč (aby to neudělal opakovaně). */
+    /** Flag indicating whether the goblin has already dropped a key (to prevent multiple drops). */
     private boolean hasDroppedKey = false;
 
     public Boss_Goblin(gamePanel gp) {
@@ -108,7 +108,7 @@ public class Boss_Goblin extends Entity {
     }
 
     /**
-     * Načte sprite obrázky pro goblina podle směru a animace.
+     * Loads sprite images for the goblin based on direction and animation.
      */
     public void getImage() {
         try {
@@ -127,10 +127,10 @@ public class Boss_Goblin extends Entity {
     }
 
     /**
-     * Určuje chování bosse v závislosti na vzdálenosti od hráče.
+     * Determines the boss's behavior based on distance from the player.
      * <ul>
-     *   <li>Při blízkosti hráče: sleduje hráče.</li>
-     *   <li>Jinak: náhodný pohyb.</li>
+     *   <li>When player is nearby: tracks the player.</li>
+     *   <li>Otherwise: random movement.</li>
      * </ul>
      */
     public void setAction() {
@@ -168,7 +168,7 @@ public class Boss_Goblin extends Entity {
     }
 
     /**
-     * Vystřelí ohnivou kouli směrem k hráči, pokud je v dosahu.
+     * Shoots a fireball towards the player if they are in range.
      */
     private void shootFireball() {
         int dx = gp.player.worldX - worldX;
@@ -183,9 +183,9 @@ public class Boss_Goblin extends Entity {
     }
 
     /**
-     * Hlavní update metoda bosse – volaná každým snímkem hry.
+     * Main boss update method - called every game frame.
      * <p>
-     * Zpracovává: pohyb, kolize, útok, střelbu, animaci, smrt, upuštění klíče.
+     * Handles: movement, collisions, attacks, shooting, animation, death, key dropping.
      * </p>
      */
     public void update() {
@@ -298,9 +298,9 @@ public class Boss_Goblin extends Entity {
 
 
     /**
-     * Vykreslí goblina na obrazovku a následně i jeho ohnivé koule.
+     * Renders the goblin on screen and then its fireballs.
      *
-     * @param g2d grafický kontext
+     * @param g2d graphics context
      */
     @Override
     public void draw(Graphics2D g2d) {
@@ -356,9 +356,9 @@ public class Boss_Goblin extends Entity {
     }
 
     /**
-     * Vnitřní třída {@code Fireball} představuje jednu ohnivou kouli vystřelenou bossem.
+     * Inner class {@code Fireball} represents a single fireball shot by the boss.
      * <p>
-     * Uchovává pozici a rychlost a má jednoduchou metodu {@code update()} pro pohyb.
+     * Stores position and velocity and has a simple {@code update()} method for movement.
      * </p>
      */
 
@@ -373,7 +373,7 @@ public class Boss_Goblin extends Entity {
             this.speedY = speedY;
         }
 
-/** Posune kouli o její rychlost (1 snímek)*/
+        /** Moves the ball by its velocity (1 frame) */
         void update() {
             x += speedX;
             y += speedY;

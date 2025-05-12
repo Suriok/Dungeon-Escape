@@ -8,10 +8,10 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 /**
- * Třída {@code iron_bib} reprezentuje železný hrudní plát – nejdůležitější část brnění,
- * která pokrývá trup a poskytuje nejvyšší obranu ze všech částí výstroje.
+ * The {@code iron_bib} class represents an iron chest piece – the most important part of the armor,
+ * which covers the torso and provides the highest defense of all equipment pieces.
  * <p>
- * jeho obranná hodnota činí 5.
+ * Its defense value is 5.
  * </p>
  */
 
@@ -36,6 +36,11 @@ public class iron_bib extends GameObject implements Armor {
         }
     }
 
+    /**
+     * Returns the defense amount provided by this armor piece.
+     *
+     * @return the defense value of the iron bib
+     */
     @Override
     public float getDefensAmount() {
         return defensAmount;

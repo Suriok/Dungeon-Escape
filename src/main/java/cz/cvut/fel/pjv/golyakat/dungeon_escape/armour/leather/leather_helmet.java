@@ -8,10 +8,10 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 /**
- * Třída {@code leather_helmet} reprezentuje koženou přilbu,
- * která se nasazuje na hlavu hráče a poskytuje základní ochranu.
+ * The {@code leather_helmet} class represents a leather helmet,
+ * which is equipped on the player's head and provides basic protection.
  * <p>
- * Obranná hodnota přilby je 1 bod.
+ * The defense value of the helmet is 1 point.
  * </p>
  */
 
@@ -36,6 +36,11 @@ public class leather_helmet extends GameObject implements Armor {
         }
     }
 
+    /**
+     * Returns the defense amount provided by this armor piece.
+     *
+     * @return the defense value of the leather helmet
+     */
     @Override
     public float getDefensAmount() {
         return defensAmount;

@@ -2,50 +2,50 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Weapon;
 
 import javax.imageio.ImageIO;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
- * Třída {@code Emerald_sword} reprezentuje specifický typ meče – smaragdový meč,
- * který hráči poskytuje určitou útočnou sílu.
+ * The {@code Emerald_sword} class represents a specific type of sword – the emerald sword,
+ * which provides players with a certain attack strength.
  * <p>
- * Meč implementuje rozhraní {@link Weapon} a rozšiřuje {@link GameObject}, takže se
- * může nacházet ve světě jako herní objekt a zároveň poskytovat bojové vlastnosti.
+ * The sword implements the {@link Weapon} interface and extends {@link GameObject}, allowing it
+ * to exist in the world as a game object while also providing combat properties.
  * </p>
  */
 public class Emerald_sword extends GameObject implements Weapon {
 
     /**
-     * Hodnota útoku, kterou tento meč způsobuje.
+     * The attack value that this sword inflicts.
      */
     private final int attack;
 
     /**
-     * Vytváří nový smaragdový meč s danou útočnou hodnotou.
+     * Creates a new emerald sword with the specified attack value.
      * <p>
-     * Při konstrukci se zároveň načítá příslušná textura z resource balíčku.
+     * During construction, the corresponding texture is also loaded from the resource package.
      * </p>
      *
-     * @param attackValue hodnota útoku, kterou meč způsobí
+     * @param attackValue the attack value that the sword inflicts
      */
     public Emerald_sword(int attackValue) {
         this.attack = attackValue;
         name = "emerald_sword";
 
         try {
-            image = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/sword/emerald_sword.png"));
+            image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/sword/emerald_sword.png")));
         } catch (IOException e) {
             GameLogger.error("Error loading image for emerald_sword: " + e.getMessage());
         }
     }
 
     /**
-     * Vrací hodnotu útoku daného meče.
+     * Returns the attack value of the given sword.
      *
-     * @return číselná hodnota útoku
+     * @return the numerical attack value
      */
     @Override
     public int getAttack() {

@@ -1,18 +1,18 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon;
 
 /**
- * Rozhraní {@code Weapon} definuje základní vlastnosti všech zbraní ve hře.
+ * The {@code Weapon} interface defines the basic properties of all weapons in the game.
  * <p>
- * Každá třída, která toto rozhraní implementuje (např. meče, sekery apod.),
- * musí poskytnout metodu {@link #getAttack()}, která vrací útočnou sílu dané zbraně.
+ * Every class that implements this interface (e.g., swords, axes, etc.)
+ * must provide the {@link #getAttack()} method, which returns the attack strength of the given weapon.
  * </p>
  */
 public interface Weapon {
 
     /**
-     * Vrací hodnotu útoku, kterou tato zbraň způsobuje.
+     * Returns the attack value that this weapon inflicts.
      *
-     * @return číselná hodnota útoku
+     * @return the numerical attack value
      */
     int getAttack();
 }

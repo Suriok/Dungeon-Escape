@@ -6,27 +6,27 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 /**
- * Třída {@code Item_Apple} reprezentuje léčivý předmět – jablko,
- * který obnovuje malé množství zdraví (1/4 srdce, tedy 0.5 HP).
+ * The {@code Item_Apple} class represents a healing item – an apple,
+ * which restores a small amount of health (1/4 heart, i.e., 0.5 HP).
  * <p>
- * Jablko je graficky reprezentováno ikonou a slouží jako spotřební položka
- * v hráčově inventáři. Dědí od {@link GameObject}, což umožňuje jeho použití
- * v herním světě i inventáři.
+ * The apple is graphically represented by an icon and serves as a consumable item
+ * in the player's inventory. It inherits from {@link GameObject}, which allows its use
+ * both in the game world and inventory.
  * </p>
  */
 public class Item_Apple extends GameObject {
 
     /**
-     * Množství zdraví, které jablko při použití obnoví.
+     * Amount of health that the apple restores when used.
      */
     private final float healAmount;
 
     /**
-     * Vytvoří nové jablko, nastaví jeho název, účinek a načte obrázek z resource složky.
+     * Creates a new apple, sets its name, effect, and loads the image from the resource folder.
      */
     public Item_Apple() {
         name = "Apple";
-        healAmount = 0.5f; // odpovídá 1/4 srdce (1 srdce = 2 HP)
+        healAmount = 0.5f; // corresponds to 1/4 heart (1 heart = 2 HP)
 
         try {
             image = ImageIO.read(Objects.requireNonNull(
@@ -38,9 +38,9 @@ public class Item_Apple extends GameObject {
     }
 
     /**
-     * Vrací počet jednotek zdraví, které jablko při použití obnoví.
+     * Returns the number of health units that the apple restores when used.
      *
-     * @return hodnota regenerace zdraví (např. 0.5)
+     * @return health regeneration value (e.g., 0.5)
      */
     public float getHealAmount() {
         return healAmount;

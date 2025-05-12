@@ -7,10 +7,10 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 /**
- * Třída {@code Item_SilverKey} reprezentuje kompletní stříbrný klíč,
- * který je možné vycraftit spojením tří částí: {@link Item_partKey1}, {@link Item_partKey2}, a {@link Item_partKey3}.
+ * The {@code Item_SilverKey} class represents a complete silver key,
+ * which can be crafted by combining three parts: {@link Item_partKey1}, {@link Item_partKey2}, and {@link Item_partKey3}.
  * <p>
- * Tento klíč slouží k odemykání speciálních dveří ve vyšších úrovních hry.
+ * This key is used to unlock special doors in higher levels of the game.
  * </p>
  */
 public class Item_SilverKey extends GameObject {

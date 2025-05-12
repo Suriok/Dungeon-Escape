@@ -7,45 +7,45 @@ import java.awt.image.BufferedImage;
 import java.util.Objects;
 
 /**
- * Třída {@code Object_DoorFront} reprezentuje přední (čelní) dveře ve hře,
- * které lze otevřít buď přímo, nebo pomocí speciálního klíče – např. SilverKey.
+ * The {@code Object_DoorFront} class represents a front-facing door in the game,
+ * which can be opened either directly or with a special key - e.g., SilverKey.
  * <p>
- * Obsahuje grafiku pro zavřený i otevřený stav, kolizní logiku a podporu interakce hráče.
+ * Contains graphics for both closed and open states, collision logic, and player interaction support.
  * </p>
  */
 public class Object_DoorFront extends GameObject {
 
     /**
-     * Určuje, zda dveře vyžadují klíč (např. SilverKey) k otevření.
+     * Determines whether the door requires a key (e.g., SilverKey) to open.
      */
     public boolean requiresKey = false;
 
     /**
-     * Příznak označující, zda jsou dveře otevřené.
+     * Flag indicating whether the door is open.
      */
     private boolean isOpen = false;
 
     /**
-     * Obrázek otevřených dveří.
+     * Image of the open door.
      */
     private BufferedImage openImage;
 
     /**
-     * Vytvoří novou instanci dveří, načte obrázky a nastaví výchozí stav (zavřeno).
+     * Creates a new door instance, loads images and sets the default state (closed).
      */
     public Object_DoorFront() {
         name = "DoorFront";
-        Collision = true; // Kolizní, pokud jsou zavřené
-        solidArea = new java.awt.Rectangle(0, 0, 48, 48); // Předpoklad: tileSize = 48
+        Collision = true; // Collision enabled when closed
+        solidArea = new java.awt.Rectangle(0, 0, 48, 48); // Assumption: tileSize = 48
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
 
         /*
-          Obrázek zavřených dveří.
+          Image of the closed door.
          */
         BufferedImage closedImage;
         try {
-            // Načtení obrázku pro zavřené dveře
+            // Loading the closed door image
             BufferedImage tempClosed = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_front.png")));
             if (tempClosed == null) {
@@ -54,7 +54,7 @@ public class Object_DoorFront extends GameObject {
             }
             closedImage = tempClosed;
 
-            // Načtení obrázku pro otevřené dveře (recykluje se obrázek bočních dveří)
+            // Loading the open door image (reuses the side door image)
             BufferedImage tempOpen = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side.png")));
             if (tempOpen == null) {
@@ -73,10 +73,10 @@ public class Object_DoorFront extends GameObject {
     }
 
     /**
-     * Zpracovává interakci hráče s dveřmi.
+     * Handles player interaction with the door.
      * <ul>
-     *     <li>Pokud dveře nevyžadují klíč, otevřou se ihned.</li>
-     *     <li>Pokud dveře vyžadují klíč, pouze oznámí nutnost jeho použití.</li>
+     *     <li>If the door doesn't require a key, it opens immediately.</li>
+     *     <li>If the door requires a key, it only notifies about the need to use it.</li>
      * </ul>
      */
     public void interact() {
@@ -91,18 +91,18 @@ public class Object_DoorFront extends GameObject {
     }
 
     /**
-     * Vrací, zda jsou dveře otevřené.
+     * Returns whether the door is open.
      *
-     * @return {@code true}, pokud jsou otevřené
+     * @return {@code true} if the door is open
      */
     public boolean isOpen() {
         return isOpen;
     }
 
     /**
-     * Odemkne dveře, pokud vyžadují klíč a jsou zavřené.
+     * Unlocks the door if it requires a key and is closed.
      * <p>
-     * Nastaví obrázek otevřených dveří a vypne kolizi.
+     * Sets the open door image and disables collision.
      * </p>
      */
     public void unlock() {

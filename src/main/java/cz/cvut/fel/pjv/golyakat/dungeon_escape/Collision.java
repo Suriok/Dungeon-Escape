@@ -9,44 +9,44 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
 import java.awt.*;
 
 /**
- * Třída {@code Collision} zajišťuje detekci kolizí mezi entitami, dlaždicemi a objekty ve hře.
+ * The {@code Collision} class handles collision detection between entities, tiles, and objects in the game.
  * <p>
- * Obsahuje logiku pro kolize pohybu, interakce a nastavuje příznaky kolize
- * pro entity typu {@link Entity}.
+ * It contains logic for movement collisions, interactions, and sets collision flags
+ * for entities of type {@link Entity}.
  * </p>
  */
 public class Collision {
 
     /**
-     * Odkaz na hlavní herní panel {@link gamePanel}, ze kterého získáváme mapu, objekty a dlaždice.
+     * Reference to the main game panel {@link gamePanel}, from which we obtain the map, objects, and tiles.
      */
     gamePanel gp;
 
     /**
-     * Vytváří novou instanci kolizního manažeru pro daný herní panel.
+     * Creates a new instance of the collision manager for the given game panel.
      *
-     * @param gp hlavní instance hry (gamePanel)
+     * @param gp the main game instance (gamePanel)
      */
     public Collision(gamePanel gp) {
         this.gp = gp;
     }
 
     /**
-     * Kontroluje, zda entita narazí do kolizních dlaždic v závislosti na směru pohybu.
+     * Checks if an entity collides with collision-enabled tiles depending on the movement direction.
      * <p>
-     * Pokud kolize existuje, nastaví {@code entity.collisionOn = true}.
+     * If a collision exists, sets {@code entity.collisionOn = true}.
      * </p>
      *
-     * @param entity entita, pro kterou detekujeme kolizi s dlaždicemi
+     * @param entity the entity for which we are detecting collisions with tiles
      */
     public void checkTiles(Entity entity) {
-        // Výpočet hraničních bodů solidní oblasti entity
+        // Calculate the boundary points of the entity's solid area
         int entityLeftWorldX = entity.worldX + entity.solidArea.x;
         int entityRightWorldX = entity.worldX + entity.solidArea.x + entity.solidArea.width;
         int entityTopWorldY = entity.worldY + entity.solidArea.y;
         int entityBottomWorldY = entity.worldY + entity.solidArea.y + entity.solidArea.height;
 
-        // Přepočet na sloupce a řádky mapy
+        // Convert to map columns and rows
         int entityLeftCol = entityLeftWorldX / gp.tileSize;
         int entityRightCol = entityRightWorldX / gp.tileSize;
         int entityTopRow = entityTopWorldY / gp.tileSize;
@@ -55,7 +55,7 @@ public class Collision {
         String direction = (entity.direction != null) ? entity.direction : "down";
         entity.collisionOn = false;
 
-        // Kolizní logika podle směru pohybu
+        // Collision logic based on movement direction
         switch (direction) {
             case "up":
                 int nextTopRow = (entityTopWorldY - entity.speed) / gp.tileSize;
@@ -99,22 +99,22 @@ public class Collision {
                 break;
         }
 
-        // U nehráče detekujeme kolize s objekty také
+        // For non-player entities, also detect collisions with objects
         if (!entity.getClass().getSimpleName().equals("Player")) {
             checkObject(entity, false);
         }
     }
 
     /**
-     * Detekuje kolizi entity s objektem a případně vrátí index kolidujícího objektu.
+     * Detects collisions between an entity and an object and optionally returns the index of the colliding object.
      * <p>
-     * Pokud parametr {@code player} je {@code true}, metoda vrací index kolidujícího objektu.
-     * Jinak jen nastavuje příznak kolize.
+     * If the {@code player} parameter is {@code true}, the method returns the index of the colliding object.
+     * Otherwise, it only sets the collision flag.
      * </p>
      *
-     * @param entity entita, pro kterou detekujeme kolizi
-     * @param player zda se jedná o hráče (používá se pro interakci)
-     * @return index objektu, se kterým došlo ke kolizi, nebo 999 pokud k žádné nedošlo
+     * @param entity the entity for which we are detecting collisions
+     * @param player whether this is the player (used for interactions)
+     * @return the index of the object collided with, or 999 if no collision occurred
      */
     public int checkObject(Entity entity, boolean player) {
         int index = 999;
@@ -123,13 +123,13 @@ public class Collision {
             if (gp.obj[gp.currentMap][i] != null) {
                 GameObject obj = gp.obj[gp.currentMap][i];
 
-                // Nastavení aktuálních pozic
+                // Set current positions
                 entity.solidArea.x = entity.worldX + entity.solidArea.x;
                 entity.solidArea.y = entity.worldY + entity.solidArea.y;
                 obj.solidArea.x = obj.worldX + obj.solidArea.x;
                 obj.solidArea.y = obj.worldY + obj.solidArea.y;
 
-                // Simulace pohybu
+                // Simulate movement
                 switch (entity.direction) {
                     case "up":
                         entity.solidArea.y -= entity.speed;
@@ -154,7 +154,7 @@ public class Collision {
                     }
                 }
 
-                // Reset pozic
+                // Reset positions
                 entity.solidArea.x = entity.solidAreaDefaultX;
                 entity.solidArea.y = entity.solidAreaDefaultY;
                 obj.solidArea.x = obj.solidAreaDefaultX;
@@ -165,15 +165,15 @@ public class Collision {
     }
 
     /**
-     * Detekuje, zda se entita nachází v oblasti interakce některého objektu.
+     * Detects whether an entity is within the interaction range of an object.
      * <p>
-     * Na rozdíl od {@link #checkObject} rozšiřuje detekční oblast.
-     * Používá se např. pro otevření truhly nebo dveří při stisknutí klávesy.
+     * Unlike {@link #checkObject}, this method expands the detection area.
+     * It is used, for example, to open chests or doors when a key is pressed.
      * </p>
      *
-     * @param entity entita, která interaguje
-     * @param player zda jde o hráče
-     * @return index objektu, se kterým lze interagovat, nebo 999
+     * @param entity the interacting entity
+     * @param player whether it is the player
+     * @return the index of the object that can be interacted with, or 999
      */
     public int checkObjectForInteraction(Entity entity, boolean player) {
         int index = 999;
@@ -182,7 +182,7 @@ public class Collision {
             if (gp.obj[gp.currentMap][i] != null) {
                 GameObject obj = gp.obj[gp.currentMap][i];
 
-                // Rozšíření kolizní oblasti objektu
+                // Expand the object's collision area
                 entity.solidArea.x = entity.worldX + entity.solidArea.x;
                 entity.solidArea.y = entity.worldY + entity.solidArea.y;
 
@@ -197,7 +197,7 @@ public class Collision {
                     }
                 }
 
-                // Reset kolizní oblasti
+                // Reset collision area
                 entity.solidArea.x = entity.solidAreaDefaultX;
                 entity.solidArea.y = entity.solidAreaDefaultY;
                 obj.solidArea.x = obj.solidAreaDefaultX;
@@ -211,13 +211,13 @@ public class Collision {
     }
 
     /**
-     * Zajišťuje zpracování interakce hráče s objektem.
+     * Handles the player's interaction with an object.
      * <p>
-     * Např. otevření dveří, otevření truhly atd.
+     * For example, opening doors, opening chests, etc.
      * </p>
      *
-     * @param entity entita (hráč), která interaguje
-     * @param objectIndex index objektu v poli {@code gp.obj}, se kterým dochází k interakci
+     * @param entity the entity (player) that is interacting
+     * @param objectIndex the index of the object in the {@code gp.obj} array with which interaction occurs
      */
     public void handleObjectInteraction(Entity entity, int objectIndex) {
         if (objectIndex != 999 && gp.obj[gp.currentMap][objectIndex] != null) {

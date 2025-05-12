@@ -9,59 +9,59 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
- * Třída {@code HealthBar} slouží k vizuálnímu zobrazení zdraví hráče
- * formou srdíček na obrazovce.
+ * The {@code HealthBar} class serves to visually display the player's health
+ * in the form of hearts on the screen.
  * <p>
- * Každé srdce představuje 2 jednotky HP a mění svůj vzhled podle aktuálního stavu hráče.
- * Obrazy jednotlivých fází zranění jsou načítány při konstrukci objektu.
+ * Each heart represents 2 HP units and changes its appearance based on the player's current state.
+ * Images of different damage phases are loaded during object construction.
  * </p>
  */
 public class HealthBar extends GameObject {
 
     /**
-     * Obrázek plného srdce (2 HP).
+     * Image of a full heart (2 HP).
      */
     private BufferedImage fullHp;
 
     /**
-     * Obrázek srdce při lehkém zásahu (~0.5 HP).
+     * Image of a heart after light damage (~0.5 HP).
      */
     private BufferedImage hit1;
 
     /**
-     * Obrázek srdce při středním zásahu (~1 HP).
+     * Image of a heart after medium damage (~1 HP).
      */
     private BufferedImage hit2;
 
     /**
-     * Obrázek srdce při těžkém zásahu (~1.5 HP).
+     * Image of a heart after heavy damage (~1.5 HP).
      */
     private BufferedImage hit3;
 
     /**
-     * Obrázek prázdného (mrtvého) srdce (0 HP).
+     * Image of an empty (dead) heart (0 HP).
      */
     private BufferedImage die;
 
     /**
-     * Odkaz na hlavní herní panel, slouží pro zjištění velikosti dlaždic atd.
+     * Reference to the main game panel, used for obtaining tile size etc.
      */
     private gamePanel gp;
 
     /**
-     * Maximální počet jednotek zdraví (např. 8 = 4 srdce).
+     * Maximum number of health units (e.g., 8 = 4 hearts).
      */
     private final int maxHp = 8;
 
     /**
-     * Aktuální počet jednotek zdraví hráče.
+     * Current number of player's health units.
      */
     private int currentHp;
 
     /**
-     * Vytvoří nový ukazatel zdraví a načte obrázky všech stavů srdcí.
+     * Creates a new health indicator and loads images of all heart states.
      *
-     * @param gp herní panel, ze kterého se získávají data
+     * @param gp game panel from which data is obtained
      */
     public HealthBar(gamePanel gp) {
         this.gp = gp;
@@ -70,7 +70,7 @@ public class HealthBar extends GameObject {
     }
 
     /**
-     * Načte obrázky všech variant srdce z adresáře resource.
+     * Loads images of all heart variants from the resource directory.
      */
     private void loadImages() {
         try {
@@ -90,18 +90,18 @@ public class HealthBar extends GameObject {
     }
 
     /**
-     * Aktualizuje hodnotu aktuálního zdraví, které bude vizuálně vykresleno.
+     * Updates the value of current health that will be visually rendered.
      *
-     * @param playerHp aktuální počet HP hráče (0–8)
+     * @param playerHp current number of player's HP (0-8)
      */
     public void update(int playerHp) {
         this.currentHp = playerHp;
     }
 
     /**
-     * Vykreslí ukazatel zdraví v levém horním rohu obrazovky.
+     * Renders the health indicator in the top-left corner of the screen.
      *
-     * @param g2 grafický kontext, do kterého se vykresluje
+     * @param g2 graphics context to render into
      */
     public void draw(Graphics2D g2) {
         int x = 10;
@@ -116,10 +116,10 @@ public class HealthBar extends GameObject {
     }
 
     /**
-     * Vrací odpovídající obrázek pro daný počet HP v jednom srdci (0–2).
+     * Returns the appropriate image for a given amount of HP in one heart (0-2).
      *
-     * @param heartHp zdraví v rámci jednoho srdce (např. 1 = polovina)
-     * @return obrázek odpovídající danému stavu srdce
+     * @param heartHp health within one heart (e.g., 1 = half)
+     * @return image corresponding to the given heart state
      */
     private BufferedImage getHeartImage(int heartHp) {
         if (heartHp >= 2) {

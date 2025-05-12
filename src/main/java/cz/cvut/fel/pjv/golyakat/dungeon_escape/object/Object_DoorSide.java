@@ -6,37 +6,37 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 /**
- * Třída {@code Object_DoorSide} reprezentuje boční dveře ve hře,
- * které lze otevřít buď interakcí, nebo odemknout pomocí klíče.
+ * The {@code Object_DoorSide} class represents a side door in the game,
+ * which can be opened either through interaction or unlocked with a key.
  * <p>
- * Dveře mají kolizní oblast, rozdílné obrázky pro otevřený/zavřený stav
- * a mohou vyžadovat {@code Key} pro odemčení.
+ * The door has a collision area, different images for open/closed states,
+ * and may require a {@code Key} for unlocking.
  * </p>
  */
 public class Object_DoorSide extends GameObject {
 
     /**
-     * Příznak, zda tyto dveře vyžadují klíč pro otevření.
+     * Flag indicating whether this door requires a key to open.
      */
     public boolean requiresKey = false;
 
     /**
-     * Příznak, zda jsou dveře aktuálně otevřené.
+     * Flag indicating whether the door is currently open.
      */
     private boolean isOpen = false;
 
     /**
-     * Obrázek zavřených dveří.
+     * Image of the closed door.
      */
     private BufferedImage closedImage;
 
     /**
-     * Obrázek otevřených dveří.
+     * Image of the open door.
      */
     private BufferedImage openImage;
 
     /**
-     * Konstruktor inicializuje dveře, načte obrázky a nastaví výchozí stav.
+     * Constructor initializes the door, loads images and sets the default state.
      */
     public Object_DoorSide() {
         name = "DoorSide";
@@ -46,7 +46,7 @@ public class Object_DoorSide extends GameObject {
         solidAreaDefaultY = solidArea.y;
 
         try {
-            // Načtení obrázku zavřených dveří
+            // Loading the closed door image
             BufferedImage tempClosed = ImageIO.read(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side.png"));
             if (tempClosed == null) {
@@ -55,7 +55,7 @@ public class Object_DoorSide extends GameObject {
             }
             closedImage = tempClosed;
 
-            // Načtení obrázku otevřených dveří
+            // Loading the open door image
             BufferedImage tempOpen = ImageIO.read(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side_open.png"));
             if (tempOpen == null) {
@@ -64,7 +64,7 @@ public class Object_DoorSide extends GameObject {
             }
             openImage = tempOpen;
 
-            // Výchozí stav – dveře zavřené
+            // Default state - door closed
             image = closedImage;
 
         } catch (Exception e) {
@@ -79,10 +79,10 @@ public class Object_DoorSide extends GameObject {
     }
 
     /**
-     * Pokusí se otevřít dveře interakcí hráče.
+     * Attempts to open the door through player interaction.
      * <p>
-     * Pokud dveře nevyžadují klíč, otevřou se a odstraní kolizi.
-     * Pokud je potřeba klíč, zůstávají zavřené.
+     * If the door doesn't require a key, it opens and removes collision.
+     * If a key is required, it remains closed.
      * </p>
      */
     public void interact() {
@@ -97,7 +97,7 @@ public class Object_DoorSide extends GameObject {
     }
 
     /**
-     * Odemkne dveře pomocí klíče – nastaví otevřený stav a deaktivuje kolizi.
+     * Unlocks the door with a key - sets the open state and deactivates collision.
      */
     public void unlock() {
         isOpen = true;
@@ -107,9 +107,9 @@ public class Object_DoorSide extends GameObject {
     }
 
     /**
-     * Zda jsou dveře aktuálně otevřené.
+     * Whether the door is currently open.
      *
-     * @return {@code true}, pokud jsou dveře otevřené
+     * @return {@code true} if the door is open
      */
     public boolean isOpen() {
         return isOpen;

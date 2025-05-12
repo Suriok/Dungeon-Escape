@@ -7,10 +7,10 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 /**
- * Třída {@code leather_bib} reprezentuje kožený hrudní plát,
- * který se nasazuje na trup hráče a poskytuje vyšší úroveň ochrany.
+ * The {@code leather_bib} class represents a leather chest piece,
+ * which is equipped on the player's torso and provides higher level of protection.
  * <p>
- * Obranná hodnota hrudního brnění je 4 body. Jedná se o nejdůležitější kus výbavy.
+ * The defense value of the chest armor is 4 points. This is the most important piece of equipment.
  * </p>
  */
 
@@ -27,6 +27,11 @@ public class leather_bib extends GameObject implements Armor {
         }
     }
 
+    /**
+     * Returns the defense amount provided by this armor piece.
+     *
+     * @return the defense value of the leather bib
+     */
     @Override
     public float getDefensAmount() {
         return defensAmount;

@@ -9,41 +9,42 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Unit tests for the {@link gamePanel} class to verify game state saving, inventory management,
+ * monster spawning, and chest initialization behaviors.
+ */
 public class GamePanelTest {
 
     private gamePanel gp;
 
     /**
-     * Metoda se provede před každým testem.
-     * Inicializuje novou instanci gamePanelu a spustí novou hru.
+     * Sets up a fresh {@code gamePanel} instance and starts a new game before each test.
      */
     @BeforeEach
     public void setUp() {
-        gp = new gamePanel();        // vytvoření instance hlavního herního panelu
-        gp.startNewGame();          // nastavení výchozího stavu hry
+        gp = new gamePanel();        // create new game panel instance
+        gp.startNewGame();           // initialize default game state
     }
 
     /**
-     * Testuje metodu buildSaveData(), která vytváří objekt reprezentující aktuální stav hry.
-     * Tento test ověřuje, že údaje o hráči (pozice, životy) jsou správně uloženy do výsledného objektu SaveData.
-     * Díky tomu je zajištěno, že při uložení hry se zaznamená aktuální pozice a stav hráče.
+     * Verifies that {@link gamePanel#buildSaveData()} correctly captures the player's data
+     * (position and life) into the returned {@link SaveData} object.
      */
     @Test
     public void testBuildSaveData_containsPlayerData() {
-        SaveData saveData = gp.buildSaveData(); // vytvoření dat pro uložení
+        SaveData saveData = gp.buildSaveData(); // create save data
 
-        assertNotNull(saveData, "SaveData by nemělo být null");
-        assertNotNull(saveData.player, "Player data by neměla být null");
-        assertTrue(saveData.player.life > 0, "Hráč by měl mít životy větší než 0");
-        assertEquals(gp.player.worldX, saveData.player.worldX, "Pozice hráče X se musí shodovat");
-        assertEquals(gp.player.worldY, saveData.player.worldY, "Pozice hráče Y se musí shodovat");
+        assertNotNull(saveData, "SaveData should not be null");
+        assertNotNull(saveData.player, "Player data should not be null");
+        assertTrue(saveData.player.life > 0, "Player should have life greater than 0");
+        assertEquals(gp.player.worldX, saveData.player.worldX, "Player X position must match");
+        assertEquals(gp.player.worldY, saveData.player.worldY, "Player Y position must match");
     }
 
-
     /**
-     * Test ověřuje správnou správu hráčova inventáře.
-     * Konkrétně se testuje, že po přidání položky do inventáře je tato položka správně uložena
-     * a že lze vytvořit přetahovatelný objekt (napodobení chování drag-and-drop v GUI).
+     * Tests that adding an item to the player's inventory produces a valid drag-and-drop
+     * representation of that item.
      */
     @Test
     public void testAddItem_createsDragItem() {
@@ -51,21 +52,18 @@ public class GamePanelTest {
         gamePanel gp = new gamePanel();
         gp.player.addItem(item);
 
-        // Rozšíření pro simulaci dragování
+        // Simulate drag creation
         ChestInventoryManager.ItemData dragged = new ChestInventoryManager.ItemData(item.getName(), 1);
 
-        assertNotNull(gp.player.getInventory());
-        assertEquals(1, gp.player.getInventory().size());
-        assertEquals("Apple", gp.player.getInventory().get(0).getName());
-        assertEquals("Apple", dragged.getName());
+        assertNotNull(gp.player.getInventory(), "Inventory list should not be null");
+        assertEquals(1, gp.player.getInventory().size(), "Inventory should contain one item");
+        assertEquals("Apple", gp.player.getInventory().get(0).getName(), "Stored item name must be 'Apple'");
+        assertEquals("Apple", dragged.getName(), "Dragged item name must match");
     }
 
-
-
     /**
-     * Tento test ověřuje správné fungování metody setMonster() v třídě AssetSetter.
-     * Metoda má za úkol spawnovat správného bosse v závislosti na aktivní mapě (0 nebo 1).
-     * Test zajišťuje, že bossové se správně generují a jsou přiřazeni do pole monster.
+     * Ensures that {@link AssetSetter#setMonster()} spawns the correct boss entity
+     * depending on the current map index (0 for Boss_Goblin, 1 for Boss_Eye).
      */
     @Test
     public void testSetMonster_spawnsCorrectBoss() {
@@ -75,20 +73,18 @@ public class GamePanelTest {
 
         gp.currentMap = 0;
         gp.assetSetter.setMonster();
-
-        assertNotNull(gp.monster[0][0]);
+        assertNotNull(gp.monster[0][0], "Boss_Goblin should be spawned on map 0");
         assertEquals("Boss_Goblin", gp.monster[0][0].getClass().getSimpleName());
 
         gp.currentMap = 1;
         gp.assetSetter.setMonster();
-        assertNotNull(gp.monster[1][0]);
+        assertNotNull(gp.monster[1][0], "Boss_Eye should be spawned on map 1");
         assertEquals("Boss_Eye", gp.monster[1][0].getClass().getSimpleName());
     }
 
     /**
-     * Testuje metodu getChestData(), která inicializuje obsah truhly.
-     * Ověřuje, že truhla obsahuje správné položky se zadaným názvem a množstvím,
-     * což je klíčové při generování lootů a ukládání/obnovování herního stavu.
+     * Verifies that {@link ChestInventoryManager#getChestData(int, Map)} initializes
+     * a chest with the expected items and quantities.
      */
     @Test
     public void testGetChestData_correctItemsAdded() {
@@ -100,10 +96,9 @@ public class GamePanelTest {
 
         ChestInventoryManager.ChestData chest = manager.getChestData(1, items);
 
-        assertTrue(chest.isOpen() == false);
-        assertEquals(2, chest.getItems().size());
-        assertEquals("Apple", chest.getItems().get(0).getName());
+        assertFalse(chest.isOpen(), "New chest should start closed");
+        assertEquals(2, chest.getItems().size(), "Chest should contain two entries");
+        assertEquals("Apple", chest.getItems().get(0).getName(), "First item name must be 'Apple'");
     }
-
 
 }

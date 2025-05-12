@@ -6,10 +6,10 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 /**
- * Třída {@code Item_partKey3} reprezentuje třetí a poslední část stříbrného klíče,
- * která je vyžadována pro úspěšné sestavení klíče {@link Item_SilverKey}.
+ * The {@code Item_partKey3} class represents the third and final part of the silver key,
+ * which is required for successful assembly of the key {@link Item_SilverKey}.
  * <p>
- * Bez této části není možné odemknout speciální dveře.
+ * Without this part, it is not possible to unlock special doors.
  * </p>
  */
 

@@ -6,10 +6,10 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 /**
- * Třída {@code Item_partKey1} reprezentuje první část stříbrného klíče,
- * kterou hráč musí najít pro pozdější vytvoření celého klíče {@link Item_SilverKey}.
+ * The {@code Item_partKey1} class represents the first part of the silver key,
+ * which the player must find for later creation of the complete key {@link Item_SilverKey}.
  * <p>
- * Tato část klíče je vizuálně zobrazena ikonou a lze ji vložit do craftingového stolu.
+ * This key part is visually represented by an icon and can be placed in the crafting table.
  * </p>
  */
 

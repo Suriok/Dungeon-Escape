@@ -7,10 +7,10 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 /**
- * Třída {@code Item_partKey2} reprezentuje druhou část stříbrného klíče,
- * která se sbírá stejně jako ostatní části a spojuje se do {@link Item_SilverKey}.
+ * The {@code Item_partKey2} class represents the second part of the silver key,
+ * which is collected like other parts and combined into {@link Item_SilverKey}.
  * <p>
- * Je nezbytná pro sestavení kompletního klíče v systému craftingu.
+ * It is essential for assembling the complete key in the crafting system.
  * </p>
  */
 

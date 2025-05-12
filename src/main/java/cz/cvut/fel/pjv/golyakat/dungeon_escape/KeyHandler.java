@@ -4,66 +4,66 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 /**
- * Třída {@code KeyHandler} zpracovává vstup z klávesnice.
+ * The {@code KeyHandler} class handles keyboard input.
  * <p>
- * Implementuje rozhraní {@link KeyListener} a uchovává informace
- * o stisknutých a uvolněných klávesách, které jsou důležité pro
- * ovládání pohybu a interakcí ve hře.
+ * Implements the {@link KeyListener} interface and stores information
+ * about pressed and released keys, which are important for controlling
+ * movement and interactions in the game.
  * </p>
  */
 public class KeyHandler implements KeyListener {
 
     /**
-     * Příznak, zda je aktuálně stisknuto tlačítko W (pohyb nahoru).
+     * Flag indicating whether the W key (move up) is currently pressed.
      */
     public boolean upPressed;
 
     /**
-     * Příznak, zda je aktuálně stisknuto tlačítko S (pohyb dolů).
+     * Flag indicating whether the S key (move down) is currently pressed.
      */
     public boolean downPressed;
 
     /**
-     * Příznak, zda je aktuálně stisknuto tlačítko A (pohyb doleva).
+     * Flag indicating whether the A key (move left) is currently pressed.
      */
     public boolean leftPressed;
 
     /**
-     * Příznak, zda je aktuálně stisknuto tlačítko D (pohyb doprava).
+     * Flag indicating whether the D key (move right) is currently pressed.
      */
     public boolean rightPressed;
 
     /**
-     * Příznak, zda je aktuálně stisknuto tlačítko E (např. otevření truhly, interakce).
+     * Flag indicating whether the E key (e.g., open chest, interaction) is currently pressed.
      */
     public boolean ePressed;
 
     /**
-     * Příznak, zda je aktuálně stisknuto tlačítko F (např. útok, akce).
+     * Flag indicating whether the F key (e.g., attack, action) is currently pressed.
      */
     public boolean fPressed;
 
     /**
-     * Příznak, zda je aktuálně stisknuto tlačítko Q (např. zahodit předmět, craftit apod.).
+     * Flag indicating whether the Q key (e.g., drop item, craft, etc.) is currently pressed.
      */
     public boolean qPressed;
 
     /**
-     * Tato metoda je volána automaticky při stisknutí klávesy,
-     * ale není v této implementaci využita.
+     * This method is automatically called when a key is typed,
+     * but it is not used in this implementation.
      *
-     * @param e objekt reprezentující událost stisknutí klávesy
+     * @param e object representing the key typed event
      */
     @Override
     public void keyTyped(KeyEvent e) {
-        // Nevyužito
+        // Not used
     }
 
     /**
-     * Tato metoda je volána při stisknutí klávesy.
-     * Nastaví příslušný boolean příznak na {@code true}.
+     * This method is called when a key is pressed.
+     * Sets the corresponding boolean flag to {@code true}.
      *
-     * @param e objekt reprezentující událost stisknutí klávesy
+     * @param e object representing the key pressed event
      */
     @Override
     public void keyPressed(KeyEvent e) {
@@ -95,10 +95,10 @@ public class KeyHandler implements KeyListener {
     }
 
     /**
-     * Tato metoda je volána při uvolnění klávesy.
-     * Nastaví příslušný boolean příznak na {@code false}.
+     * This method is called when a key is released.
+     * Sets the corresponding boolean flag to {@code false}.
      *
-     * @param e objekt reprezentující událost uvolnění klávesy
+     * @param e object representing the key released event
      */
     @Override
     public void keyReleased(KeyEvent e) {

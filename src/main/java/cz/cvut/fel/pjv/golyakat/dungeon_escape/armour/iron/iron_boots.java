@@ -8,8 +8,8 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 /**
- * Třída {@code iron_boots} představuje železné boty, které poskytují základní ochranu nohou.
- * Obranná hodnota bot činí 2.
+ * The {@code iron_boots} class represents iron boots that provide basic protection for the feet.
+ * The boots have a defense value of 2.
  *
  */
 public class iron_boots extends GameObject implements Armor {
@@ -33,6 +33,11 @@ public class iron_boots extends GameObject implements Armor {
         }
     }
 
+    /**
+     * Returns the defense amount provided by this armor piece.
+     *
+     * @return the defense value of the iron boots
+     */
     @Override
     public float getDefensAmount() {
         return defensAmount;
