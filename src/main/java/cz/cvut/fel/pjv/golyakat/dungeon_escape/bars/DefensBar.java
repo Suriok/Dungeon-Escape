@@ -5,48 +5,48 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import java.awt.*;
 
 /**
- * Třída {@code DefensBar} slouží k vizuálnímu zobrazení celkové obrany hráče.
+ * The {@code DefensBar} class serves to visually display the player's total defense.
  * <p>
- * Obranný ukazatel se zobrazuje jako vodorovný pruh, který se mění v závislosti
- * na síle nasazeného brnění. Barva výplně je modrá, obvod je bílý.
+ * The defense indicator appears as a horizontal bar that changes based on
+ * the strength of equipped armor. The fill color is blue, the border is white.
  * </p>
  */
 public class DefensBar {
 
     /**
-     * Odkaz na hlavní panel hry, ze kterého se čerpají rozměry a stav.
+     * Reference to the main game panel, from which dimensions and state are obtained.
      */
     private gamePanel gp;
 
     /**
-     * Hodnota aktuální obrany hráče (0–10).
+     * Current player's defense value (0-10).
      */
     private float defense;
 
     /**
-     * Souřadnice X levého horního rohu obranného ukazatele.
+     * X coordinate of the top-left corner of the defense indicator.
      */
     private int x;
 
     /**
-     * Souřadnice Y levého horního rohu obranného ukazatele.
+     * Y coordinate of the top-left corner of the defense indicator.
      */
     private int y;
 
     /**
-     * Šířka ukazatele obrany.
+     * Width of the defense indicator.
      */
     private int barWidth;
 
     /**
-     * Výška ukazatele obrany.
+     * Height of the defense indicator.
      */
     private int barHeight;
 
     /**
-     * Konstruktor inicializuje ukazatel obrany s výchozími souřadnicemi a rozměry.
+     * Constructor initializes the defense indicator with default coordinates and dimensions.
      *
-     * @param gp hlavní panel hry
+     * @param gp main game panel
      */
     public DefensBar(gamePanel gp) {
         this.gp = gp;
@@ -58,18 +58,18 @@ public class DefensBar {
     }
 
     /**
-     * Aktualizuje hodnotu obrany hráče pro vykreslení.
+     * Updates the player's defense value for rendering.
      *
-     * @param defense aktuální hodnota obrany (0–10)
+     * @param defense current defense value (0-10)
      */
     public void update(float defense) {
         this.defense = defense;
     }
 
     /**
-     * Vykreslí ukazatel obrany na obrazovku – pozadí, výplň a text s hodnotou.
+     * Renders the defense indicator on screen – background, fill, and value text.
      *
-     * @param g2 grafický kontext
+     * @param g2 graphics context
      */
     public void draw(Graphics2D g2) {
         g2.setColor(Color.GRAY);
@@ -87,18 +87,18 @@ public class DefensBar {
     }
 
     /**
-     * Vrací svislou pozici Y horní hrany obranného ukazatele.
+     * Returns the vertical Y position of the top edge of the defense indicator.
      *
-     * @return souřadnice Y
+     * @return Y coordinate
      */
     public int getY() {
         return y;
     }
 
     /**
-     * Vrací výšku ukazatele obrany.
+     * Returns the height of the defense indicator.
      *
-     * @return výška v pixelech
+     * @return height in pixels
      */
     public int getBarHeight() {
         return barHeight;

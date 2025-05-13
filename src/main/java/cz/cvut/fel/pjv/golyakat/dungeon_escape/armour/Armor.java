@@ -1,19 +1,19 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.armour;
 
 /**
- * Rozhraní {@code Armor} definuje základní chování každého typu brnění ve hře.
+ * The {@code Armor} interface defines the basic behavior of each armor type in the game.
  * <p>
- * Každý objekt, který implementuje toto rozhraní, musí poskytovat:
+ * Each object implementing this interface must provide:
  * <ul>
- *     <li>Úroveň obrany, kterou zvyšuje hráči</li>
+ *     <li>Defense level that it increases for the player</li>
  * </ul>
  */
 public interface Armor {
 
     /**
-     * Vrací obrannou hodnotu, kterou toto brnění poskytuje hráči.
+     * Returns the defense value that this armor provides to the player.
      *
-     * @return hodnota obrany jako desetinné číslo
+     * @return defense value as a decimal number
      */
     float getDefensAmount();
 

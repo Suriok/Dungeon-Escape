@@ -12,45 +12,45 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
- * Třída {@code ChestInventoryManager} spravuje obsah a stav truhlic ve hře.
+ * The {@code ChestInventoryManager} class manages the contents and state of chests in the game.
  * <p>
- * Umožňuje ukládání a načítání dat o truhlách, včetně jejich předmětů.
- * Každá truhla má své ID a seznam předmětů.
+ * It enables saving and loading data about chests, including their items.
+ * Each chest has its own ID and a list of items.
  * </p>
  */
 public class ChestInventoryManager {
 
     /**
-     * Mapa všech známých truhel ve hře, klíčem je jejich unikátní ID.
+     * Map of all known chests in the game, with their unique ID as the key.
      */
     private final Map<Integer, ChestData> chestDataMap = new HashMap<>();
 
     /**
-     * Konstruktor správce inventáře truhlic. Zatím neprovádí žádnou inicializaci.
+     * Constructor for the chest inventory manager. Currently performs no initialization.
      */
     public ChestInventoryManager() {}
 
     /**
-     * Třída {@code ChestData} reprezentuje jeden konkrétní stav truhly:
-     * zda byla otevřena a jaké obsahuje předměty.
+     * The {@code ChestData} class represents the specific state of a chest:
+     * whether it has been opened and what items it contains.
      */
     public static class ChestData implements Serializable {
 
         /**
-         * Příznak označující, zda je truhla otevřená.
+         * Flag indicating whether the chest is open.
          */
         private boolean isOpen;
 
         /**
-         * Seznam předmětů, které jsou v truhle uložené.
+         * List of items stored in the chest.
          */
         private List<ItemData> items;
 
         /**
-         * Vytváří nový objekt truhly se stavem a seznamem předmětů.
+         * Creates a new chest object with a state and list of items.
          *
-         * @param isOpen zda je truhla otevřená
-         * @param items seznam položek uvnitř
+         * @param isOpen whether the chest is open
+         * @param items list of items inside
          */
         public ChestData(boolean isOpen, List<ItemData> items) {
             this.isOpen = isOpen;
@@ -58,18 +58,18 @@ public class ChestInventoryManager {
         }
 
         /**
-         * Vrací stav otevřenosti truhly.
+         * Returns the open state of the chest.
          *
-         * @return {@code true}, pokud je truhla otevřená
+         * @return {@code true} if the chest is open
          */
         public boolean isOpen() {
             return isOpen;
         }
 
         /**
-         * Vrací seznam předmětů v truhle.
+         * Returns the list of items in the chest.
          *
-         * @return seznam {@link ItemData}
+         * @return list of {@link ItemData}
          */
         public List<ItemData> getItems() {
             return items;
@@ -77,8 +77,8 @@ public class ChestInventoryManager {
     }
 
     /**
-     * Třída {@code ItemData} představuje jeden konkrétní předmět,
-     * jeho název, množství a odkaz na samotný objekt {@link GameObject}.
+     * The {@code ItemData} class represents a specific item,
+     * its name, quantity, and reference to the actual {@link GameObject}.
      */
     public static class ItemData implements Serializable {
 
@@ -86,16 +86,16 @@ public class ChestInventoryManager {
         private int quantity;
 
         /**
-         * Předmět ve hře – instanci třídy {@link GameObject}.
-         * Je označen jako {@code transient}, protože se nesérializuje.
+         * The in-game item – an instance of the {@link GameObject} class.
+         * Marked as {@code transient} because it is not serialized.
          */
         private transient GameObject item;
 
         /**
-         * Vytváří nový záznam předmětu s daným názvem a počtem.
+         * Creates a new item record with the given name and quantity.
          *
-         * @param name název položky
-         * @param quantity počet kusů
+         * @param name the name of the item
+         * @param quantity the number of items
          */
         public ItemData(String name, int quantity) {
             this.name = name;
@@ -103,20 +103,20 @@ public class ChestInventoryManager {
             this.item = createItemFromName(name);
         }
 
-        /** @return název položky */
+        /** @return the name of the item */
         public String getName() { return name; }
 
-        /** @return počet kusů položky */
+        /** @return the quantity of the item */
         public int getQuantity() { return quantity; }
 
-        /** @param quantity nastaví nové množství položky */
+        /** @param quantity sets the new quantity of the item */
         public void setQuantity(int quantity) { this.quantity = quantity; }
 
         /**
-         * Vrací herní objekt spojený s touto položkou.
-         * Pokud není inicializovaný, vytvoří jej podle názvu.
+         * Returns the game object associated with this item.
+         * If not initialized, creates it based on the name.
          *
-         * @return instance {@link GameObject}
+         * @return an instance of {@link GameObject}
          */
         public GameObject getItem() {
             if (item == null) {
@@ -125,17 +125,17 @@ public class ChestInventoryManager {
             return item;
         }
 
-        /** @param item ručně nastaví objekt položky */
+        /** @param item manually sets the item object */
         public void setItem(GameObject item) {
             this.item = item;
         }
     }
 
     /**
-     * Vytvoří konkrétní instanci předmětu na základě jeho názvu.
+     * Creates a specific instance of an item based on its name.
      *
-     * @param name název předmětu jako string
-     * @return odpovídající instance {@link GameObject}, nebo {@code null}, pokud není známý
+     * @param name the name of the item as a string
+     * @return the corresponding instance of {@link GameObject}, or {@code null} if unknown
      */
     private static GameObject createItemFromName(String name) {
         switch (name) {
@@ -164,11 +164,11 @@ public class ChestInventoryManager {
     }
 
     /**
-     * Vytvoří nová data truhly se zadanými výchozími předměty.
+     * Creates new chest data with the specified default items.
      *
-     * @param id ID truhly
-     * @param defaultItems mapa názvů a množství výchozích předmětů
-     * @return nově vytvořená data truhly
+     * @param id the chest's ID
+     * @param defaultItems a map of item names and quantities for default items
+     * @return the newly created chest data
      */
     public ChestData getChestData(int id, Map<String, Integer> defaultItems) {
         List<ItemData> items = new ArrayList<>();
@@ -184,10 +184,10 @@ public class ChestInventoryManager {
     }
 
     /**
-     * Aktualizuje stav truhly v interní mapě a uloží data na disk.
+     * Updates the state of a chest in the internal map and saves the data to disk.
      *
-     * @param id ID truhly
-     * @param chestData aktualizovaná data truhly
+     * @param id the chest's ID
+     * @param chestData the updated chest data
      */
     public void updateChestData(int id, ChestData chestData) {
         chestDataMap.put(id, chestData);
@@ -195,9 +195,9 @@ public class ChestInventoryManager {
     }
 
     /**
-     * Uloží všechna data o truhlách do souboru na disku.
+     * Saves all chest data to a file on disk.
      * <p>
-     * Aktuálně používá objektovou serializaci do souboru {@code chest_data.xml}.
+     * Currently uses object serialization to the file {@code chest_data.xml}.
      * </p>
      */
     public void saveChestData() {
@@ -210,37 +210,37 @@ public class ChestInventoryManager {
     }
 
     /**
-     * Načte data o truhlách ze souboru – zatím neimplementováno.
-     * <p>V budoucnu bude číst z uloženého souboru.</p>
+     * Loads chest data from a file – not yet implemented.
+     * <p>In the future, it will read from a saved file.</p>
      */
     private void loadChestData() {
         GameLogger.info("Starting fresh, no previous chest data loaded.");
     }
 
     /**
-     * Provede zadanou akci nad každou truhlou v mapě.
+     * Performs the specified action for each chest in the map.
      *
-     * @param action funkce přebírající ID a seznam předmětů
+     * @param action a function that takes the ID and list of items
      */
     public void forEachChest(BiConsumer<Integer, List<ItemData>> action) {
         chestDataMap.forEach((id, chest) -> action.accept(id, chest.items));
     }
 
     /**
-     * Nahradí obsah konkrétní truhly novým seznamem předmětů.
+     * Replaces the contents of a specific chest with a new list of items.
      * <p>
-     * Používá se při načítání uložené hry.
+     * Used when loading a saved game.
      * </p>
      *
-     * @param id ID truhly
-     * @param items nový seznam předmětů
+     * @param id the chest's ID
+     * @param items the new list of items
      */
     public void overrideChest(int id, List<ItemData> items) {
         chestDataMap.put(id, new ChestData(true, items));
     }
 
     /**
-     * Resetuje veškerá data o truhlách – použije se při začátku nové hry.
+     * Resets all chest data – used at the start of a new game.
      */
     public void resetChestData() {
         chestDataMap.clear();

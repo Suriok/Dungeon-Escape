@@ -8,85 +8,85 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
- * Třída {@code Entity} slouží jako základní nadtřída pro všechny herní entity,
- * které se pohybují a interagují – včetně hráče a monster.
+ * The {@code Entity} class serves as a base class for all game entities
+ * that move and interact - including the player and monsters.
  * <p>
- * Obsahuje atributy pro pohyb, kolize, zdraví, útok i animace.
+ * Contains attributes for movement, collisions, health, attacks, and animations.
  * </p>
  */
 public class Entity extends GameObject {
 
-    /** Odkaz na hlavní herní panel. */
+    /** Reference to the main game panel. */
     protected gamePanel gp;
 
-    /** Rychlost pohybu entity (v pixelech na update). */
+    /** Movement speed of the entity (in pixels per update). */
     public int speed;
 
-    /** Sprite obrázky pro pohyb ve čtyřech směrech (dva snímky na směr). */
+    /** Sprite images for movement in four directions (two frames per direction). */
     public BufferedImage up1, up2, down1, down2, right1, right2, left1, left2;
 
-    /** Směr pohybu ("up", "down", "left", "right"). */
+    /** Movement direction ("up", "down", "left", "right"). */
     public String direction = "down";
 
-    /** Počítadlo snímků pro animaci. */
+    /** Frame counter for animation. */
     public int spriteCounter = 0;
 
-    /** Číslo sprite snímku, který se zrovna vykresluje (1 nebo 2). */
+    /** Number of the sprite frame currently being rendered (1 or 2). */
     public int spriteNum = 1;
 
     /**
-     * Obdélník reprezentující kolizní oblast entity.
-     * Slouží k detekci kontaktu s prostředím a objekty.
+     * Rectangle representing the collision area of the entity.
+     * Used for detecting contact with environment and objects.
      */
     public Rectangle solidArea;
 
-    /** Výchozí X souřadnice kolizní oblasti. */
+    /** Default X coordinate of the collision area. */
     public int solidAreaDefaultX;
 
-    /** Výchozí Y souřadnice kolizní oblasti. */
+    /** Default Y coordinate of the collision area. */
     public int solidAreaDefaultY;
 
-    /** Příznak, zda je v aktuálním snímku detekována kolize. */
+    /** Flag indicating whether a collision is detected in the current frame. */
     public boolean collisionOn = false;
 
-    /** Maximální počet životů entity. */
+    /** Maximum number of entity's health points. */
     public int maxLife;
 
-    /** Aktuální počet životů entity. */
+    /** Current number of entity's health points. */
     public int life;
 
-    // === Fade-out efekt při smrti ===
+    // === Fade-out effect on death ===
 
-    /** Příznak, zda je entita mrtvá. */
+    /** Flag indicating whether the entity is dead. */
     public boolean isDead = false;
 
-    /** Průhlednost entity při zániku (0.0 až 1.0). */
+    /** Entity transparency during fade-out (0.0 to 1.0). */
     public float fadeAlpha = 1.0f;
 
-    /** Počítadlo trvání fade efektu. */
+    /** Counter for fade effect duration. */
     public int fadeCounter = 0;
 
-    /** Maximální počet snímků pro fade efekt. */
+    /** Maximum number of frames for fade effect. */
     public static final int FADE_DURATION = 60;
 
-    // === Parametry útoku monster ===
+    // === Monster attack parameters ===
 
-    /** Poškození způsobené útokem této entity. */
+    /** Damage dealt by this entity's attack. */
     protected int attackDamage = 1;
 
-    /** Maximální vzdálenost, na kterou může entita zaútočit. */
+    /** Maximum distance at which the entity can attack. */
     protected int attackRange = 48;
 
-    /** Počet snímků, po kterých může entita znovu zaútočit. */
+    /** Number of frames before the entity can attack again. */
     protected int attackCooldown = 60;
 
-    /** Počítadlo od posledního útoku. */
+    /** Counter since the last attack. */
     protected int attackCounter = 0;
 
     /**
-     * Konstruktor základní entity.
+     * Constructor for the base entity.
      *
-     * @param gp instance hlavního panelu
+     * @param gp instance of the main panel
      */
     public Entity(gamePanel gp) {
         this.gp = gp;
@@ -94,13 +94,13 @@ public class Entity extends GameObject {
     }
 
     /**
-     * Aktualizuje stav entity – útok, pohyb, případně fade efekt.
+     * Updates the entity's state - attack, movement, and fade effect if applicable.
      */
     public void update() {
         if (!isDead) {
             attackCounter++;
 
-            // Pokus o útok na hráče
+            // Attempt to attack the player
             if (attackCounter >= attackCooldown) {
                 double distance = Math.sqrt(Math.pow(gp.player.worldX - worldX, 2)
                         + Math.pow(gp.player.worldY - worldY, 2));
@@ -110,10 +110,10 @@ public class Entity extends GameObject {
                 }
             }
 
-            // (Případně zde může být pohyb AI monstra)
+            // (Monster AI movement could be here)
         }
 
-        // Fade efekt po smrti
+        // Fade effect after death
         if (isDead && fadeAlpha > 0) {
             fadeCounter++;
             fadeAlpha = 1.0f - ((float) fadeCounter / FADE_DURATION);
@@ -124,17 +124,17 @@ public class Entity extends GameObject {
     }
 
     /**
-     * Provede útok entity – standardně útočí na hráče.
+     * Performs the entity's attack - by default attacks the player.
      */
     public void attack() {
-        GameLogger.info("DEBUG: " + name + " útočí na hráče s poškozením " + attackDamage);
+        GameLogger.info("DEBUG: " + name + " attacks player with damage " + attackDamage);
         gp.player.receiveDamage(attackDamage);
     }
 
     /**
-     * Vykreslí entitu na základě její aktuální pozice a stavu.
+     * Renders the entity based on its current position and state.
      *
-     * @param g2d grafický kontext
+     * @param g2d graphics context
      */
     public void draw(Graphics2D g2d) {
         super.draw(g2d, gp);

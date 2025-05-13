@@ -11,39 +11,39 @@ import java.util.Objects;
 import java.util.Random;
 
 /**
- * Třída {@code Monster_Skeleton} reprezentuje nepřátelskou jednotku typu kostlivec.
+ * The {@code Monster_Skeleton} class represents an enemy unit of type skeleton.
  * <p>
- * Kostlivec se pohybuje po mapě, detekuje hráče v dosahu a útočí, pokud se přiblíží.
- * Obsahuje logiku pohybu, kolizí, útoku i základní animace.
+ * The skeleton moves around the map, detects the player within range and attacks when approached.
+ * Contains logic for movement, collisions, attacks, and basic animations.
  * </p>
  */
 public class Monster_Skeleton extends Entity {
 
-    /** Odkaz na herní panel, který obsahuje mapu a hráče. */
+    /** Reference to the game panel that contains the map and player. */
     private gamePanel gp;
 
-    /** Počítadlo, které určuje, kdy může změnit směr nebo začít novou akci. */
+    /** Counter that determines when it can change direction or start a new action. */
     public int actionLockCounter = 0;
 
-    /** Maximální vzdálenost detekce hráče (v pixelech). */
+    /** Maximum player detection range (in pixels). */
     private static final int DETECTION_RANGE = 5 * 48;
 
-    /** Vzdálenost, na kterou může monster zaútočit. */
+    /** Distance at which the monster can attack. */
     private static final int ATTACK_RANGE = 32;
 
-    /** Počet snímků, které musí uběhnout mezi dvěma útoky. */
+    /** Number of frames that must pass between two attacks. */
     private static final int ATTACK_COOLDOWN = 60;
 
-    /** Počítadlo od posledního útoku (pro cooldown). */
+    /** Counter since the last attack (for cooldown). */
     private int attackCounter = 0;
 
-    /** Poškození způsobené útokem. */
+    /** Damage dealt by the attack. */
     private static final int ATTACK_DAMAGE = 5;
 
     /**
-     * Vytváří instanci kostlivce s výchozím nastavením a načte grafiku.
+     * Creates a skeleton instance with default settings and loads graphics.
      *
-     * @param gp herní panel
+     * @param gp game panel
      */
     public Monster_Skeleton(gamePanel gp) {
         super(gp);
@@ -63,7 +63,7 @@ public class Monster_Skeleton extends Entity {
     }
 
     /**
-     * Načte sprite obrázky kostlivce pro všechny směry pohybu.
+     * Loads skeleton sprite images for all movement directions.
      */
     public void getImage() {
         try {
@@ -84,13 +84,13 @@ public class Monster_Skeleton extends Entity {
             right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/skeleton_left2.png")));
         } catch (Exception e) {
-            GameLogger.error("Chyba při načítání sprite obrázků kostlivce: " + e.getMessage());
+            GameLogger.error("Error loading skeleton sprite images: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
-     * Určuje další akci kostlivce – sleduje hráče nebo se pohybuje náhodně.
+     * Determines the skeleton's next action - tracks the player or moves randomly.
      */
     public void setAction() {
         actionLockCounter++;
@@ -121,11 +121,11 @@ public class Monster_Skeleton extends Entity {
     }
 
     /**
-     * Aktualizuje chování kostlivce: pohyb, kolize, útok, animace a efekt smrti.
+     * Updates the skeleton's behavior: movement, collision, attack, animation, and death effect.
      */
     public void update() {
         if (isDead) {
-            super.update(); // fade efekt
+            super.update(); // fade effect
             return;
         }
 
@@ -151,7 +151,7 @@ public class Monster_Skeleton extends Entity {
             actionLockCounter = 120;
         }
 
-        // Útok na hráče
+        // Attack on player
         attackCounter++;
         int dx = gp.player.worldX - worldX;
         int dy = gp.player.worldY - worldY;
@@ -159,17 +159,17 @@ public class Monster_Skeleton extends Entity {
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
-            GameLogger.info(name + " zaútočil na hráče! HP hráče: " + gp.player.life);
+            GameLogger.info(name + " attacked the player! Player HP: " + gp.player.life);
         }
 
-        // Animace
+        // Animation
         spriteCounter++;
         if (spriteCounter > 15) {
             spriteNum = (spriteNum == 1) ? 2 : 1;
             spriteCounter = 0;
         }
 
-        // Smrt
+        // Death
         if (life <= 0) {
             isDead = true;
             fadeAlpha = 1.0f;
@@ -178,9 +178,9 @@ public class Monster_Skeleton extends Entity {
     }
 
     /**
-     * Vykreslí kostlivce pomocí aktuálního sprite obrázku a směru.
+     * Renders the skeleton using the current sprite image and direction.
      *
-     * @param g2d grafický kontext
+     * @param g2d graphics context
      */
     @Override
     public void draw(Graphics2D g2d) {

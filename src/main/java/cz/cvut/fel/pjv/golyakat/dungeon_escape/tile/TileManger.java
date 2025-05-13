@@ -11,41 +11,43 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Třída {@code TileManger} odpovídá za načítání, správu a vykreslování herní mapy.
+ * The {@code TileManger} class is responsible for loading, managing,
+ * and rendering the game map.
  * <p>
- * Obsahuje logiku pro načítání dlaždic (tile) z obrázků a mapy z textových souborů,
- * včetně identifikace průchozích oblastí a výpočtu viditelných dlaždic.
+ * It includes logic for loading tile images and reading maps from text files,
+ * as well as identifying walkable regions and calculating visible tiles.
  * </p>
  */
 public class TileManger {
 
-    /** Odkaz na hlavní herní panel */
+    /** Reference to the main game panel */
     gamePanel gp;
 
-    /** Pole definujících vlastnosti jednotlivých typů dlaždic */
+    /** Array defining properties of individual tile types */
     public Tile[] tiles;
 
     /**
-     * Třírozměrné pole obsahující čísla dlaždic na jednotlivých mapách.
-     * Struktura: [mapa][řádek][sloupec]
+     * A three-dimensional array containing tile numbers for each map.
+     * Structure: [map][row][column]
      */
     public int[][][] mapTileNum;
 
     /**
-     * Seznam všech průchozích oblastí (regionů), které se skládají z několika sousedních dlaždic.
-     * Každá oblast je seznam objektů {@link Point}.
+     * A list of all walkable regions consisting of multiple adjacent tiles.
+     * Each region is a list of {@link Point} objects.
      */
     public List<List<Point>> walkableRegions;
 
     /**
-     * Seznam souřadnic aktuální oblasti, ve které se nachází hráč na začátku hry.
+     * A list of coordinates of the region the player is in at the beginning of the game.
      */
     public List<Point> playerRegion;
 
     /**
-     * Vytváří správce dlaždic a inicializuje mapu, včetně načtení obrázků a výpočtu průchodných oblastí.
+     * Creates the tile manager and initializes the map,
+     * including image loading and walkable region detection.
      *
-     * @param gp hlavní herní panel
+     * @param gp the main game panel
      */
     public TileManger(gamePanel gp) {
         this.gp = gp;
@@ -62,7 +64,7 @@ public class TileManger {
     }
 
     /**
-     * Načítá obrázky všech typů dlaždic a nastavuje jejich kolizní vlastnosti, pokud je potřeba.
+     * Loads images for all tile types and sets their collision property if necessary.
      */
     public void getTileImage() {
         try {
@@ -123,9 +125,9 @@ public class TileManger {
     }
 
     /**
-     * Najde a uloží všechny průchozí oblasti (podlahy) ve světě pomocí DFS algoritmu.
+     * Finds and stores all walkable regions (floors) in the world using the DFS algorithm.
      * <p>
-     * Hráčova počáteční oblast je také detekována a uložena zvlášť.
+     * The player's starting region is also detected and stored separately.
      * </p>
      */
     public void findWalkableRegions() {
@@ -157,12 +159,12 @@ public class TileManger {
     }
 
     /**
-     * Pomocná rekurzivní metoda pro DFS algoritmus pro vyhledávání sousedních průchozích dlaždic.
+     * Helper recursive method for the DFS algorithm to find neighboring walkable tiles.
      *
-     * @param row    aktuální řádek
-     * @param col    aktuální sloupec
-     * @param visited matice již navštívených pozic
-     * @param region seznam bodů tvořících jednu oblast
+     * @param row    current row
+     * @param col    current column
+     * @param visited matrix of already visited positions
+     * @param region list of points forming one region
      */
     private void dfs(int row, int col, boolean[][] visited, List<Point> region) {
         if (row < 0 || row >= gp.maxWorldRow || col < 0 || col >= gp.maxWorldCol ||
@@ -173,17 +175,17 @@ public class TileManger {
         visited[row][col] = true;
         region.add(new Point(row, col));
 
-        dfs(row - 1, col, visited, region); // Nahoru
-        dfs(row + 1, col, visited, region); // Dolů
-        dfs(row, col - 1, visited, region); // Vlevo
-        dfs(row, col + 1, visited, region); // Vpravo
+        dfs(row - 1, col, visited, region); // Up
+        dfs(row + 1, col, visited, region); // Down
+        dfs(row, col - 1, visited, region); // Left
+        dfs(row, col + 1, visited, region); // Right
     }
 
     /**
-     * Načte mapu z textového souboru a uloží ji do matice mapy.
+     * Loads a map from a text file and stores it in the map matrix.
      *
-     * @param filePath cesta k textovému souboru mapy
-     * @param map      index mapy (např. 0 = první úroveň)
+     * @param filePath path to the text file
+     * @param map      index of the map (e.g., 0 = first level)
      */
     public void loadMap(String filePath, int map) {
         try {
@@ -223,9 +225,9 @@ public class TileManger {
     }
 
     /**
-     * Vykreslí celou mapu na základě pozice hráče a dlaždic v okolí.
+     * Draws the entire map based on the player’s position and surrounding tiles.
      *
-     * @param g2 grafický kontext
+     * @param g2 the graphics context
      */
     public void draw(Graphics2D g2) {
         int worldCol = 0;

@@ -6,22 +6,22 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 /**
- * Třída {@code Item_Blubbery} reprezentuje bobule (blubbery),
- * což je spotřební léčivý předmět, který hráči obnovuje malé množství zdraví.
+ * The {@code Item_Blubbery} class represents a berry (blubbery),
+ * which is a consumable healing item that restores a small amount of health to the player.
  * <p>
- * Tento předmět dědí z {@link GameObject}, a proto jej lze přidat do inventáře
- * a vykreslit ve hře pomocí obrázku.
+ * This item inherits from {@link GameObject}, so it can be added to the inventory
+ * and rendered in the game using an image.
  * </p>
  */
 public class Item_Blubbery extends GameObject {
 
     /**
-     * Počet jednotek zdraví, které tento předmět obnoví při použití.
+     * Number of health units this item restores when used.
      */
     private final float healAmount;
 
     /**
-     * Konstruktor nastaví název předmětu, jeho léčivý účinek a načte obrázek z resource složky.
+     * Constructor sets the item's name, its healing effect, and loads the image from the resource folder.
      */
     public Item_Blubbery() {
         name = "blubbery";
@@ -36,9 +36,9 @@ public class Item_Blubbery extends GameObject {
     }
 
     /**
-     * Vrací počet jednotek zdraví, které bobule při použití obnoví.
+     * Returns the number of health units the berry restores when used.
      *
-     * @return hodnota regenerace zdraví
+     * @return health regeneration value
      */
     public float getHealAmount() {
         return healAmount;

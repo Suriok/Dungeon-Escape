@@ -8,18 +8,24 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 /**
- * Třída {@code iron_helmet} reprezentuje železnou přilbu, která poskytuje střední úroveň ochrany pro hlavu hráče.
+ * The {@code iron_helmet} class represents an iron helmet that provides medium level protection for the player's head.
  * <p>
- *  Poskytuje hodnotu obrany 2.
+ * It provides a defense value of 2.
  * </p>
  * <p>
- * Obrázek je načítán z resource složky a používá se pro vykreslení v inventáři i na postavě.
+ * The image is loaded from the resource folder and is used for rendering in both inventory and on the character.
  * </p>
  */
 
 public class iron_helmet extends GameObject implements Armor {
     private final float defensAmount;
 
+    /**
+     * Constructs a new {@code iron_helmet} armor piece.
+     * <p>
+     * Initializes the item name, defense amount, and loads the corresponding image resource.
+     * </p>
+     */
     public iron_helmet() {
         name = "iron_helmet";
         defensAmount = 2;
@@ -38,6 +44,11 @@ public class iron_helmet extends GameObject implements Armor {
         }
     }
 
+    /**
+     * Returns the defense amount provided by this armor piece.
+     *
+     * @return the defense value of the iron helmet
+     */
     @Override
     public float getDefensAmount() {
         return defensAmount;

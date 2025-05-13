@@ -13,39 +13,39 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Třída {@code PlayerUI} zajišťuje vykreslení inventáře hráče,
- * včetně zbraní, brnění a předmětů v grafickém uživatelském rozhraní.
+ * The {@code PlayerUI} class handles the rendering of the player's inventory,
+ * including weapons, armor, and items in the graphical user interface.
  */
 public class PlayerUI {
 
-    /** Odkaz na hlavní herní panel, ze kterého čerpáme data o hráči. */
+    /** Reference to the main game panel, from which player data is retrieved. */
     private gamePanel gp;
 
-    /** Obrázek hlavního inventáře hráče. */
+    /** Image of the player's main inventory. */
     private BufferedImage playerInventory;
 
-    /** Obrázek bočního panelu pro vybavení brnění. */
+    /** Image of the side panel for equipped armor. */
     private BufferedImage sideArmor;
 
-    /** Obrázek panelu pro vybavenou zbraň. */
+    /** Image of the panel for the equipped weapon. */
     private BufferedImage weaponInventory;
 
-    /** Měřítko pro zvětšení UI prvků při vykreslení. */
+    /** Scale factor for enlarging UI elements during rendering. */
     private final float scaleFactor = 3.0f;
 
-    /** Hraniční obdélník inventáře pro výběr nebo kolize. */
+    /** Bounding rectangle of the inventory for selection or collision detection. */
     private Rectangle playerInventoryBounds;
 
-    /** Hraniční oblasti jednotlivých slotů na brnění (4 sloty: helma, nátepník, kalhoty, boty). */
+    /** Bounding areas of individual armor slots (4 slots: helmet, bib, pants, boots). */
     private Rectangle[] armorSlotBounds;
 
-    /** Hraniční oblast pro jeden slot vybavené zbraně. */
+    /** Bounding area for the single equipped weapon slot. */
     private Rectangle weaponSlotBounds;
 
     /**
-     * Inicializuje UI hráče včetně načtení grafiky.
+     * Initializes the player's UI, including loading graphics.
      *
-     * @param gp hlavní instance herního panelu
+     * @param gp the main instance of the game panel
      */
     public PlayerUI(gamePanel gp) {
         this.gp = gp;
@@ -55,7 +55,7 @@ public class PlayerUI {
     }
 
     /**
-     * Načte všechny obrázky použité pro vykreslení inventáře.
+     * Loads all images used for rendering the inventory.
      */
     private void loadImages() {
         try {
@@ -71,9 +71,9 @@ public class PlayerUI {
     }
 
     /**
-     * Vykreslí kompletní UI hráče včetně panelu předmětů, zbroje a zbraně.
+     * Renders the complete player UI, including the item panel, armor, and weapon.
      *
-     * @param g2d grafický kontext pro vykreslování
+     * @param g2d the graphics context for rendering
      */
     public void draw(Graphics2D g2d) {
         if (playerInventory == null || sideArmor == null || weaponInventory == null) {
@@ -81,7 +81,7 @@ public class PlayerUI {
             return;
         }
 
-        // Výpočet rozměrů a pozic všech panelů
+        // Calculate dimensions and positions of all panels
         int playerInvWidth = (int)(playerInventory.getWidth() * scaleFactor);
         int playerInvHeight = (int)(playerInventory.getHeight() * scaleFactor);
         int sideArmorWidth = (int)(sideArmor.getWidth() * scaleFactor);
@@ -95,14 +95,14 @@ public class PlayerUI {
         int sideX = 10;
         int startY = gp.defensBar.getY() + gp.defensBar.getBarHeight() + 15;
 
-        // Vykreslení tří hlavních panelů
+        // Render the three main panels
         g2d.drawImage(playerInventory, playerInvX, playerInvY, playerInvWidth, playerInvHeight, null);
         g2d.drawImage(sideArmor, sideX, startY, sideArmorWidth, sideArmorHeight, null);
         g2d.drawImage(weaponInventory, sideX, startY + sideArmorHeight + 15, weaponInvWidth, weaponInvHeight, null);
 
         playerInventoryBounds = new Rectangle(playerInvX, playerInvY, playerInvWidth, playerInvHeight);
 
-        // --- Inventář hráče ---
+        // --- Player Inventory ---
         int gridCols = 8;
         int gridRows = 1;
         int cellWidth = playerInvWidth / gridCols;
@@ -145,7 +145,7 @@ public class PlayerUI {
             }
         }
 
-        // --- Brnění ---
+        // --- Armor ---
         int armorGridCols = 1;
         int armorGridRows = 4;
         int armorCellWidth = sideArmorWidth / armorGridCols;
@@ -169,7 +169,7 @@ public class PlayerUI {
             }
         }
 
-        // --- Zbraň ---
+        // --- Weapon ---
         int weaponItemSize = Math.min(weaponInvWidth, weaponInvHeight);
         int weaponX = sideX + 5;
         int weaponY = startY + sideArmorHeight + 20;
@@ -184,26 +184,26 @@ public class PlayerUI {
         }
     }
 
-    /** @return hranice hlavního inventáře */
+    /** @return the bounds of the main inventory */
     public Rectangle getPlayerInventoryBounds() {
         return playerInventoryBounds;
     }
 
-    /** @return pole obdélníků reprezentujících sloty brnění */
+    /** @return an array of rectangles representing the armor slots */
     public Rectangle[] getArmorSlotBounds() {
         return armorSlotBounds;
     }
 
-    /** @return obdélník pro slot zbraně */
+    /** @return the rectangle for the weapon slot */
     public Rectangle getWeaponSlotBounds() {
         return weaponSlotBounds;
     }
 
     /**
-     * Určí, zda daný předmět je součástí brnění.
+     * Determines whether the given item is part of armor.
      *
-     * @param item položka k posouzení
-     * @return {@code true}, pokud jde o brnění
+     * @param item the item to evaluate
+     * @return {@code true} if it is armor
      */
     public boolean isArmor(ChestInventoryManager.ItemData item) {
         String itemName = item.getName();
@@ -213,10 +213,10 @@ public class PlayerUI {
     }
 
     /**
-     * Určí index slotu, do kterého brnění patří.
+     * Determines the slot index for the given armor item.
      *
-     * @param item položka brnění
-     * @return index slotu (0–3) nebo -1, pokud neznámé
+     * @param item the armor item
+     * @return the slot index (0–3) or -1 if unknown
      */
     public int getArmorSlotIndex(ChestInventoryManager.ItemData item) {
         String itemName = item.getName();
@@ -233,10 +233,10 @@ public class PlayerUI {
     }
 
     /**
-     * Určí, zda daný předmět je zbraň (meč).
+     * Determines whether the given item is a weapon (sword).
      *
-     * @param item položka k posouzení
-     * @return {@code true}, pokud je zbraň
+     * @param item the item to evaluate
+     * @return {@code true} if it is a weapon
      */
     public boolean isWeapon(ChestInventoryManager.ItemData item) {
         String itemName = item.getName();

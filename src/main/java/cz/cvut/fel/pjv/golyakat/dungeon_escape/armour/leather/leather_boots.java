@@ -7,16 +7,22 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 /**
- * Třída {@code leather_boots} reprezentuje kožené boty,
- * které se nasazují na nohy hráče a poskytují základní ochranu.
+ * The {@code leather_boots} class represents leather boots,
+ * which are equipped on the player's feet and provide basic protection.
  * <p>
- * Obranná hodnota je 1 bod.
+ * The defense value is 1 point.
  * </p>
  */
 
 public class leather_boots extends GameObject implements Armor {
     private final float defensAmount;
 
+    /**
+     * Constructs a new {@code leather_boots} armor piece.
+     * <p>
+     * Initializes the item name, defense amount, and loads the corresponding image resource.
+     * </p>
+     */
     public leather_boots() {
         name = "leather_boots";
         defensAmount = 1;
@@ -27,6 +33,11 @@ public class leather_boots extends GameObject implements Armor {
         }
     }
 
+    /**
+     * Returns the defense amount provided by this armor piece.
+     *
+     * @return the defense value of the leather boots
+     */
     @Override
     public float getDefensAmount() {
         return defensAmount;

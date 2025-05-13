@@ -46,113 +46,237 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
 /**
- * Třída {@code gamePanel} slouží jako hlavní panel hry, který spravuje herní logiku, vykreslování,
- * herní smyčku, interakce, UI i ukládání a načítání hry.
+ * The {@code gamePanel} class serves as the main game panel that manages game logic, rendering,
+ * game loop, interactions, UI, and game saving/loading.
  * <p>
- * Využívá komponenty jako {@link Player}, {@link GameObject}, {@link HealthBar}, {@link MonsterUI}, {@link TileManger} atd.
- * Obsahuje vlastní herní smyčku pomocí rozhraní {@link Runnable}, sleduje herní stav a zajišťuje přechody mezi scénami.
+ * It uses components such as {@link Player}, {@link GameObject}, {@link HealthBar}, {@link MonsterUI}, {@link TileManger}, etc.
+ * Contains its own game loop using the {@link Runnable} interface, tracks game state, and ensures transitions between scenes.
  * </p>
  */
 
 public class gamePanel extends JPanel implements Runnable {
 
     // SCREEN SETTINGS
+
+    /** The base tile size in pixels before scaling. */
     final int originalTileSize = 16;
+
+    /** The factor by which the base tile size is multiplied for rendering. */
     final int scale = 3;
 
+    /** The size of a single tile in pixels after scaling. */
     public final int tileSize = originalTileSize * scale;
+
+    /** The number of horizontal tiles visible on screen. */
     public final int maxScreenCol = 20;
+
+    /** The number of vertical tiles visible on screen. */
     public final int maxScreenRow = 12;
+
+    /** The total width of the game panel in pixels. */
     public final int screenWidth = tileSize * maxScreenCol;
+
+    /** The total height of the game panel in pixels. */
     public final int screenHeight = tileSize * maxScreenRow;
 
     //WORLD SETTINGS
+
+    /** The number of columns in the world map grid. */
     public final int maxWorldCol = 60;
+
+    /** The number of rows in the world map grid. */
     public final int maxWorldRow = 60;
+
+    /** The total number of distinct maps (levels) in the game. */
     public final int maxMap = 2; // number of all levels
+
+    /** The index of the currently active map (0-based). */
     public int currentMap = 0; // current map index
 
     // FPS
+
+    /** The target frames per second for the game loop. */
     int FPS = 60;
 
     // SYSTEM
+
+    /** Manages tile loading and rendering logic. */
     public TileManger tileH = new TileManger(this);
+
+    /** Handles keyboard input events. */
     public KeyHandler keyH = new KeyHandler();
+
+    /** The main thread running the game loop. */
     Thread gameThread;
+
+    /** Checks for and resolves collisions between entities and tiles. */
     public Collision collisionChecker = new Collision(this);
+
+    /** Responsible for placing objects and monsters in the world. */
     public AssetSetter assetSetter;
+
+    /** UI handler for the title screen overlay. */
     private final TitleScreenUI titleUi;
+
+    /** Manages game audio playback. */
     Sound sound = new Sound();
 
     // ENTITY AND OBJECT
+
+    /** The player character instance. */
     public Player player = new Player(this, keyH);
+
+    /** Array of interactive world objects per map. */
     public GameObject[][] obj = new GameObject[maxMap][11];
+
+
+    /** UI element showing the player's health bar. */
     public HealthBar healthBar;
+
+    /** UI element showing the player's defense bar. */
     public DefensBar defensBar;
+
+    /** Array of monsters per map. */
     public Entity[][] monster = new Entity[maxMap][20];
+
+    /** UI element displaying monster health/info. */
     public MonsterUI monsterUi;
     /**
-     * Určuje, zda již byla daná mapa inicializována (monstra, objekty).
-     * Slouží k tomu, aby se spawnování provádělo pouze jednou.
+     * Determines whether a given map has already been initialized (monsters, objects).
+     * Used to ensure spawning occurs only once.
      */
     public boolean[] levelSpawned = new boolean[maxMap];
 
     // GAME STATE
+
+    /** The current primary state of the game (title, playing, game over). */
     public int gameState;
+
+    /** State constant for the title screen. */
     public final int titleState = 0;
+
+    /** State constant for active gameplay. */
     public final int playerState = 1;
+
+    /** State constant for the game-over screen. */
     public final int gameOverState = 2;
 
+    // UI MANAGERS
+
+    /** UI for displaying and interacting with chests. */
     public ChestUI chestUI;
+
+    /** UI for the crafting table. */
     public CraftingTableUI craftingTableUI;
+
+    /** UI for the player inventory and equipped items. */
     public PlayerUI playerUI;
-    /**
-     * Předmět, který je právě přetahován hráčem (drag-and-drop).
-     */
+
+    /** Manages chest inventory data and drag-and-drop operations. */
     public ChestInventoryManager chestInventoryManager;
 
+    // COMBAT
+
+    /** Counter to enforce attack cooldown between clicks. */
     private int attackCounter = 0;
+
+    /** Number of update ticks required between attacks. */
     private static final int ATTACK_COOLDOWN = 30;
 
     // Drag-and-drop variables
+
+    /** The item currently being dragged by the player. */
     public ChestInventoryManager.ItemData draggedItem = null;
+
+    /** The source container (player, chest, or crafting table) of the dragged item. */
     private Object sourceInventory = null; // Player, Chest, CraftingTableUI
+
+    /** The index of the dragged item within its source container. */
     private int draggedItemIndex = -1;
+
+    /** X offset between mouse pointer and top-left of dragged item sprite. */
     private int dragOffsetX, dragOffsetY;
+
+    /** Whether the collision event has been logged this drag operation. */
     private boolean collisionLogged = false;
+
+    /** Whether the drop event has been logged this drag operation. */
     private boolean dragDroppedLogged = false;
+
+    /** Whether the dragged item originated from an armor slot. */
     private boolean draggedFromArmor = false;
 
     // MESSAGES
+    /** Hint message shown when near a door. */
     public HintMessage doorMessage = new HintMessage();
+
+    /** Hint message shown specifically for door unlock hints. */
     public HintMessage doorHintMessage = new HintMessage();
+
+    /** Hint message shown when near a chest. */
     public HintMessage chestMessage = new HintMessage();
+
+    /** Hint message shown when near a healing station or item. */
     public HintMessage healingHintMessage = new HintMessage();
+
+    /** Hint message shown when near the crafting table. */
     public HintMessage craftingHintMessage = new HintMessage();
 
     // UI MESSAGE SETTINGS
+
+    /** Font size used for on-screen messages. */
     private final int messageFontSize = 20;
+
+    /** Line height (vertical spacing) between message lines. */
     private final int messageLineHeight = 30;
-    private final int messageX = screenWidth - tileSize * 7; // вправо
+
+    /** X coordinate at which messages are drawn (from the left). */
+    private final int messageX = screenWidth - tileSize * 7;
+
+    /** Y coordinate at which the first line of messages is drawn. */
     private final int messageY = 25;
 
     // HINT MESSAGE
+
+    /**
+     * Represents a transient on-screen hint message with a timer and proximity flag.
+     */
     public class HintMessage {
+        /** The text content of the hint. */
         public String text = "";
+
+        /** Remaining ticks before the hint is cleared. */
         public int counter = 0;
+
+        /** Whether the related object (door, chest, etc.) is near the player. */
         public boolean near = false;
 
+        /**
+         * Shows a new hint message for a specified duration.
+         *
+         * @param message the hint text to display
+         * @param duration number of ticks the hint remains visible
+         * @param isNear whether the player is near the related object
+         */
         public void show(String message, int duration, boolean isNear) {
             this.text = message;
             this.counter = duration;
             this.near = isNear;
         }
 
+        /**
+         * Updates the visibility timer and clears text when expired.
+         */
         public void update() {
             if (counter > 0) counter--;
             if (counter <= 0) text = "";
         }
 
+        /**
+         * Checks if the hint message is currently visible.
+         *
+         * @return true if the text is non-empty; false otherwise
+         */
         public boolean isVisible() {
             return !text.isEmpty();
         }
@@ -163,14 +287,13 @@ public class gamePanel extends JPanel implements Runnable {
     private final XmlMapper xml = new XmlMapper();
 
     /**
-     * Na základě názvu vytvoří a vrátí instanci příslušného herního předmětu nebo výbavy.
+     * Creates and returns an instance of the appropriate game item or equipment based on the name.
      * <p>
-     * Používá se při obnově hry z uloženého stavu, aby se z názvu (uloženého v XML)
-     * zrekonstruoval správný typ objektu {@link GameObject}.
+     * Used when restoring the game from a saved state to reconstruct the correct {@link GameObject} type from the name (saved in XML).
      * </p>
      *
-     * @param name název předmětu podle uložení v save souboru
-     * @return instance objektu odpovídajícího názvu nebo {@code null}, pokud nebyl rozpoznán
+     * @param name item name according to save file
+     * @return instance of the object corresponding to the name or {@code null} if not recognized
      */
     private GameObject makeItem(String name) {
         switch (name) {
@@ -213,19 +336,17 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Vytvoří objekt {@link SaveData}, který obsahuje kompletní stav hry pro uložení do XML.
-     * <p>
-     * Do výstupního objektu se ukládají:
+     * Creates a {@link SaveData} object containing the complete game state for saving to XML.
+     * The output object stores:
      * <ul>
-     *     <li>Pozice a život hráče</li>
-     *     <li>Inventář, brnění, zbraň a vylepšení</li>
-     *     <li>Stav monster na aktuální mapě</li>
-     *     <li>Obsahy truhel</li>
-     *     <li>Informace o tom, které mapy byly již spawnuty</li>
+     *     <li>Player position and health</li>
+     *     <li>Inventory, armor, weapon, and upgrades</li>
+     *     <li>Monster states on the current map</li>
+     *     <li>Chest contents</li>
+     *     <li>Information about which maps have already been spawned</li>
      * </ul>
-     * </p>
      *
-     * @return připravený objekt {@link SaveData} pro serializaci do XML
+     * @return prepared {@link SaveData} object for XML serialization
      */
     public SaveData buildSaveData() {
         SaveData data = new SaveData();
@@ -312,40 +433,40 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Obnoví celý stav hry ze zadaného objektu {@link SaveData}.
+     * Restores the entire game state from the given {@link SaveData} object.
      * <p>
-     * Provádí následující kroky:
+     * Performs the following steps:
      * <ol>
-     *     <li>Obnovení aktuální mapy a inicializace prostředí</li>
-     *     <li>Nastavení pozice a životů hráče</li>
-     *     <li>Rekonstrukce inventáře, výbavy, zbraně a vylepšení</li>
-     *     <li>Načtení monster a jejich pozic/stavů</li>
-     *     <li>Obnovení obsahu jednotlivých truhel</li>
+     *     <li>Restores current map and environment initialization</li>
+     *     <li>Sets player position and health</li>
+     *     <li>Reconstructs inventory, equipment, weapon, and upgrades</li>
+     *     <li>Loads monsters and their positions/states</li>
+     *     <li>Restores contents of individual chests</li>
      * </ol>
-     * Pokud některý objekt nebo typ nelze obnovit, vypíše se chybové hlášení.
+     * If any object or type cannot be restored, an error message is printed.
      * </p>
      *
-     * @param d objekt {@link SaveData}, načtený z XML souboru
+     * @param d {@link SaveData} object loaded from XML file
      */
     private void restoreFromSave(SaveData d) {
-        currentMap = d.currentMap;                           // по умолчанию 0, если в XML нет атрибута
+        currentMap = d.currentMap;                           // default 0 if the XML attribute is missing
         if (d.levelSpawned != null && d.levelSpawned.length == levelSpawned.length) {
             levelSpawned = d.levelSpawned.clone();
         } else {
             Arrays.fill(levelSpawned, false);
         }
 
-        /* 2.  Подготовка окружения под нужную карту */
-        assetSetter.setObg();                 // заново раскладываем двери/сундуки/и т.д.
-        tileH.findWalkableRegions();          // пересчёт проходных зон
+        /* 2. Set up the environment for the required map */
+        assetSetter.setObg();                 // re-place doors/chests/etc.
+        tileH.findWalkableRegions();          // recalculate walkable areas
 
-        if (!levelSpawned[currentMap]) {      // если в этой карте монстры ещё не спавнились
+        if (!levelSpawned[currentMap]) {      // if monsters have not yet been spawned on this map
             assetSetter.setMonster();
             levelSpawned[currentMap] = true;
         }
 
-        /* 3.  Сбрасываем сущности игрока НА ОСНОВЕ новой currentMap */
-        player.reset();                       // ставит стартовые координаты для карты
+        /* 3. Reset player entity based on the new currentMap */
+        player.reset();                       // set starting coordinates for the map
 
         player.reset();
         player.worldX = d.player.worldX;
@@ -353,7 +474,7 @@ public class gamePanel extends JPanel implements Runnable {
         player.life = d.player.life;
         GameLogger.info("Restored player position: (" + player.worldX + ", " + player.worldY + "), HP: " + player.life);
 
-        // Восстановление инвентаря
+        // Restore inventory
         if (d.player.backpack != null && !d.player.backpack.isEmpty()) {
             d.player.backpack.forEach(it -> {
                 if (it != null && it.name != null) {
@@ -365,6 +486,7 @@ public class gamePanel extends JPanel implements Runnable {
             GameLogger.info("No backpack data to restore");
         }
 
+        // Restore armor
         if (d.player.armor != null && !d.player.armor.isEmpty()) {
             for (int i = 0; i < d.player.armor.size() && i < 4; i++) {
                 SaveData.ItemData armorData = d.player.armor.get(i);
@@ -382,6 +504,7 @@ public class gamePanel extends JPanel implements Runnable {
             GameLogger.info("No armor data to restore");
         }
 
+        // Restore weapon
         if (d.player.weapon != null && d.player.weapon.name != null) {
             GameObject weaponObj = makeItem(d.player.weapon.name);
             if (weaponObj != null) {
@@ -394,6 +517,7 @@ public class gamePanel extends JPanel implements Runnable {
             GameLogger.info("No weapon data to restore");
         }
 
+        // Restore grade
         if (d.player.grade != null && d.player.grade.name != null) {
             GameObject gradeObj = makeItem(d.player.grade.name);
             if (gradeObj != null) {
@@ -406,9 +530,11 @@ public class gamePanel extends JPanel implements Runnable {
             GameLogger.info("No grade data to restore");
         }
 
+        // Clear existing monsters
         for (Entity[] row : monster) {
             Arrays.fill(row, null);
         }
+        // Restore monsters
         if (d.monsters != null && !d.monsters.isEmpty()) {
             for (int i = 0; i < d.monsters.size() && i < monster.length; i++) {
                 SaveData.MonsterData md = d.monsters.get(i);
@@ -418,9 +544,8 @@ public class gamePanel extends JPanel implements Runnable {
                             monster[0][i] = new Boss_Goblin(this);
                             break;
                         case "Boss_Eye":
-                            monster[1][i] = new Boss_Eye(this);    // 1-я карта = индекс 1
+                            monster[1][i] = new Boss_Eye(this);    // map index 1
                             break;
-
                         case "Monster_Slime":
                             monster[currentMap][i] = new Monster_Slime(this);
                             break;
@@ -446,6 +571,7 @@ public class gamePanel extends JPanel implements Runnable {
         }
 
         chestInventoryManager.resetChestData();
+        // Restore chests
         if (d.chests != null && !d.chests.isEmpty()) {
             d.chests.forEach(cd -> {
                 if (cd != null && cd.items != null) {
@@ -458,11 +584,12 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+
     /**
-     * Pomocná metoda pro převod seznamu uložených předmětů z {@link SaveData} do interní struktury {@link ChestInventoryManager.ItemData}.
+     * Helper method for converting a list of saved items from {@link SaveData} to internal {@link ChestInventoryManager.ItemData} structure.
      *
-     * @param list seznam položek načtený z XML
-     * @return seznam objektů {@link ChestInventoryManager.ItemData} připravený k použití ve hře
+     * @param list list of items loaded from XML
+     * @return list of {@link ChestInventoryManager.ItemData} objects ready for use in the game
      */
     private List<ChestInventoryManager.ItemData> toItemList(List<SaveData.ItemData> list) {
         List<ChestInventoryManager.ItemData> result = new ArrayList<>();
@@ -507,18 +634,18 @@ public class gamePanel extends JPanel implements Runnable {
         gameState = titleState;
 
         /**
-         * Centrální zpracování kliknutí myší – inicializace přetahování (drag) a interakce.
-         * <p>
-         * Ošetřuje:
+         * Central mouse click processing – initialization of dragging and interaction.
+         *
+         * Handles:
          * <ul>
-         *   <li>Kliknutí na inventář hráče a výběr předmětu</li>
-         *   <li>Výběr výbavy (armor, weapon)</li>
-         *   <li>Kliknutí do truhly a na předměty v ní</li>
-         *   <li>Přetahování z craftingového stolu</li>
-         *   <li>Craftovací tlačítko (vytvoření SilverKey)</li>
+         *   <li>Clicking on player inventory and item selection</li>
+         *   <li>Equipment selection (armor, weapon)</li>
+         *   <li>Clicking on chest and items in it</li>
+         *   <li>Dragging from crafting table</li>
+         *   <li>Crafting button (creating SilverKey)</li>
          * </ul>
-         * Pravé tlačítko slouží k útoku.
-         * </p>
+         * Right button is used for attack.
+         *
          */
         this.addMouseListener(new MouseAdapter() {
             @Override
@@ -671,12 +798,12 @@ public class gamePanel extends JPanel implements Runnable {
             }
 
             /**
-             * Zpracovává událost uvolnění myši (mouseReleased), zejména při práci s přetahovanými předměty (drag-and-drop).
+             * Processes the mouse release event, especially when working with dragged items (drag-and-drop).
              * <p>
-             * Tato metoda určuje, kam byl předmět puštěn – do inventáře hráče, na výbavu, do truhly, do craftingového stolu nebo na mapu (např. na dveře).
+             * This method determines where the item was dropped – into player inventory, onto equipment, into chest, into crafting table, or onto the map (e.g., onto doors).
              * </p>
              *
-             * @param e objekt události {@link MouseEvent}, obsahuje např. souřadnice kliknutí
+             * @param e {@link MouseEvent} object containing click coordinates
              */
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -888,12 +1015,12 @@ public class gamePanel extends JPanel implements Runnable {
 
 
 /**
- * Reaguje na pohyb a přetahování myši na herním panelu.
+ * Responds to mouse movement and dragging on the game panel.
  * <p>
- * Pomocí {@link MouseMotionAdapter} jsou zachyceny dvě události:
+ * Using {@link MouseMotionAdapter}, two events are captured:
  * <ul>
- *   <li>{@code mouseMoved} – slouží k interaktivnímu zvýraznění prvků v titulní obrazovce</li>
- *   <li>{@code mouseDragged} – aktualizuje vykreslování při přetahování předmětů (drag-and-drop)</li>
+ *   <li>{@code mouseMoved} – used for interactive highlighting of elements in the title screen</li>
+ *   <li>{@code mouseDragged} – updates rendering during item dragging (drag-and-drop)</li>
  * </ul>
  */
         this.addMouseMotionListener(new MouseMotionAdapter() {
@@ -921,7 +1048,7 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Vymaže přetahovaný předmět a resetuje stav přetahování.
+     * Clears the dragged item and resets the drag state.
      */
     private void clearDrag() {
         draggedItem = null;
@@ -932,8 +1059,8 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Odebere předmět z inventáře nebo truhly podle zdroje (sourceInventory),
-     * přičemž respektuje množství – pokud quantity > 1, jen sníží počet.
+     * Removes the item from inventory or chest according to the source (sourceInventory),
+     * respecting quantity – if quantity > 1, only decreases the count.
      */
     private void removeDraggedItem() {
         if (sourceInventory == player) {
@@ -967,11 +1094,11 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Inicializuje objekty a monstra ve hře a nastaví výchozí stav na titulní obrazovku.
+     * Initializes objects and monsters in the game and sets the default state to the title screen.
      * <p>
-     * Metoda slouží k počátečnímu nastavení hry – volá {@link AssetSetter#setObg()},
-     * který umisťuje objekty (např. truhly, dveře, crafting table) a následně {@link AssetSetter#setMonster()},
-     * který spawnuje monstra na mapu. Poté se nastaví stav hry na {@code titleState}, čímž se zobrazí úvodní menu.
+     * This method is used for initial game setup – calls {@link AssetSetter#setObg()},
+     * which places objects (e.g., chests, doors, crafting table) and then {@link AssetSetter#setMonster()},
+     * which spawns monsters on the map. Then sets the game state to {@code titleState}, displaying the intro menu.
      * </p>
      */
     public void setUpObjects() {
@@ -981,7 +1108,7 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Spustí herní vlákno – volá se po inicializaci okna.
+     * Starts the game thread – called after window initialization.
      */
     public void startGameThread() {
         gameThread = new Thread(this);
@@ -989,12 +1116,11 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Hlavní herní smyčka, která běží v samostatném vlákně.
+     * Main game loop running in a separate thread.
      * <p>
-     * Smyčka se snaží udržet stabilní FPS (snímky za sekundu) a volá update a repaint.
+     * The loop tries to maintain stable FPS (frames per second) and calls update and repaint.
      * </p>
      */
-    @Override
     public void run() {
         double drawInterval = (double) 1000000000 / FPS;
         double nextDrawTime = System.nanoTime() + drawInterval;
@@ -1020,10 +1146,10 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Hlavní logika aktualizace hry – zpracovává stav hráče, interakce,
-     * vykreslování zpráv, otevření truhly, dveří a craftingového stolu.
+     * Main game update logic – processes player state, interactions,
+     * message rendering, chest opening, doors, and crafting table.
      * <p>
-     * Tato metoda se volá každým snímkem a reaguje na blízkost objektů a stisky kláves.
+     * This method is called every frame and responds to object proximity and key presses.
      * </p>
      */
     public void update() {
@@ -1223,19 +1349,18 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
 /**
- * Překresluje veškeré vizuální prvky hry na obrazovce.
+ * Redraws all visual game elements on the screen.
  * <p>
- * Tato metoda je volána automaticky Swingem vždy, když je třeba obnovit nebo znovu vykreslit panel.
- * Zajišťuje zobrazení titulní obrazovky, mapy, objektů, monster, hráče,
- * uživatelského rozhraní, drag-and-drop ikony i zpráv.
+ * This method is automatically called by Swing whenever the panel needs to be refreshed or redrawn.
+ * Ensures display of the title screen, map, objects, monsters, player,
+ * user interface, drag-and-drop icon, and messages.
  * </p>
  *
- * @param g Grafický kontext {@link Graphics}, který se používá pro kreslení
+ * @param g {@link Graphics} context used for drawing
  */
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-
 
         // === 1) TITULNÍ OBRAZOVKA ===
         if (gameState == titleState) {
@@ -1252,36 +1377,25 @@ public class gamePanel extends JPanel implements Runnable {
             // 2.2) Vykreslení objektů (např. dveře, truhly, crafting stůl)
             for (int i = 0; i < obj[currentMap].length; i++) {
                 if (obj[currentMap][i] != null) {
-                    int screenX = obj[currentMap][i].worldX - player.worldX + player.screenX;
-                    int screenY = obj[currentMap][i].worldY - player.worldY + player.screenY;
-                    if (screenX + tileSize > 0 && screenX < screenWidth &&
-                            screenY + tileSize > 0 && screenY < screenHeight) {
-                        obj[currentMap][i].draw(g2d, this);
-                    }
+                    obj[currentMap][i].draw(g2d, this);
                 }
             }
 
             // 2.3) Vykreslení monster (včetně animace smrti a UI)
             for (int i = 0; i < monster[currentMap].length; i++) {
-                if (monster[currentMap][i] != null) {
-                    int screenX = monster[currentMap][i].worldX - player.worldX + player.screenX;
-                    int screenY = monster[currentMap][i].worldY - player.worldY + player.screenY;
-                    if (screenX + tileSize > 0 && screenX < screenWidth &&
-                            screenY + tileSize > 0 && screenY < screenHeight) {
+                Entity m = monster[currentMap][i];
 
-                        monsterUi.draw(g2d, monster[currentMap][i]); // Zdravotní panel nad monstrem
+                if (m != null) {
+                    monsterUi.draw(g2d, m);
+                    m.draw(g2d);
 
-                        // Vykreslení samotného monstra (pokud není mrtvé nebo fade-out neskončil)
-                        if (!monster[currentMap][i].isDead || monster[currentMap][i].fadeAlpha > 0) {
-                            monster[currentMap][i].draw(g2d); // Отрисовка самого монстра
-                        }
-                    }
-                    // Vymazání monstra po dokončení fade animace
-                    if (monster[currentMap][i].isDead && monster[currentMap][i].fadeAlpha <= 0) {
+                    if (m.isDead && m.fadeAlpha <= 0) {
                         monster[currentMap][i] = null;
                     }
                 }
             }
+
+
             // 2.4) Vykreslení hráče
             player.draw(g2d);
 
@@ -1297,12 +1411,6 @@ public class gamePanel extends JPanel implements Runnable {
                 Point mousePos = getMousePosition();
                 if (mousePos != null) {
                     int itemSize = tileSize;
-                    boolean isKeyPart = draggedItem.getName().equals("Key1") ||
-                            draggedItem.getName().equals("Key2") ||
-                            draggedItem.getName().equals("Key3");
-                    if (isKeyPart) {
-                        itemSize = (int) (tileSize * 0.6667f);
-                    }
                     g2d.drawImage(draggedItem.getItem().image,
                             mousePos.x - dragOffsetX,
                             mousePos.y - dragOffsetY,
@@ -1365,12 +1473,12 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Spustí hudbu na pozadí podle zvoleného indexu zvukového souboru.
+     * Plays background music according to the selected sound file index.
      * <p>
-     * Tato hudba bude hrát opakovaně.
+     * This music will play repeatedly.
      * </p>
      *
-     * @param i index zvuku ve zvukovém poli (např. 0 = menu, 1 = dungeon...)
+     * @param i sound index in the sound array (e.g., 0 = menu, 1 = dungeon...)
      */
     public void playMusic(int i) {
         sound.setFile(i);
@@ -1380,12 +1488,12 @@ public class gamePanel extends JPanel implements Runnable {
 
 
     /**
-     * Přehrává krátký zvukový efekt (např. útok, výběr v menu, otevření truhly).
+     * Plays a short sound effect (e.g., attack, menu selection, chest opening).
      * <p>
-     * Efekt se přehraje jednorázově bez smyčky.
+     * The effect plays once without looping.
      * </p>
      *
-     * @param i index zvukového efektu v poli
+     * @param i sound effect index in the array
      */
     public void playSE(int i) {
         sound.setFile(i);
@@ -1396,13 +1504,15 @@ public class gamePanel extends JPanel implements Runnable {
 
     //NEW GAME
     /**
-     * Inicializuje novou hru: spustí mapu 0, vynuluje vše a nastaví výchozí stavy.
+     * Initializes a new game: starts map 0, resets everything, and sets default states.
      */
     public void startNewGame() {
         currentMap = 0;
         Arrays.fill(levelSpawned, false);
         levelSpawned[currentMap] = true;
         player.reset();
+        Iron_sword starterSword = new Iron_sword(2);
+        player.equipWeapon(starterSword);
         chestInventoryManager.resetChestData();
 
         setUpObjects();
@@ -1412,7 +1522,7 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Uloží aktuální stav hry (hráč, mapa, inventář...).
+     * Saves the current game state (player, map, inventory...).
      */
     public void saveGame() {
         try {
@@ -1435,7 +1545,7 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     /**
-     * Načte poslední uložený stav hry ze souboru.
+     * Loads the last saved game state from file.
      */
     public void loadSavedGame() {
         if (!Files.exists(SAVE_PATH)) {

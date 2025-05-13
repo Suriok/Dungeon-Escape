@@ -7,79 +7,79 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
- * Abstraktní třída {@code GameObject} slouží jako základ pro všechny interaktivní objekty ve hře.
+ * The abstract class {@code GameObject} serves as a base for all interactive objects in the game.
  * <p>
- * Obsahuje základní atributy jako obrázky, pozici, kolizní plochu a logiku vykreslování.
- * Je určena k dědění – konkrétní objekty (truhly, dveře, crafting table) ji rozšiřují.
+ * Contains basic attributes such as images, position, collision area, and rendering logic.
+ * Designed for inheritance – specific objects (chests, doors, crafting table) extend it.
  * </p>
  */
 public abstract class GameObject {
 
     /**
-     * Obrázek objektu (hlavní vzhled).
+     * Object's image (main appearance).
      */
     public BufferedImage image;
 
     /**
-     * Druhý obrázek – může být použit pro animaci nebo alternativní stav.
+     * Second image – can be used for animation or alternative state.
      */
     public BufferedImage image2;
 
     /**
-     * Třetí obrázek – rozšířený vzhled (např. otevřená verze).
+     * Third image – extended appearance (e.g., open version).
      */
     public BufferedImage image3;
 
     /**
-     * Čtvrtý obrázek (volitelný).
+     * Fourth image (optional).
      */
     public BufferedImage image4;
 
     /**
-     * Pátý obrázek (volitelný).
+     * Fifth image (optional).
      */
     public BufferedImage image5;
 
     /**
-     * Název objektu (slouží k identifikaci).
+     * Object's name (used for identification).
      */
     public String name;
 
     /**
-     * Příznak určující, zda objekt způsobuje kolizi (blokuje průchod).
+     * Flag determining whether the object causes collision (blocks passage).
      */
     public boolean Collision = true;
 
     /**
-     * X-ová souřadnice objektu ve světovém prostoru.
+     * X-coordinate of the object in world space.
      */
     public int worldX;
 
     /**
-     * Y-ová souřadnice objektu ve světovém prostoru.
+     * Y-coordinate of the object in world space.
      */
     public int worldY;
 
     /**
-     * Kolizní oblast objektu – slouží k detekci kontaktu s hráčem nebo entitami.
+     * Object's collision area – used for detecting contact with player or entities.
      */
     public Rectangle solidArea = new Rectangle(0, 0, 48, 48);
 
     /**
-     * Výchozí X souřadnice kolizní oblasti.
+     * Default X coordinate of the collision area.
      */
     public int solidAreaDefaultX = 0;
 
     /**
-     * Výchozí Y souřadnice kolizní oblasti.
+     * Default Y coordinate of the collision area.
      */
     public int solidAreaDefaultY = 0;
 
     /**
-     * Vykreslí objekt na obrazovku, pokud je v rámci zobrazitelné oblasti vůči hráči.
+     * Renders the object on screen if it's within the visible area relative to the player.
      *
-     * @param g2d grafický kontext pro vykreslení
-     * @param gp  hlavní panel hry, ze kterého se získává pozice hráče
+     * @param g2d graphics context for rendering
+     * @param gp  main game panel from which player position is obtained
      */
     public void draw(Graphics2D g2d, gamePanel gp) {
         int screenX = worldX - gp.player.worldX + gp.player.screenX;
@@ -98,12 +98,12 @@ public abstract class GameObject {
     }
 
     /**
-     * Metoda pro interakci s objektem – je určena k přepsání v podtřídách.
+     * Method for object interaction – meant to be overridden in subclasses.
      * <p>
-     * Např. otevření dveří, otevření truhly, zahájení craftování atd.
+     * E.g., opening doors, opening chests, starting crafting, etc.
      * </p>
      */
     public void interact() {
-        // Přepsáno v podtřídách dle potřeby
+        // Overridden in subclasses as needed
     }
 }

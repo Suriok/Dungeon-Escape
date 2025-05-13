@@ -9,33 +9,33 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
- * Třída {@code CraftingTableUI} reprezentuje grafické rozhraní pro craftování (výrobu) předmětů.
+ * The {@code CraftingTableUI} class represents the graphical interface for crafting items.
  * <p>
- * V aktuální implementaci slouží k vytvoření předmětu {@code SilverKey} ze tří částí klíče
- * – Key1, Key2 a Key3.
+ * In the current implementation, it is used to create the {@code SilverKey} item from three key parts
+ * – Key1, Key2, and Key3.
  * </p>
  */
 public class CraftingTableUI {
 
-    /** Odkaz na hlavní herní panel pro přístup k hráči, rozměrům a přemalování. */
+    /** Reference to the main game panel for accessing player data, dimensions, and repainting. */
     private gamePanel gp;
 
-    /** Určuje, zda je okno craftování zrovna zobrazené. */
+    /** Indicates whether the crafting window is currently displayed. */
     private boolean isShowing;
 
-    /** Pole slotů používaných pro výrobu. Očekává se přesně 3 části klíče. */
+    /** Array of slots used for crafting. Expects exactly 3 key parts. */
     private ChestInventoryManager.ItemData[] craftingSlots;
 
-    /** Obdélníky reprezentující interaktivní oblasti pro sloty. */
+    /** Rectangles representing interactive areas for the slots. */
     private Rectangle[] slotBounds;
 
-    /** Obdélník pro tlačítko "Craft". */
+    /** Rectangle for the "Craft" button. */
     private Rectangle craftButtonBounds;
 
     /**
-     * Inicializuje craftovací UI, nastaví prázdné sloty a nezobrazený stav.
+     * Initializes the crafting UI, sets empty slots, and hides the window.
      *
-     * @param gp hlavní herní panel
+     * @param gp the main game panel
      */
     public CraftingTableUI(gamePanel gp) {
         this.gp = gp;
@@ -46,10 +46,10 @@ public class CraftingTableUI {
     }
 
     /**
-     * Přidá položku do seznamu. Pokud již existuje, navýší množství.
+     * Adds an item to the list. If it already exists, increments its quantity.
      *
-     * @param list seznam, do kterého přidáváme
-     * @param item položka, kterou přidáváme nebo zvyšujeme množství
+     * @param list the list to add to
+     * @param item the item to add or increment
      */
     public static void addOrIncrement(java.util.List<ChestInventoryManager.ItemData> list,
                                       ChestInventoryManager.ItemData item) {
@@ -62,38 +62,38 @@ public class CraftingTableUI {
         list.add(item);
     }
 
-    /** Zobrazí okno craftování. */
+    /** Displays the crafting window. */
     public void open() {
         isShowing = true;
         GameLogger.info("CraftingTableUI: Opened");
     }
 
-    /** Skryje okno craftování. */
+    /** Hides the crafting window. */
     public void close() {
         isShowing = false;
         GameLogger.info("CraftingTableUI: Closed");
     }
 
-    /** @return zda je právě okno craftingu zobrazeno */
+    /** @return whether the crafting window is currently displayed */
     public boolean isShowing() {
         return isShowing;
     }
 
-    /** @return pole obdélníků představujících sloty pro předměty */
+    /** @return array of rectangles representing the item slots */
     public Rectangle[] getSlotBounds() {
         return slotBounds;
     }
 
-    /** @return obdélník představující tlačítko "Craft" */
+    /** @return rectangle representing the "Craft" button */
     public Rectangle getCraftButtonBounds() {
         return craftButtonBounds;
     }
 
     /**
-     * Vrací předmět ve slotu na daném indexu.
+     * Returns the item in the slot at the given index.
      *
-     * @param index číslo slotu (0–2)
-     * @return instance předmětu nebo {@code null}
+     * @param index the slot number (0–2)
+     * @return the item instance or {@code null}
      */
     public ChestInventoryManager.ItemData getCraftingSlot(int index) {
         if (index >= 0 && index < craftingSlots.length) {
@@ -103,10 +103,10 @@ public class CraftingTableUI {
     }
 
     /**
-     * Nastaví předmět do konkrétního slotu craftingu.
+     * Sets an item in a specific crafting slot.
      *
-     * @param index index slotu (0–2)
-     * @param item předmět k vložení
+     * @param index the slot index (0–2)
+     * @param item the item to place
      */
     public void setCraftingSlot(int index, ChestInventoryManager.ItemData item) {
         if (index >= 0 && index < craftingSlots.length) {
@@ -115,20 +115,20 @@ public class CraftingTableUI {
     }
 
     /**
-     * Určuje, zda daný název patří části klíče.
+     * Determines whether the given name belongs to a key part.
      *
-     * @param name název předmětu
-     * @return {@code true}, pokud je to "Key1", "Key2" nebo "Key3"
+     * @param name the item name
+     * @return {@code true} if it is "Key1", "Key2", or "Key3"
      */
     public boolean isKeyPart(String name) {
         return "Key1".equals(name) || "Key2".equals(name) || "Key3".equals(name);
     }
 
     /**
-     * Určuje, zda daná část klíče se již nachází ve craftovacím slotu.
+     * Determines whether the given key part is already in a crafting slot.
      *
-     * @param name název části klíče
-     * @return {@code true}, pokud je slot již obsažen touto částí
+     * @param name the name of the key part
+     * @return {@code true} if the slot already contains this part
      */
     public boolean containsPart(String name) {
         for (ChestInventoryManager.ItemData d : craftingSlots)
@@ -137,10 +137,10 @@ public class CraftingTableUI {
     }
 
     /**
-     * Pokusí se vycraftit předmět "SilverKey" ze všech tří částí.
+     * Attempts to craft the "SilverKey" item from all three key parts.
      * <p>
-     * Pokud jsou přítomny Key1, Key2 a Key3, vytvoří nový předmět, přidá ho do inventáře hráče
-     * a odstraní části z obou: craftovacích slotů i inventáře hráče.
+     * If Key1, Key2, and Key3 are present, it creates a new item, adds it to the player's inventory,
+     * and removes the parts from both the crafting slots and the player's inventory.
      * </p>
      */
     public void craftSilverKey() {
@@ -186,9 +186,9 @@ public class CraftingTableUI {
     }
 
     /**
-     * Vykreslí UI rozhraní pro craftovací stůl.
+     * Renders the UI interface for the crafting table.
      *
-     * @param g2d grafický kontext
+     * @param g2d the graphics context
      */
     public void draw(Graphics2D g2d) {
         if (!isShowing) return;

@@ -8,10 +8,10 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 /**
- * Třída {@code iron_pants} reprezentuje železné kalhoty, které chrání spodní polovinu těla hráče.
+ * The {@code iron_pants} class represents iron pants that protect the lower half of the player's body.
  * <p>
- *  poskytují obrannou hodnotu 3.
- * Obrázek kalhot je načítán ze souboru a zobrazuje se v inventáři i při výběru výstroje.
+ * They provide a defense value of 3.
+ * The pants image is loaded from a file and displayed in both inventory and equipment selection.
  * </p>
  */
 
@@ -19,6 +19,12 @@ public class iron_pants extends GameObject implements Armor {
     private final float defensAmount;
 
 
+    /**
+     * Constructs a new {@code iron_pants} armor piece.
+     * <p>
+     * Initializes the item name, defense amount, and loads the corresponding image resource.
+     * </p>
+     */
     public iron_pants() {
         name = "iron_pants";
         defensAmount = 3;
@@ -37,6 +43,11 @@ public class iron_pants extends GameObject implements Armor {
         }
     }
 
+    /**
+     * Returns the defense amount provided by this armor piece.
+     *
+     * @return the defense value of the iron pants
+     */
     @Override
     public float getDefensAmount() {
         return defensAmount;

@@ -6,33 +6,33 @@ import javax.sound.sampled.Clip;
 import java.net.URL;
 
 /**
- * Třída {@code Sound} obstarává přehrávání zvuků a hudby ve hře.
+ * The {@code Sound} class handles playing sound effects and music in the game.
  * <p>
- * Využívá rozhraní Java Sound API (balík {@code javax.sound.sampled}) – konkrétně
- * třídy {@link Clip} pro vlastní přehrávání a {@link AudioSystem} pro načtení audio
- * streamu ze souboru WAV uloženého v resources.
+ * It uses the Java Sound API ({@code javax.sound.sampled} package) – specifically,
+ * the {@link Clip} class for playback and {@link AudioSystem} to load audio
+ * streams from WAV files stored in the resources.
  * </p>
  */
 public class Sound {
 
-    /** Instance {@link Clip}, která přehrává aktuální zvuk. */
+    /** The {@link Clip} instance that plays the current sound. */
     private Clip clip;
 
     /**
-     * Pole {@link URL} slouží jako „katalog“ všech zvukových souborů,
-     * které můžeme ve hře přehrát. Zde je předpřipraveno místo až
-     * pro 30 zvuků – pro další stačí přidat cestu do konstruktoru
-     * a volat {@link #setFile(int)} s odpovídajícím indexem.
+     * The {@link URL} array acts as a “catalog” of all sound files
+     * that can be played in the game. It is preconfigured for up to
+     * 30 sounds – to add more, simply insert the path in the constructor
+     * and call {@link #setFile(int)} with the appropriate index.
      */
     private final URL[] soundURL = new URL[30];
 
     /**
-     * Konstruktor naplní pole {@link #soundURL} cestami k požadovaným zvukovým
-     * souborům uloženým v classpath (adresář {@code resources}).
+     * Constructor populates the {@link #soundURL} array with paths to the desired
+     * sound files stored in the classpath (the {@code resources} directory).
      * <ul>
-     *   <li>index 0 – hudba na pozadí</li>
-     *   <li>index 1 – zvuk zásahu mečem</li>
-     *   <li>index 2 – útok monstra</li>
+     *   <li>index 0 – background music</li>
+     *   <li>index 1 – sword hit sound</li>
+     *   <li>index 2 – monster attack</li>
      * </ul>
      */
     public Sound() {
@@ -42,35 +42,35 @@ public class Sound {
     }
 
     /**
-     * Načte zvukový soubor podle zadaného indexu a připraví jej k přehrání.
+     * Loads a sound file by the given index and prepares it for playback.
      *
-     * @param i index do pole {@link #soundURL}. Pokud je index neplatný
-     *          nebo dojde k chybě při načítání, k nastavení klipu nedojde.
+     * @param i the index in the {@link #soundURL} array. If the index is invalid
+     *          or loading fails, the clip will not be set.
      */
     public void setFile(int i) {
         try {
-            // 1) Získáme audio stream z voleného resource
+            // 1) Get the audio stream from the chosen resource
             AudioInputStream ais = AudioSystem.getAudioInputStream(soundURL[i]);
-            // 2) Vytvoříme nový Clip (zvukový buffer)
+            // 2) Create a new Clip (sound buffer)
             clip = AudioSystem.getClip();
-            // 3) Načteme data do Clipu, aby bylo možné přehrávání
+            // 3) Load the audio data into the Clip for playback
             clip.open(ais);
         } catch (Exception e) {
-            // Tiché zachycení – v produkční verzi by bylo lepší chybové hlášení zalogovat
+            // Silent catch – in production it would be better to log the error
         }
     }
 
-    /** Okamžitě spustí přehrávání aktuálně nastaveného klipu. */
+    /** Immediately starts playing the currently loaded clip. */
     public void playSound() {
         clip.start();
     }
 
-    /** Spustí zvuk v nekonečné smyčce, dokud není zastaven. */
+    /** Plays the sound in an infinite loop until it is stopped. */
     public void loopSound() {
         clip.loop(Clip.LOOP_CONTINUOUSLY);
     }
 
-    /** Okamžitě zastaví přehrávání klipu. */
+    /** Immediately stops playing the clip. */
     public void StopSound() {
         clip.stop();
     }

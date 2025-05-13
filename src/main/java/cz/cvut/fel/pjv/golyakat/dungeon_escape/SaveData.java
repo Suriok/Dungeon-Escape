@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Datová třída reprezentující strukturu uložené hry.
+ * Data class representing the structure of a saved game.
  * <p>
- * Umožňuje serializaci/deserializaci pomocí knihovny Jackson ve formátu XML.
- * Obsahuje informace o hráči, monstrech, truhlách a aktuální mapě.
+ * Enables serialization/deserialization using the Jackson library in XML format.
+ * Contains information about the player, monsters, chests, and the current map.
  * </p>
  */
 @JacksonXmlRootElement(localName = "save")
@@ -20,46 +20,46 @@ import java.util.List;
 public class SaveData {
 
     /**
-     * Index aktuálně aktivní mapy.
-     * Používá se k přepínání mezi různými úrovněmi.
+     * Index of the currently active map.
+     * Used for switching between different levels.
      */
     @JacksonXmlProperty(isAttribute = true)
     public int currentMap;
 
     /**
-     * Pole příznaků označujících, zda již byly jednotlivé úrovně "spawnuté"
-     * (např. vygenerování monster pouze při prvním vstupu).
+     * Array of flags indicating whether individual levels have already been "spawned"
+     * (e.g., generating monsters only on the first entry).
      */
     @JacksonXmlElementWrapper(localName = "levelsSpawned")
     @JacksonXmlProperty(localName = "level")
     public boolean[] levelSpawned;
 
     /**
-     * Vnitřní datová třída reprezentující předmět v inventáři nebo truhle.
+     * Inner data class representing an item in the inventory or chest.
      */
     public static class ItemData {
         /**
-         * Název předmětu.
+         * Name of the item.
          */
         @JacksonXmlProperty(isAttribute = true)
         public String name;
 
         /**
-         * Množství daného předmětu.
+         * Quantity of the item.
          */
         @JacksonXmlProperty(isAttribute = true)
         public int qty;
 
         /**
-         * Výchozí konstruktor (nutný pro deserializaci).
+         * Default constructor (required for deserialization).
          */
         public ItemData() {}
 
         /**
-         * Konstruktor nastavující název a množství.
+         * Constructor setting the name  name and quantity.
          *
-         * @param name název předmětu
-         * @param qty počet kusů
+         * @param name name of the item
+         * @param qty number of items
          */
         public ItemData(String name, int qty) {
             this.name = name;
@@ -68,50 +68,50 @@ public class SaveData {
     }
 
     /**
-     * Datová třída uchovávající informace o hráči.
+     * Data class storing information about the player.
      */
     public static class PlayerData {
         /**
-         * X-ová pozice hráče ve světových souřadnicích.
+         * X position of the player in world coordinates.
          */
         public int worldX;
 
         /**
-         * Y-ová pozice hráče ve světových souřadnicích.
+         * Y position of the player in world coordinates.
          */
         public int worldY;
 
         /**
-         * Aktuální počet životů hráče.
+         * Current number of player lives.
          */
         public int life;
 
         /**
-         * Seznam předmětů v batohu hráče.
+         * List of items in the player's backpack.
          */
         @JacksonXmlElementWrapper(localName = "backpack")
         @JacksonXmlProperty(localName = "backpackItem")
         public List<ItemData> backpack;
 
         /**
-         * Seznam kusů brnění nasazených hráčem.
+         * List of armor pieces equipped by the player.
          */
         @JacksonXmlElementWrapper(localName = "armor")
         @JacksonXmlProperty(localName = "armorItem")
         public List<ItemData> armor;
 
         /**
-         * Aktuálně vybraná zbraň hráče.
+         * Currently selected weapon of the player.
          */
         public ItemData weapon;
 
         /**
-         * Úroveň nebo vylepšení hráče.
+         * Player level or upgrade.
          */
         public ItemData grade;
 
         /**
-         * Výchozí konstruktor – inicializuje prázdný batoh i brnění.
+         * Default constructor – initializes an empty backpack and armor.
          */
         public PlayerData() {
             backpack = new ArrayList<>();
@@ -120,55 +120,55 @@ public class SaveData {
     }
 
     /**
-     * Datová třída reprezentující jedno monstrum ve hře.
+     * Data class representing a single monster in the game.
      */
     public static class MonsterData {
         /**
-         * Typ monstra (např. "zombie", "skeleton").
+         * Type of the monster (e.g., "zombie", "skeleton").
          */
         @JacksonXmlProperty(isAttribute = true)
         public String type;
 
         /**
-         * X-ová pozice monstra.
+         * X position of the monster.
          */
         public int worldX;
 
         /**
-         * Y-ová pozice monstra.
+         * Y position of the monster.
          */
         public int worldY;
 
         /**
-         * Aktuální počet životů monstra.
+         * Current number of monster lives.
          */
         public int life;
 
         /**
-         * Příznak, zda je monstrum mrtvé.
+         * Flag indicating whether the monster is dead.
          */
         public boolean dead;
     }
 
     /**
-     * Datová třída reprezentující jednu truhlu na mapě.
+     * Data class representing a single chest on the map.
      */
     public static class ChestData {
         /**
-         * Jedinečné ID truhly, které slouží k jejímu rozpoznání.
+         * Unique ID of the chest, used for its identification.
          */
         @JacksonXmlProperty(isAttribute = true)
         public int id;
 
         /**
-         * Seznam předmětů uložených v této truhle.
+         * List of items stored in this chest.
          */
         @JacksonXmlElementWrapper(localName = "items")
         @JacksonXmlProperty(localName = "item")
         public List<ItemData> items;
 
         /**
-         * Výchozí konstruktor – inicializuje prázdný seznam předmětů.
+         * Default constructor – initializes an empty list of items.
          */
         public ChestData() {
             items = new ArrayList<>();
@@ -176,26 +176,26 @@ public class SaveData {
     }
 
     /**
-     * Objekt uchovávající kompletní stav hráče.
+     * Object storing the complete state of the player.
      */
     public PlayerData player;
 
     /**
-     * Seznam všech monster aktuálně existujících na mapě.
+     * List of all monsters currently existing on the map.
      */
     @JacksonXmlElementWrapper(localName = "monsters")
     @JacksonXmlProperty(localName = "monster")
     public List<MonsterData> monsters;
 
     /**
-     * Seznam všech truhl na aktuální mapě a jejich obsahu.
+     * List of all chests on the current map and their contents.
      */
     @JacksonXmlElementWrapper(localName = "chests")
     @JacksonXmlProperty(localName = "chest")
     public List<ChestData> chests;
 
     /**
-     * Výchozí konstruktor – inicializuje prázdného hráče a prázdné seznamy monster a truhel.
+     * Default constructor – initializes an empty player and empty lists of monsters and chests.
      */
     public SaveData() {
         player = new PlayerData();

@@ -6,14 +6,23 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 /**
- * Třída {@code Item_partKey3} reprezentuje třetí a poslední část stříbrného klíče,
- * která je vyžadována pro úspěšné sestavení klíče {@link Item_SilverKey}.
+ * The {@code Item_partKey3} class represents the third and final part of the silver key,
+ * which is required for successful assembly of the key {@link Item_SilverKey}.
  * <p>
- * Bez této části není možné odemknout speciální dveře.
+ * Without this part, it is not possible to unlock special doors.
  * </p>
  */
 
 public class Item_partKey3 extends GameObject {
+    /**
+     * Constructs a new key fragment item ("Key3").
+     * <p>
+     * Sets the item name and attempts to load its image from the resource path
+     * <code>/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/key_part/silver_key_3.png</code>.
+     * If the image cannot be found or loaded, logs an error via {@link GameLogger} and
+     * falls back to a 1×1 transparent pixel.
+     * </p>
+     */
     public Item_partKey3() {
         name = "Key3";
         try {

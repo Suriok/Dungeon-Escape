@@ -10,29 +10,29 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
- * Třída {@code ChestUI} slouží pro zobrazování a interakci s obsahem truhel ve hře.
+ * The {@code ChestUI} class is responsible for displaying and interacting with the contents of chests in the game.
  * <p>
- * Zajišťuje grafické vykreslení inventáře truhly a obsluhu jejího otevření nebo zavření.
+ * It handles the graphical rendering of the chest's inventory and manages its opening or closing.
  * </p>
  */
 public class ChestUI {
 
-    /** Hlavní herní panel, odkud získáváme hráče, velikost okna atd. */
+    /** The main game panel, from which player data, window size, etc., are obtained. */
     private gamePanel gp;
 
-    /** Aktuálně otevřená truhla. */
+    /** The currently open chest. */
     private Object_Small_Chest activeChest;
 
-    /** Pole ohraničení položek zobrazených v truhle. */
+    /** Array of bounding rectangles for items displayed in the chest. */
     private Rectangle[] itemBounds;
 
-    /** Ohraničení celého inventáře truhly. */
+    /** Bounding rectangle for the entire chest inventory. */
     private Rectangle chestBounds;
 
     /**
-     * Inicializuje správce truhlového UI.
+     * Initializes the chest UI manager.
      *
-     * @param gp instance hlavního herního panelu
+     * @param gp instance of the main game panel
      */
     public ChestUI(gamePanel gp) {
         this.gp = gp;
@@ -41,9 +41,9 @@ public class ChestUI {
     }
 
     /**
-     * Otevře nebo zavře danou truhlu v závislosti na stavu.
+     * Opens or closes the given chest depending on its state.
      *
-     * @param chest truhla, která se má otevřít nebo zavřít
+     * @param chest the chest to open or close
      */
     public void openChest(Object_Small_Chest chest) {
         if (activeChest == chest && isShowingInventory()) {
@@ -59,25 +59,25 @@ public class ChestUI {
     }
 
     /**
-     * Nastaví aktivní truhlu bez jejího zobrazení.
+     * Sets the active chest without displaying it.
      *
-     * @param chest truhla k nastavení
+     * @param chest the chest to set
      */
     public void setActiveChest(Object_Small_Chest chest) {
         this.activeChest = chest;
     }
 
     /**
-     * Zda je momentálně zobrazena inventářová obrazovka truhly.
+     * Indicates whether the chest's inventory screen is currently displayed.
      *
-     * @return {@code true}, pokud je aktivní a otevřená
+     * @return {@code true} if active and open
      */
     public boolean isShowingInventory() {
         return activeChest != null && activeChest.isShowingInventory();
     }
 
     /**
-     * Zavře aktuální inventář truhly.
+     * Closes the current chest inventory.
      */
     public void closeInventory() {
         if (activeChest != null) {
@@ -89,9 +89,9 @@ public class ChestUI {
     }
 
     /**
-     * Vykreslí uživatelské rozhraní truhly a její obsah.
+     * Renders the chest's user interface and its contents.
      *
-     * @param g2d grafický kontext
+     * @param g2d the graphics context
      */
     public void draw(Graphics2D g2d) {
         if (!isShowingInventory() || activeChest == null) {
@@ -114,7 +114,7 @@ public class ChestUI {
 
         chestBounds = new Rectangle(windowX - 10, windowY - 10, windowWidth, windowHeight);
 
-        // Pozadí a rámeček
+        // Background and border
         g2d.setColor(new Color(0, 0, 0, 200));
         g2d.fillRoundRect(windowX - 10, windowY - 10, windowWidth, windowHeight, 25, 25);
 
@@ -122,17 +122,17 @@ public class ChestUI {
         g2d.setStroke(new BasicStroke(2));
         g2d.drawRoundRect(windowX - 10, windowY - 10, windowWidth, windowHeight, 25, 25);
 
-        // Obrázek truhly
+        // Chest image
         g2d.drawImage(inventoryImage, windowX, windowY, imageWidth, imageHeight, null);
 
-        // Nadpis
+        // Title
         g2d.setFont(new Font("Arial", Font.BOLD, 24));
         String title = "Chest Inventory";
         int titleX = windowX + windowWidth / 2 - g2d.getFontMetrics().stringWidth(title) / 2;
         int titleY = windowY - 25;
         g2d.drawString(title, titleX, titleY);
 
-        // Položky v truhle
+        // Items in the chest
         List<ChestInventoryManager.ItemData> items = activeChest.getItems();
         itemBounds = new Rectangle[items.size()];
         int gridSize = 4;
@@ -175,27 +175,27 @@ public class ChestUI {
     }
 
     /**
-     * Vrací pole obdélníků s pozicemi položek v aktuálně otevřené truhle.
+     * Returns an array of rectangles with the positions of items in the currently open chest.
      *
-     * @return pole {@link Rectangle} odpovídající jednotlivým položkám
+     * @return an array of {@link Rectangle} corresponding to individual items
      */
     public Rectangle[] getItemBounds() {
         return itemBounds != null ? itemBounds : new Rectangle[0];
     }
 
     /**
-     * Vrací aktuálně aktivní (otevřenou) truhlu.
+     * Returns the currently active (open) chest.
      *
-     * @return instance {@link Object_Small_Chest} nebo {@code null}
+     * @return an instance of {@link Object_Small_Chest} or {@code null}
      */
     public Object_Small_Chest getActiveChest() {
         return activeChest;
     }
 
     /**
-     * Vrací obdélník pokrývající celé UI truhly.
+     * Returns the rectangle covering the entire chest UI.
      *
-     * @return {@link Rectangle} nebo {@code null}, pokud není truhla zobrazena
+     * @return a {@link Rectangle} or {@code null} if the chest is not displayed
      */
     public Rectangle getChestBounds() {
         return chestBounds;

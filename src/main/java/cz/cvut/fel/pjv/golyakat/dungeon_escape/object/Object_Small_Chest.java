@@ -10,55 +10,55 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 /**
- * Třída {@code Object_Small_Chest} reprezentuje interaktivní truhlu,
- * která obsahuje náhodně nebo pevně definované předměty a lze ji otevřít.
+ * The {@code Object_Small_Chest} class represents an interactive chest
+ * that contains randomly or fixedly defined items and can be opened.
  * <p>
- * Truhla má grafické zobrazení a vlastní inventář, který lze zobrazit hráči.
+ * The chest has a graphical representation and its own inventory that can be displayed to the player.
  * </p>
  */
 public class Object_Small_Chest extends GameObject {
 
     /**
-     * Určuje, zda je truhla již otevřena.
+     * Determines whether the chest is already open.
      */
     private boolean isOpen;
 
     /**
-     * Obrázek grafického rozhraní truhly (inventáře).
+     * Image of the chest's graphical interface (inventory).
      */
     private BufferedImage inventoryImage;
 
     /**
-     * Příznak určující, zda se má právě zobrazovat inventář truhly.
+     * Flag indicating whether the chest's inventory should be displayed.
      */
     private boolean showInventory;
 
     /**
-     * Jedinečný identifikátor truhly pro ukládání stavu.
+     * Unique identifier for the chest for state saving.
      */
     private int id;
 
     /**
-     * Seznam předmětů aktuálně obsažených v truhle.
+     * List of items currently contained in the chest.
      */
     private List<ChestInventoryManager.ItemData> items;
 
     /**
-     * Odkaz na správce truhlových inventářů, který zajišťuje ukládání a načítání stavu.
+     * Reference to the chest inventory manager that handles saving and loading state.
      */
     private ChestInventoryManager chestInventoryManager;
 
     /**
-     * Mapa s pevně definovanými (neměnnými) předměty pro danou truhlu.
+     * Map with fixed (unchanging) items for this chest.
      */
     private Map<String, Integer> fixedArmor;
 
     /**
-     * Vytvoří novou instanci malé truhly s předdefinovaným obsahem.
+     * Creates a new instance of a small chest with predefined contents.
      *
-     * @param gp         odkaz na {@link AssetSetter}, přes který získáme správce inventářů
-     * @param id         jedinečný identifikátor truhly
-     * @param fixedArmor mapa s pevně definovanými předměty (např. brnění)
+     * @param gp         reference to {@link AssetSetter}, through which we get the inventory manager
+     * @param id         unique identifier for the chest
+     * @param fixedArmor map with fixed items (e.g., armor)
      */
     public Object_Small_Chest(AssetSetter gp, int id, Map<String, Integer> fixedArmor) {
         this.id = id;
@@ -85,15 +85,15 @@ public class Object_Small_Chest extends GameObject {
             var inventoryStream = getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/inventory/case_inventory.png");
             if (inventoryStream != null) inventoryImage = ImageIO.read(inventoryStream);
         } catch (Exception e) {
-            GameLogger.error("Chyba při načítání obrázků truhly: " + e.getMessage());
+            GameLogger.error("Error loading chest images: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
-     * Vygeneruje náhodný obsah truhly (spotřební předměty).
+     * Generates random contents for the chest (consumable items).
      *
-     * @return mapa názvů předmětů a jejich množství
+     * @return map of item names and their quantities
      */
     private Map<String, Integer> generateRandomItems() {
         Map<String, Integer> randomItems = new HashMap<>();
@@ -110,8 +110,8 @@ public class Object_Small_Chest extends GameObject {
     }
 
     /**
-     * Otevře truhlu a zobrazí její obsah hráči.
-     * <p>Stav se uloží do správce truhlic.</p>
+     * Opens the chest and displays its contents to the player.
+     * <p>The state is saved to the chest manager.</p>
      */
     public void open() {
         showInventory = true;
@@ -120,37 +120,37 @@ public class Object_Small_Chest extends GameObject {
     }
 
     /**
-     * Zavře truhlu a aktualizuje její stav.
+     * Closes the chest and updates its state.
      */
     public void close() {
         showInventory = false;
         chestInventoryManager.updateChestData(id, new ChestInventoryManager.ChestData(isOpen, items));
     }
 
-    /** @return {@code true}, pokud je truhla otevřená */
+    /** @return {@code true} if the chest is open */
     public boolean isOpen() {
         return isOpen;
     }
 
-    /** @return {@code true}, pokud se má zobrazovat inventář truhly */
+    /** @return {@code true} if the chest's inventory should be displayed */
     public boolean isShowingInventory() {
         return showInventory;
     }
 
-    /** @return obrázek inventáře truhly */
+    /** @return the chest's inventory image */
     public BufferedImage getInventoryImage() {
         return inventoryImage;
     }
 
-    /** @return seznam předmětů v truhle */
+    /** @return list of items in the chest */
     public List<ChestInventoryManager.ItemData> getItems() {
         return items;
     }
 
     /**
-     * Odstraní 1 kus z dané položky v truhle a případně ji zcela odstraní.
+     * Removes 1 piece from the given item in the chest and possibly removes it completely.
      *
-     * @param item položka, která má být odebrána
+     * @param item the item to be removed
      */
     public void removeItem(ChestInventoryManager.ItemData item) {
         item.setQuantity(item.getQuantity() - 1);
@@ -158,15 +158,15 @@ public class Object_Small_Chest extends GameObject {
         chestInventoryManager.updateChestData(id, new ChestInventoryManager.ChestData(isOpen, items));
     }
 
-    /** @return identifikátor truhly */
+    /** @return the chest's identifier */
     public int getId() {
         return id;
     }
 
     /**
-     * Odstraní předmět ze seznamu podle jeho indexu.
+     * Removes an item from the list by its index.
      *
-     * @param index pozice položky v seznamu
+     * @param index position of the item in the list
      */
     public void removeItem(int index) {
         if (index >= 0 && index < items.size()) {
@@ -175,10 +175,10 @@ public class Object_Small_Chest extends GameObject {
     }
 
     /**
-     * Vykreslí truhlu na mapě podle její pozice vůči hráči.
+     * Renders the chest on the map according to its position relative to the player.
      *
-     * @param g2d grafický kontext
-     * @param gp  instance herního panelu
+     * @param g2d graphics context
+     * @param gp  game panel instance
      */
     @Override
     public void draw(java.awt.Graphics2D g2d, gamePanel gp) {

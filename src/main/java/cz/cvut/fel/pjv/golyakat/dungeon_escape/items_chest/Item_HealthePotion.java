@@ -6,21 +6,21 @@ import javax.imageio.ImageIO;
 import java.util.Objects;
 
 /**
- * Třída {@code Item_HealthePotion} reprezentuje léčivý předmět – lektvar zdraví,
- * který může hráč použít k obnovení určitého počtu životů.
+ * The {@code Item_HealthePotion} class represents a healing item – a health potion,
+ * which the player can use to restore a certain amount of health.
  * <p>
- * Tato položka je vizuálně reprezentována ikonou a její účinek je pevně daný.
+ * This item is visually represented by an icon and its effect is fixed.
  * </p>
  */
 public class Item_HealthePotion extends GameObject {
 
     /**
-     * Množství zdraví (v jednotkách), které lektvar obnoví při použití.
+     * Amount of health (in units) that the potion restores when used.
      */
     private final float healAmount;
 
     /**
-     * Vytvoří nový léčivý lektvar a nastaví jeho název, účinek a obrázek.
+     * Creates a new healing potion and sets its name, effect, and image.
      */
     public Item_HealthePotion() {
         name = "potion";
@@ -34,9 +34,9 @@ public class Item_HealthePotion extends GameObject {
     }
 
     /**
-     * Vrací množství zdraví, které lektvar obnoví při použití.
+     * Returns the amount of health that the potion restores when used.
      *
-     * @return počet jednotek zdraví
+     * @return number of health units
      */
     public float getHealAmount() {
         return healAmount;

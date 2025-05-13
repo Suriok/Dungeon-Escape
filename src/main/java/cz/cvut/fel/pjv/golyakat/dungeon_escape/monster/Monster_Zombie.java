@@ -11,42 +11,42 @@ import java.util.Objects;
 import java.util.Random;
 
 /**
- * Třída {@code Monster_Zombie} reprezentuje nepřátelskou entitu zombie.
+ * The {@code Monster_Zombie} class represents an enemy zombie entity.
  * <p>
- * Obsahuje logiku pohybu, útoku, detekce hráče, animace a vizuální efekt po smrti.
- * Dědí od třídy {@link Entity}, čímž získává základní schopnosti entity ve hře.
+ * Contains logic for movement, attack, player detection, animations, and death visual effects.
+ * Inherits from the {@link Entity} class, gaining basic entity capabilities in the game.
  * </p>
  */
 public class Monster_Zombie extends Entity {
 
-    /** Odkaz na hlavní herní panel. */
+    /** Reference to the main game panel. */
     private gamePanel gp;
 
-    /** Počítadlo akcí pro řízení změn směru. */
+    /** Action counter for controlling direction changes. */
     public int actionLockCounter = 0;
 
     /**
-     * Maximální vzdálenost, na kterou může zombie detekovat hráče.
-     * Jednotky odpovídají pixelům (5 tile = 240 px).
+     * Maximum distance at which the zombie can detect the player.
+     * Units correspond to pixels (5 tile = 240 px).
      */
     private static final int DETECTION_RANGE = 5 * 48;
 
-    /** Vzdálenost, na kterou může zombie zaútočit na hráče. */
+    /** Distance at which the zombie can attack the player. */
     private static final int ATTACK_RANGE = 32;
 
-    /** Doba mezi jednotlivými útoky ve snímcích (při 60 FPS = 1s). */
+    /** Time between attacks in frames (at 60 FPS = 1s). */
     private static final int ATTACK_COOLDOWN = 60;
 
-    /** Počítadlo cooldownu mezi útoky. */
+    /** Counter for attack cooldown. */
     private int attackCounter = 4;
 
-    /** Množství poškození, které zombie způsobí hráči. */
+    /** Amount of damage the zombie deals to the player. */
     private static final int ATTACK_DAMAGE = 5;
 
     /**
-     * Konstruktor vytvoří novou zombie a nastaví výchozí atributy včetně obrázků a kolize.
+     * Constructor creates a new zombie and sets default attributes including images and collision.
      *
-     * @param gp hlavní panel hry
+     * @param gp main game panel
      */
     public Monster_Zombie(gamePanel gp) {
         super(gp);
@@ -70,7 +70,7 @@ public class Monster_Zombie extends Entity {
     }
 
     /**
-     * Načte sprite obrázky zombie pro animace pohybu ve všech směrech.
+     * Loads zombie sprite images for movement animations in all directions.
      */
     public void getImage() {
         try {
@@ -91,14 +91,14 @@ public class Monster_Zombie extends Entity {
             right2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/monsters/zombie_right2.png")));
         } catch (Exception e) {
-            GameLogger.error("Chyba při načítání sprite obrázků zombie: " + e.getMessage());
+            GameLogger.error("Error loading zombie sprite images: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
-     * Nastavuje akci zombie – buď se náhodně pohybuje, nebo pronásleduje hráče,
-     * pokud je v dosahu detekce.
+     * Sets the zombie's action - either random movement or chasing the player
+     * if within detection range.
      */
     public void setAction() {
         actionLockCounter++;
@@ -108,14 +108,14 @@ public class Monster_Zombie extends Entity {
         double distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance <= DETECTION_RANGE && !isDead) {
-            // Směr k hráči
+            // Direction towards player
             if (Math.abs(dx) > Math.abs(dy)) {
                 direction = dx > 0 ? "right" : "left";
             } else {
                 direction = dy > 0 ? "down" : "up";
             }
         } else {
-            // Náhodný pohyb
+            // Random movement
             if (actionLockCounter >= 120) {
                 Random random = new Random();
                 int i = random.nextInt(100) + 1;
@@ -129,11 +129,11 @@ public class Monster_Zombie extends Entity {
     }
 
     /**
-     * Aktualizuje stav zombie – pohyb, kolize, útok a animace.
+     * Updates the zombie's state - movement, collision, attack, and animations.
      */
     public void update() {
         if (isDead) {
-            super.update(); // fade efekt
+            super.update(); // fade effect
             return;
         }
 
@@ -166,7 +166,7 @@ public class Monster_Zombie extends Entity {
         if (distance <= ATTACK_RANGE && attackCounter >= ATTACK_COOLDOWN) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
-            GameLogger.info(name + " zaútočil na hráče! HP hráče: " + gp.player.life);
+            GameLogger.info(name + " attacked the player! Player HP: " + gp.player.life);
         }
 
         spriteCounter++;
@@ -183,9 +183,9 @@ public class Monster_Zombie extends Entity {
     }
 
     /**
-     * Vykreslí zombie pomocí správného sprite dle směru a fáze animace.
+     * Renders the zombie using the correct sprite based on direction and animation phase.
      *
-     * @param g2d grafický kontext
+     * @param g2d graphics context
      */
     @Override
     public void draw(Graphics2D g2d) {
@@ -206,6 +206,5 @@ public class Monster_Zombie extends Entity {
         if (!isDead) {
             super.draw(g2d);
         }
-        // Fade & health bar handled elsewhere (e.g. MonsterUI)
     }
 }
