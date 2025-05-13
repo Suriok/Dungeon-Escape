@@ -1,4 +1,4 @@
-package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.ui;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
@@ -19,7 +19,7 @@ import java.util.Objects;
 public class PlayerUI {
 
     /** Reference to the main game panel, from which player data is retrieved. */
-    private gamePanel gp;
+    final private gamePanel gp;
 
     /** Image of the player's main inventory. */
     private BufferedImage playerInventory;
@@ -30,14 +30,11 @@ public class PlayerUI {
     /** Image of the panel for the equipped weapon. */
     private BufferedImage weaponInventory;
 
-    /** Scale factor for enlarging UI elements during rendering. */
-    private final float scaleFactor = 3.0f;
-
     /** Bounding rectangle of the inventory for selection or collision detection. */
     private Rectangle playerInventoryBounds;
 
     /** Bounding areas of individual armor slots (4 slots: helmet, bib, pants, boots). */
-    private Rectangle[] armorSlotBounds;
+    final private Rectangle[] armorSlotBounds;
 
     /** Bounding area for the single equipped weapon slot. */
     private Rectangle weaponSlotBounds;
@@ -82,6 +79,8 @@ public class PlayerUI {
         }
 
         // Calculate dimensions and positions of all panels
+        /** Scale factor for enlarging UI elements during rendering. */
+        float scaleFactor = 3.0f;
         int playerInvWidth = (int)(playerInventory.getWidth() * scaleFactor);
         int playerInvHeight = (int)(playerInventory.getHeight() * scaleFactor);
         int sideArmorWidth = (int)(sideArmor.getWidth() * scaleFactor);
@@ -156,16 +155,15 @@ public class PlayerUI {
 
         GameObject[] equippedArmor = gp.player.getEquippedArmor();
         for (int i = 0; i < equippedArmor.length; i++) {
-            int slotX = armorOffsetX;
             int slotY = armorOffsetY + i * armorCellHeight + (armorCellHeight - armorItemSize) / 2;
-            armorSlotBounds[i] = new Rectangle(slotX, slotY, armorItemSize, armorItemSize);
+            armorSlotBounds[i] = new Rectangle(armorOffsetX, slotY, armorItemSize, armorItemSize);
 
             GameObject armor = equippedArmor[i];
             if (armor != null && armor.image != null) {
-                g2d.drawImage(armor.image, slotX, slotY, armorItemSize, armorItemSize, null);
+                g2d.drawImage(armor.image, armorOffsetX, slotY, armorItemSize, armorItemSize, null);
                 g2d.setFont(new Font("Arial", Font.PLAIN, 12));
                 g2d.setColor(Color.WHITE);
-                g2d.drawString("x1", slotX + armorItemSize - g2d.getFontMetrics().stringWidth("x1") - 2, slotY + armorItemSize - 2);
+                g2d.drawString("x1", armorOffsetX + armorItemSize - g2d.getFontMetrics().stringWidth("x1") - 2, slotY + armorItemSize - 2);
             }
         }
 

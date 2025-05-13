@@ -1,4 +1,4 @@
-package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.ui;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
@@ -6,7 +6,6 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 /**
  * The {@code CraftingTableUI} class represents the graphical interface for crafting items.
@@ -18,16 +17,16 @@ import java.awt.image.BufferedImage;
 public class CraftingTableUI {
 
     /** Reference to the main game panel for accessing player data, dimensions, and repainting. */
-    private gamePanel gp;
+    final private gamePanel gp;
 
     /** Indicates whether the crafting window is currently displayed. */
     private boolean isShowing;
 
     /** Array of slots used for crafting. Expects exactly 3 key parts. */
-    private ChestInventoryManager.ItemData[] craftingSlots;
+    final private ChestInventoryManager.ItemData[] craftingSlots;
 
     /** Rectangles representing interactive areas for the slots. */
-    private Rectangle[] slotBounds;
+    final private Rectangle[] slotBounds;
 
     /** Rectangle for the "Craft" button. */
     private Rectangle craftButtonBounds;
@@ -211,18 +210,17 @@ public class CraftingTableUI {
 
         for (int i = 0; i < craftingSlots.length; i++) {
             int x = offsetX + i * (slotSize + 10);
-            int y = offsetY;
-            slotBounds[i] = new Rectangle(x, y, slotSize, slotSize);
+            slotBounds[i] = new Rectangle(x, offsetY, slotSize, slotSize);
 
             g2d.setColor(Color.GRAY);
-            g2d.fillRect(x, y, slotSize, slotSize);
+            g2d.fillRect(x, offsetY, slotSize, slotSize);
             g2d.setColor(Color.WHITE);
-            g2d.drawRect(x, y, slotSize, slotSize);
+            g2d.drawRect(x, offsetY, slotSize, slotSize);
 
             if (craftingSlots[i] != null) {
                 GameObject item = craftingSlots[i].getItem();
                 if (item.image != null) {
-                    g2d.drawImage(item.image, x, y, slotSize, slotSize, null);
+                    g2d.drawImage(item.image, x, offsetY, slotSize, slotSize, null);
                 }
             }
         }

@@ -1,4 +1,4 @@
-package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.ui;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
@@ -18,7 +18,7 @@ import java.util.List;
 public class ChestUI {
 
     /** The main game panel, from which player data, window size, etc., are obtained. */
-    private gamePanel gp;
+    final private gamePanel gp;
 
     /** The currently open chest. */
     private Object_Small_Chest activeChest;

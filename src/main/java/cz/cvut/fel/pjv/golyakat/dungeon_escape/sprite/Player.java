@@ -1,4 +1,4 @@
-package cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.sprite;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
@@ -7,7 +7,6 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Apple;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Blubbery;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_HealthePotion;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Weapon;
@@ -31,10 +30,10 @@ import java.util.Objects;
 public class Player extends Entity {
 
     /** Reference to the main game panel. */
-    gamePanel gp;
+    final gamePanel gp;
 
     /** Keyboard handler for movement and actions. */
-    KeyHandler keyH;
+    final KeyHandler keyH;
 
     /** Player's position on the screen (always centered). */
     public final int screenX;
@@ -52,24 +51,13 @@ public class Player extends Entity {
     /** Index of the currently displayed sprite image. */
     public int spriteNum = 1;
 
-    // === COMBAT & ANIMATION ===
-
-    /** Flag indicating whether the player is currently attacking. */
-    private boolean isAttacking = false;
-
-    /** Counter for attack animation frames. */
-    private int attackAnimationCounter = 0;
-
-    /** Duration of an attack in frames. */
-    private static final int ATTACK_ANIMATION_DURATION = 20;
-
     // === INVENTORY & EQUIPMENT ===
 
     /** Player's inventory – list of items with quantity. */
-    private List<ChestInventoryManager.ItemData> inventory;
+    final private List<ChestInventoryManager.ItemData> inventory;
 
     /** Array of equipped armor pieces (helmet, bib, pants, boots). */
-    private GameObject[] equippedArmor;
+    final private GameObject[] equippedArmor;
 
     /** Currently equipped weapon. */
     private GameObject equippedWeapon;
@@ -158,10 +146,16 @@ public class Player extends Entity {
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_left_1.png")));
             left2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/player/run_left_2.png")));
+
+            GameLogger.info("Successfully loaded all player movement images");
+
         } catch (IOException e) {
-            e.printStackTrace();
+            GameLogger.error("Error loading player movement images: " + e.getMessage());
+        } catch (NullPointerException e) {
+            GameLogger.error("Missing player image resource: " + e.getMessage());
         }
     }
+
 
     /**
      * Updates the player's state – movement, collision, animation, interaction, and health.
@@ -179,7 +173,7 @@ public class Player extends Entity {
             if (keyH.upPressed) direction = "up";
             else if (keyH.downPressed) direction = "down";
             else if (keyH.leftPressed) direction = "left";
-            else if (keyH.rightPressed) direction = "right";
+            else  direction = "right";
 
             switch (direction) {
                 case "up"    -> worldY -= speed;
@@ -221,42 +215,16 @@ public class Player extends Entity {
             }
         }
 
-        // === Attack animation ===
-        attackCounter++;
-        if (isAttacking) {
-            attackAnimationCounter++;
-            if (attackAnimationCounter >= ATTACK_ANIMATION_DURATION) {
-                isAttacking = false;
-                attackAnimationCounter = 0;
+        // === Interaction with object ===
+        if (keyH.ePressed) {
+            keyH.ePressed = false;
+
+            int i = gp.collisionChecker.checkObjectForInteraction(this, true);
+            if (i != 999 && gp.obj[gp.currentMap][i] != null) {
+                gp.collisionChecker.handleObjectInteraction(this, i);
             }
         }
 
-        // === Attack animation ===
-        int interactionIndex = gp.collisionChecker.checkObjectForInteraction(this, true);
-        if (keyH.ePressed && interactionIndex != 999 && gp.obj[gp.currentMap][interactionIndex] != null) {
-            if (gp.obj[gp.currentMap][interactionIndex].name.equals("DoorSide")) {
-                Object_DoorSide door = (Object_DoorSide) gp.obj[gp.currentMap][interactionIndex];
-                if (door.requiresKey && !door.isOpen()) {
-                    ChestInventoryManager.ItemData keyItem = inventory.stream()
-                            .filter(item -> item.getName().equals("Key"))
-                            .findFirst().orElse(null);
-                    if (keyItem != null) {
-                        door.unlock();
-                        inventory.remove(keyItem);
-                        GameLogger.info("Dveře odemčeny pomocí klíče.");
-                    } else {
-                        GameLogger.info("Chybí klíč pro otevření dveří.");
-                    }
-                } else {
-                    gp.collisionChecker.handleObjectInteraction(this, interactionIndex);
-                }
-            } else {
-                gp.collisionChecker.handleObjectInteraction(this, interactionIndex);
-            }
-            keyH.ePressed = false;
-        } else if (keyH.ePressed) {
-            keyH.ePressed = false;
-        }
 
         if (isHit) {
             hitEffectCounter--;
@@ -265,6 +233,7 @@ public class Player extends Entity {
                 hitEffectCounter = 0;
             }
         }
+
 
     }
     /**
@@ -275,40 +244,34 @@ public class Player extends Entity {
      */
     public void attack() {
         if (equippedWeapon == null) {
-            GameLogger.info("Hráč se pokusil zaútočit bez vybavené zbraně.");
             return;
         }
-
-        isAttacking = true;
-        attackAnimationCounter = 0;
 
         int attackDamage = (equippedWeapon instanceof Weapon)
                 ? ((Weapon) equippedWeapon).getAttack() : 1;
 
-        Entity target = null;
-        double minDistance = Double.MAX_VALUE;
+        int targetX = worldX;
+        int targetY = worldY;
+
+        switch (direction) {
+            case "up" -> targetY -= gp.tileSize;
+            case "down" -> targetY += gp.tileSize;
+            case "left" -> targetX -= gp.tileSize;
+            case "right" -> targetX += gp.tileSize;
+        }
+
         for (Entity monster : gp.monster[gp.currentMap]) {
-            if (monster != null && !monster.isDead) {
-                int dx = monster.worldX - worldX;
-                int dy = monster.worldY - worldY;
-                double distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance <= ATTACK_RANGE && distance < minDistance) {
-                    minDistance = distance;
-                    target = monster;
-                }
+            if (monster != null && !monster.isDead &&
+                    monster.worldX / gp.tileSize == targetX / gp.tileSize &&
+                    monster.worldY / gp.tileSize == targetY / gp.tileSize) {
+
+                monster.life -= attackDamage;
+                if (monster.life < 0) monster.life = 0;
+                break;
             }
         }
-
-        gp.playSE(1);
-
-        if (target != null) {
-            target.life -= attackDamage;
-            if (target.life < 0) target.life = 0;
-            GameLogger.info("Hráč zasáhl " + target.name + " za " + attackDamage + " HP. Zbývá: " + target.life);
-        } else {
-            GameLogger.info("Hráč útočil, ale nic nezasáhl.");
-        }
     }
+
 
     /**
      * Zpracuje příjem poškození včetně odečtu životů, efektu a zvuku zásahu.
@@ -368,7 +331,7 @@ public class Player extends Entity {
      * @param item léčivý předmět
      */
     public void consumeHealingItem(ChestInventoryManager.ItemData item) {
-        float healAmountFloat = 0;
+        float healAmountFloat;
         switch (item.getName()) {
             case "Apple" -> healAmountFloat = ((Item_Apple) item.getItem()).getHealAmount();
             case "blubbery" -> healAmountFloat = ((Item_Blubbery) item.getItem()).getHealAmount();
@@ -414,61 +377,6 @@ public class Player extends Entity {
             g2d.fillRect(screenX, screenY, gp.tileSize, gp.tileSize);
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
         }
-
-        if (isAttacking && equippedWeapon != null) {
-            drawWaveEffect(g2d);
-        }
-    }
-
-    /**
-     * Vykreslí efekt "vlny" při útoku (sinusová křivka) ve směru útoku.
-     *
-     * @param g2d grafický kontext
-     */
-    private void drawWaveEffect(Graphics2D g2d) {
-        float animationProgress = (float) attackAnimationCounter / ATTACK_ANIMATION_DURATION;
-
-        g2d.setColor(new Color(255, 255, 255, (int) (255 * (1.0f - animationProgress))));
-        g2d.setStroke(new BasicStroke(3));
-
-        int waveWidth = gp.tileSize;
-        int waveHeight = gp.tileSize / 2;
-        int waveStartX = screenX + gp.tileSize / 2;
-        int waveStartY = screenY + gp.tileSize / 2;
-
-        int[] xPoints = new int[5];
-        int[] yPoints = new int[5];
-        int waveOffset = (int) (animationProgress * gp.tileSize);
-
-        switch (direction) {
-            case "up" -> {
-                for (int i = 0; i < 5; i++) {
-                    xPoints[i] = waveStartX - waveWidth / 2 + (i * waveWidth / 4);
-                    yPoints[i] = waveStartY - waveOffset + (int) (Math.sin(i * Math.PI / 4) * waveHeight);
-                }
-            }
-            case "down" -> {
-                for (int i = 0; i < 5; i++) {
-                    xPoints[i] = waveStartX - waveWidth / 2 + (i * waveWidth / 4);
-                    yPoints[i] = waveStartY + waveOffset - (int) (Math.sin(i * Math.PI / 4) * waveHeight);
-                }
-            }
-            case "left" -> {
-                for (int i = 0; i < 5; i++) {
-                    yPoints[i] = waveStartY - waveWidth / 2 + (i * waveWidth / 4);
-                    xPoints[i] = waveStartX - waveOffset + (int) (Math.sin(i * Math.PI / 4) * waveHeight);
-                }
-            }
-            case "right" -> {
-                for (int i = 0; i < 5; i++) {
-                    yPoints[i] = waveStartY - waveWidth / 2 + (i * waveWidth / 4);
-                    xPoints[i] = waveStartX + waveOffset - (int) (Math.sin(i * Math.PI / 4) * waveHeight);
-                }
-            }
-        }
-
-        g2d.drawPolyline(xPoints, yPoints, 5);
-        g2d.setStroke(new BasicStroke(1));
     }
 
     /**
@@ -511,16 +419,15 @@ public class Player extends Entity {
      * @return součet obranných hodnot všech brnění
      */
     public float getTotalDefense() {
-        float totalDefense = 0;
-        for (int i = 0; i < equippedArmor.length; i++) {
-            if (equippedArmor[i] instanceof Armor) {
-                float defense = ((Armor) equippedArmor[i]).getDefensAmount();
-                totalDefense += defense;
-            } else if (equippedArmor[i] != null) {
+        float total = 0;
+        for (GameObject obj : equippedArmor) {
+            if (obj instanceof Armor armor) {
+                total += armor.getDefensAmount();
             }
         }
-        return totalDefense;
+        return total;
     }
+
 
     /** @param weapon zbraň, která bude nasazena */
     public void equipWeapon(GameObject weapon) {

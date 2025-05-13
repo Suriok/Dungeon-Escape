@@ -1,4 +1,4 @@
-package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.ui;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
@@ -31,7 +31,7 @@ public class TitleScreenUI {
      */
     private static class UIButton {
         Rectangle bounds;
-        String text;
+        final String text;
         boolean hovered = false;
         boolean pressed = false;
 

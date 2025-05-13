@@ -11,7 +11,7 @@ import java.awt.event.WindowEvent;
  * sets up the closing logic, and starts the main game loop.
  * </p>
  */
-public class main {
+public class Main {
 
     /**
      * Main entry method – launches the entire game.

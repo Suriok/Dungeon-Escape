@@ -1,4 +1,4 @@
-package cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.sprite;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
@@ -17,7 +17,7 @@ import java.awt.image.BufferedImage;
 public class Entity extends GameObject {
 
     /** Reference to the main game panel. */
-    protected gamePanel gp;
+    protected final gamePanel gp;
 
     /** Movement speed of the entity (in pixels per update). */
     public int speed;
@@ -72,13 +72,13 @@ public class Entity extends GameObject {
     // === Monster attack parameters ===
 
     /** Damage dealt by this entity's attack. */
-    protected int attackDamage = 1;
+    protected final int attackDamage = 1;
 
     /** Maximum distance at which the entity can attack. */
-    protected int attackRange = 48;
+    protected final int attackRange = 48;
 
     /** Number of frames before the entity can attack again. */
-    protected int attackCooldown = 60;
+    protected final int attackCooldown = 60;
 
     /** Counter since the last attack. */
     protected int attackCounter = 0;
