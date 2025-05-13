@@ -258,31 +258,15 @@ public class Player extends Entity {
             keyH.ePressed = false;
         }
 
-        // === Use item to heal using key F ===
-
-        if (keyH.fPressed && !inventory.isEmpty()) {
-            ChestInventoryManager.ItemData item = inventory.get(0);
-            consumeHealingItem(item);
-            inventory.remove(0);
-            keyH.fPressed = false;
-        }
-
-        // === Use item to heal using key F ===
-
         if (isHit) {
             hitEffectCounter--;
             if (hitEffectCounter <= 0) {
                 isHit = false;
+                hitEffectCounter = 0;
             }
         }
 
-        // === Use item to heal using key F ===
-
-        if (life <= 0) {
-            gp.gameState = gp.gameOverState;
-        }
     }
-
     /**
      * Executes a player attack – applies damage to the nearest monster within range.
      * <p>
@@ -572,29 +556,6 @@ public class Player extends Entity {
         return equippedGrade;
     }
 
-    /**
-     * Použije klíč z inventáře k odemčení zadaných dveří.
-     *
-     * @param doorIndex index dveří v poli objektů
-     */
-    public void useKeyOnDoor(int doorIndex) {
-        if (doorIndex != 999 && gp.obj[gp.currentMap][doorIndex] != null &&
-                gp.obj[gp.currentMap][doorIndex].name.equals("DoorSide")) {
-            Object_DoorSide door = (Object_DoorSide) gp.obj[gp.currentMap][doorIndex];
-            if (door.requiresKey && !door.isOpen()) {
-                ChestInventoryManager.ItemData keyItem = inventory.stream()
-                        .filter(item -> item.getName().equals("Key"))
-                        .findFirst().orElse(null);
-                if (keyItem != null) {
-                    door.unlock();
-                    inventory.remove(keyItem);
-                    GameLogger.info("Dveře byly úspěšně odemčeny.");
-                } else {
-                    GameLogger.info("Hráč nemá potřebný klíč.");
-                }
-            }
-        }
-    }
 
     /**
      * Resetuje stav hráče do výchozího stavu.

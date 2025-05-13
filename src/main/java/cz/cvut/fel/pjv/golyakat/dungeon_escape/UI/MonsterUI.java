@@ -60,15 +60,11 @@ public class MonsterUI {
         int screenX = monster.worldX - gp.player.worldX + gp.player.screenX;
         int screenY = monster.worldY - gp.player.worldY + gp.player.screenY;
 
-        // Determine if the monster is within the visible screen area
-        boolean isVisible = screenX >= -gp.tileSize && screenX <= gp.screenWidth &&
-                screenY >= -gp.tileSize && screenY <= gp.screenHeight;
-
         // Check if the monster is a boss
         boolean isBossGoblin = monster instanceof Boss_Goblin;
         boolean isBossEye = monster instanceof Boss_Eye;
 
-        if (!monster.isDead && isVisible) {
+        if (!monster.isDead) {
             if (isBossGoblin || isBossEye) {
                 // === Boss health bar ===
                 int bossBarX = (gp.screenWidth - bossBarWidth) / 2;

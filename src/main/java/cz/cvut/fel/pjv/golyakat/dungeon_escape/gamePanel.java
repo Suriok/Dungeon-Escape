@@ -1121,7 +1121,6 @@ public class gamePanel extends JPanel implements Runnable {
      * The loop tries to maintain stable FPS (frames per second) and calls update and repaint.
      * </p>
      */
-    @Override
     public void run() {
         double drawInterval = (double) 1000000000 / FPS;
         double nextDrawTime = System.nanoTime() + drawInterval;
@@ -1363,7 +1362,6 @@ public class gamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-
         // === 1) TITULNÍ OBRAZOVKA ===
         if (gameState == titleState) {
             titleUi.draw(g2d);
@@ -1379,36 +1377,25 @@ public class gamePanel extends JPanel implements Runnable {
             // 2.2) Vykreslení objektů (např. dveře, truhly, crafting stůl)
             for (int i = 0; i < obj[currentMap].length; i++) {
                 if (obj[currentMap][i] != null) {
-                    int screenX = obj[currentMap][i].worldX - player.worldX + player.screenX;
-                    int screenY = obj[currentMap][i].worldY - player.worldY + player.screenY;
-                    if (screenX + tileSize > 0 && screenX < screenWidth &&
-                            screenY + tileSize > 0 && screenY < screenHeight) {
-                        obj[currentMap][i].draw(g2d, this);
-                    }
+                    obj[currentMap][i].draw(g2d, this);
                 }
             }
 
             // 2.3) Vykreslení monster (včetně animace smrti a UI)
             for (int i = 0; i < monster[currentMap].length; i++) {
-                if (monster[currentMap][i] != null) {
-                    int screenX = monster[currentMap][i].worldX - player.worldX + player.screenX;
-                    int screenY = monster[currentMap][i].worldY - player.worldY + player.screenY;
-                    if (screenX + tileSize > 0 && screenX < screenWidth &&
-                            screenY + tileSize > 0 && screenY < screenHeight) {
+                Entity m = monster[currentMap][i];
 
-                        monsterUi.draw(g2d, monster[currentMap][i]); // Zdravotní panel nad monstrem
+                if (m != null) {
+                    monsterUi.draw(g2d, m);
+                    m.draw(g2d);
 
-                        // Vykreslení samotného monstra (pokud není mrtvé nebo fade-out neskončil)
-                        if (!monster[currentMap][i].isDead || monster[currentMap][i].fadeAlpha > 0) {
-                            monster[currentMap][i].draw(g2d); // Отрисовка самого монстра
-                        }
-                    }
-                    // Vymazání monstra po dokončení fade animace
-                    if (monster[currentMap][i].isDead && monster[currentMap][i].fadeAlpha <= 0) {
+                    if (m.isDead && m.fadeAlpha <= 0) {
                         monster[currentMap][i] = null;
                     }
                 }
             }
+
+
             // 2.4) Vykreslení hráče
             player.draw(g2d);
 
@@ -1424,12 +1411,6 @@ public class gamePanel extends JPanel implements Runnable {
                 Point mousePos = getMousePosition();
                 if (mousePos != null) {
                     int itemSize = tileSize;
-                    boolean isKeyPart = draggedItem.getName().equals("Key1") ||
-                            draggedItem.getName().equals("Key2") ||
-                            draggedItem.getName().equals("Key3");
-                    if (isKeyPart) {
-                        itemSize = (int) (tileSize * 0.6667f);
-                    }
                     g2d.drawImage(draggedItem.getItem().image,
                             mousePos.x - dragOffsetX,
                             mousePos.y - dragOffsetY,
