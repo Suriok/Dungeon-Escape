@@ -20,7 +20,7 @@ public class Boss_Goblin extends Monster {
 
     public Boss_Goblin(gamePanel gp) {
         super(gp, "Boss Goblin", 2, 6, 5 * 48,
-                48, 10, 60,
+                5,
                 new Rectangle(3, 10, 20, 50));// collision box
     }
 
@@ -51,13 +51,14 @@ public class Boss_Goblin extends Monster {
     protected void onDeath() {
         if (keyDropped) return;
 
+        // 1× предмет "Key" сразу содержит правильный GameObject
         ChestInventoryManager.ItemData key =
                 new ChestInventoryManager.ItemData("Key", 1);
-        key.setItem(new Item_Key());
 
-        gp.player.addItem(key);
+        gp.player.addItem(key);   // Player.addItem() принимает KEY без ограничений
         keyDropped = true;
 
         GameLogger.info(name + " dropped a key!");
     }
+
 }

@@ -2,7 +2,6 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.boss;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.Item_Key;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster;
 
@@ -16,7 +15,7 @@ public class Boss_Eye extends Monster {
 
     public Boss_Eye(gamePanel gp) {
         super(gp, "Boss_Eye", 2, 15,5 * 48,
-                48, 15, 60,
+                5,
                 new Rectangle(3, 10, 20, 50));// collision box
     }
 
@@ -37,18 +36,18 @@ public class Boss_Eye extends Monster {
         }
     }
 
-    // === Drop key after death ===
     @Override
     protected void onDeath() {
         if (keyDropped) return;
 
+        // 1× предмет "Key" сразу содержит правильный GameObject
         ChestInventoryManager.ItemData key =
                 new ChestInventoryManager.ItemData("Key", 1);
-        key.setItem(new Item_Key());
 
-        gp.player.addItem(key);
+        gp.player.addItem(key);   // Player.addItem() принимает KEY без ограничений
         keyDropped = true;
 
         GameLogger.info(name + " dropped a key!");
     }
+
 }

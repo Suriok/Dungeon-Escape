@@ -1,9 +1,9 @@
-package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.ui;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Eye;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Goblin;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.sprite.Entity;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.boss.Boss_Eye;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.boss.Boss_Goblin;
 
 import java.awt.*;
 
@@ -17,25 +17,7 @@ import java.awt.*;
 public class MonsterUI {
 
     /** Reference to the main game panel, which contains information about the player and the map. */
-    private gamePanel gp;
-
-    /** Width of the health bar for a regular monster. */
-    private final int regularBarWidth = 30;
-
-    /** Height of the health bar for a regular monster. */
-    private final int regularBarHeight = 5;
-
-    /** Vertical offset of the health bar relative to the monster. */
-    private final int offsetY = -10;
-
-    /** Width of the health bar for bosses. */
-    private final int bossBarWidth = 300;
-
-    /** Height of the health bar for bosses. */
-    private final int bossBarHeight = 10;
-
-    /** Distance of the boss health bar from the top edge of the screen. */
-    private final int bossBarY = 20;
+    final private gamePanel gp;
 
     /**
      * Constructor creates an instance of {@code MonsterUI} for the given {@link gamePanel}.
@@ -67,10 +49,16 @@ public class MonsterUI {
         if (!monster.isDead) {
             if (isBossGoblin || isBossEye) {
                 // === Boss health bar ===
+                /** Width of the health bar for bosses. */
+                int bossBarWidth = 300;
                 int bossBarX = (gp.screenWidth - bossBarWidth) / 2;
 
                 // Background
                 g2.setColor(Color.GRAY);
+                /** Distance of the boss health bar from the top edge of the screen. */
+                int bossBarY = 20;
+                /** Height of the health bar for bosses. */
+                int bossBarHeight = 10;
                 g2.fillRect(bossBarX, bossBarY, bossBarWidth, bossBarHeight);
 
                 // Calculate health percentage
@@ -99,6 +87,12 @@ public class MonsterUI {
             } else {
                 // === Regular monster ===
                 g2.setColor(Color.GRAY);
+                /** Vertical offset of the health bar relative to the monster. */
+                int offsetY = -10;
+                /** Height of the health bar for a regular monster. */
+                int regularBarHeight = 5;
+                /** Width of the health bar for a regular monster. */
+                int regularBarWidth = 30;
                 g2.fillRect(screenX + (gp.tileSize - regularBarWidth) / 2, screenY + offsetY,
                         regularBarWidth, regularBarHeight);
 
