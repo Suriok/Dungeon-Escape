@@ -1,8 +1,11 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.ItemType;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import javax.imageio.ImageIO;
+import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -26,14 +29,16 @@ public class Item_Apple extends GameObject {
      */
     public Item_Apple() {
         name = "Apple";
-        healAmount = 0.5f; // corresponds to 1/4 heart (1 heart = 2 HP)
+        healAmount = 0.5f;
 
         try {
             image = ImageIO.read(Objects.requireNonNull(
                     getClass().getResourceAsStream(
                             "/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/apple.png")));
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            GameLogger.error("Error loading apple image" + e.getMessage());
+        } catch (NullPointerException e) {
+            GameLogger.error("apple.png not found in resources" + e.getMessage());
         }
     }
 
@@ -44,5 +49,9 @@ public class Item_Apple extends GameObject {
      */
     public float getHealAmount() {
         return healAmount;
+    }
+
+    public ItemType getType() {
+        return ItemType.HEALING;
     }
 }

@@ -1,8 +1,11 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.ItemType;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import javax.imageio.ImageIO;
+import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -26,12 +29,15 @@ public class Item_Blubbery extends GameObject {
     public Item_Blubbery() {
         name = "blubbery";
         healAmount = 1f;
+        String path = "/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/bluberry.png";
+
         try {
-            image = ImageIO.read(Objects.requireNonNull(
-                    getClass().getResourceAsStream(
-                            "/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/bluberry.png")));
-        } catch (Exception e) {
-            e.printStackTrace();
+            image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(path)));
+            GameLogger.info("Successfully loaded bluberry.png");
+        } catch (IOException e) {
+            GameLogger.error("Error loading blubbery image: " + e.getMessage());
+        } catch (NullPointerException e) {
+            GameLogger.error("bluberry.png not found in resources: " + e.getMessage());
         }
     }
 
@@ -42,5 +48,9 @@ public class Item_Blubbery extends GameObject {
      */
     public float getHealAmount() {
         return healAmount;
+    }
+
+    public ItemType getType() {
+        return ItemType.HEALING;
     }
 }

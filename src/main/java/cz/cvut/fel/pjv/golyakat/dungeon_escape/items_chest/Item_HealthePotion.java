@@ -1,8 +1,11 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.ItemType;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import javax.imageio.ImageIO;
+import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -25,13 +28,18 @@ public class Item_HealthePotion extends GameObject {
     public Item_HealthePotion() {
         name = "potion";
         healAmount = 2;
+        String path = "/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/healing.png";
+
         try {
-            image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/healing.png")));
-        } catch (Exception e) {
-            e.printStackTrace();
+            image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(path)));
+            GameLogger.info("Successfully loaded healing.png");
+        } catch (IOException e) {
+            GameLogger.error("Error loading healing potion image: " + e.getMessage());
+        } catch (NullPointerException e) {
+            GameLogger.error("healing.png not found in resources: " + e.getMessage());
         }
     }
+
 
     /**
      * Returns the amount of health that the potion restores when used.
@@ -40,5 +48,9 @@ public class Item_HealthePotion extends GameObject {
      */
     public float getHealAmount() {
         return healAmount;
+    }
+
+    public ItemType getType() {
+        return ItemType.HEALING;
     }
 }
