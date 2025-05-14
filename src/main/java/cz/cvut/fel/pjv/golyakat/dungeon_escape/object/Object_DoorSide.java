@@ -1,9 +1,11 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 
 /**
  * The {@code Object_DoorSide} class represents a side door in the game,
@@ -14,6 +16,7 @@ import java.awt.image.BufferedImage;
  * </p>
  */
 public class Object_DoorSide extends GameObject {
+    private final gamePanel gp;
 
     /**
      * Flag indicating whether this door requires a key to open.
@@ -26,11 +29,6 @@ public class Object_DoorSide extends GameObject {
     private boolean isOpen = false;
 
     /**
-     * Image of the closed door.
-     */
-    private BufferedImage closedImage;
-
-    /**
      * Image of the open door.
      */
     private BufferedImage openImage;
@@ -38,17 +36,22 @@ public class Object_DoorSide extends GameObject {
     /**
      * Constructor initializes the door, loads images and sets the default state.
      */
-    public Object_DoorSide() {
+    public Object_DoorSide(gamePanel gp, boolean requiresKey) {
+        this.gp = gp;
         name = "DoorSide";
         Collision = true;
         solidArea = new java.awt.Rectangle(0, 0, 48, 48); // Velikost tile
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
 
+        /**
+         * Image of the closed door.
+         */
+        BufferedImage closedImage;
         try {
             // Loading the closed door image
-            BufferedImage tempClosed = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side.png"));
+            BufferedImage tempClosed = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side.png")));
             if (tempClosed == null) {
                 GameLogger.error("door_side.png nenalezen – používá se záložní prázdný obrázek.");
                 tempClosed = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
@@ -56,8 +59,8 @@ public class Object_DoorSide extends GameObject {
             closedImage = tempClosed;
 
             // Loading the open door image
-            BufferedImage tempOpen = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side_open.png"));
+            BufferedImage tempOpen = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side_open.png")));
             if (tempOpen == null) {
                 GameLogger.error("door_side_open.png nenalezen – použije se zavřený obrázek.");
                 tempOpen = closedImage;
@@ -69,7 +72,6 @@ public class Object_DoorSide extends GameObject {
 
         } catch (Exception e) {
             GameLogger.error("Chyba při načítání obrázků dveří: " + e.getMessage());
-            e.printStackTrace();
             closedImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             openImage = closedImage;
             image = closedImage;
@@ -86,13 +88,11 @@ public class Object_DoorSide extends GameObject {
      * </p>
      */
     public void interact() {
-        if (!requiresKey) {
-            isOpen = true;
-            image = openImage;
-            Collision = false;
-            GameLogger.info("DoorSide byl otevřen hráčem.");
-        } else {
-            GameLogger.info("Tyto dveře vyžadují klíč.");
+        if (isOpen()) return;
+
+        boolean hasKey = gp.player.hasItem("Key") || gp.player.hasItem("SilverKey");
+        if (!requiresKey || hasKey) {
+            unlock();
         }
     }
 

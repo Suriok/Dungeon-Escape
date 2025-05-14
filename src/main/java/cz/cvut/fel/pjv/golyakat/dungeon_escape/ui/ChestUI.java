@@ -11,40 +11,20 @@ import java.util.List;
 
 /**
  * The {@code ChestUI} class is responsible for displaying and interacting with the contents of chests in the game.
- * <p>
- * It handles the graphical rendering of the chest's inventory and manages its opening or closing.
- * </p>
  */
 public class ChestUI {
 
-    /** The main game panel, from which player data, window size, etc., are obtained. */
-    final private gamePanel gp;
-
-    /** The currently open chest. */
+    private final gamePanel gp;
     private Object_Small_Chest activeChest;
-
-    /** Array of bounding rectangles for items displayed in the chest. */
     private Rectangle[] itemBounds;
-
-    /** Bounding rectangle for the entire chest inventory. */
     private Rectangle chestBounds;
 
-    /**
-     * Initializes the chest UI manager.
-     *
-     * @param gp instance of the main game panel
-     */
     public ChestUI(gamePanel gp) {
         this.gp = gp;
         this.activeChest = null;
         this.chestBounds = null;
     }
 
-    /**
-     * Opens or closes the given chest depending on its state.
-     *
-     * @param chest the chest to open or close
-     */
     public void openChest(Object_Small_Chest chest) {
         if (activeChest == chest && isShowingInventory()) {
             closeInventory();
@@ -58,27 +38,10 @@ public class ChestUI {
         }
     }
 
-    /**
-     * Sets the active chest without displaying it.
-     *
-     * @param chest the chest to set
-     */
-    public void setActiveChest(Object_Small_Chest chest) {
-        this.activeChest = chest;
-    }
-
-    /**
-     * Indicates whether the chest's inventory screen is currently displayed.
-     *
-     * @return {@code true} if active and open
-     */
     public boolean isShowingInventory() {
         return activeChest != null && activeChest.isShowingInventory();
     }
 
-    /**
-     * Closes the current chest inventory.
-     */
     public void closeInventory() {
         if (activeChest != null) {
             activeChest.close();
@@ -88,11 +51,6 @@ public class ChestUI {
         }
     }
 
-    /**
-     * Renders the chest's user interface and its contents.
-     *
-     * @param g2d the graphics context
-     */
     public void draw(Graphics2D g2d) {
         if (!isShowingInventory() || activeChest == null) {
             return;
@@ -114,25 +72,14 @@ public class ChestUI {
 
         chestBounds = new Rectangle(windowX - 10, windowY - 10, windowWidth, windowHeight);
 
-        // Background and border
-        g2d.setColor(new Color(0, 0, 0, 200));
-        g2d.fillRoundRect(windowX - 10, windowY - 10, windowWidth, windowHeight, 25, 25);
-
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.drawRoundRect(windowX - 10, windowY - 10, windowWidth, windowHeight, 25, 25);
-
-        // Chest image
         g2d.drawImage(inventoryImage, windowX, windowY, imageWidth, imageHeight, null);
 
-        // Title
         g2d.setFont(new Font("Arial", Font.BOLD, 24));
         String title = "Chest Inventory";
         int titleX = windowX + windowWidth / 2 - g2d.getFontMetrics().stringWidth(title) / 2;
         int titleY = windowY - 25;
         g2d.drawString(title, titleX, titleY);
 
-        // Items in the chest
         List<ChestInventoryManager.ItemData> items = activeChest.getItems();
         itemBounds = new Rectangle[items.size()];
         int gridSize = 4;
@@ -162,42 +109,44 @@ public class ChestUI {
                 }
 
                 g2d.drawImage(itemImage, x, y, drawSize, drawSize, null);
-                g2d.setFont(new Font("Arial", Font.PLAIN, 12));
-                g2d.setColor(Color.WHITE);
-                String quantityText = "x" + item.getQuantity();
-                int textX = x + drawSize - g2d.getFontMetrics().stringWidth(quantityText) - 2;
-                int textY = y + drawSize - 2;
-                g2d.drawString(quantityText, textX, textY);
-
                 itemBounds[i] = new Rectangle(x, y, drawSize, drawSize);
             }
         }
     }
 
-    /**
-     * Returns an array of rectangles with the positions of items in the currently open chest.
-     *
-     * @return an array of {@link Rectangle} corresponding to individual items
-     */
     public Rectangle[] getItemBounds() {
         return itemBounds != null ? itemBounds : new Rectangle[0];
     }
 
-    /**
-     * Returns the currently active (open) chest.
-     *
-     * @return an instance of {@link Object_Small_Chest} or {@code null}
-     */
     public Object_Small_Chest getActiveChest() {
         return activeChest;
     }
 
-    /**
-     * Returns the rectangle covering the entire chest UI.
-     *
-     * @return a {@link Rectangle} or {@code null} if the chest is not displayed
-     */
     public Rectangle getChestBounds() {
         return chestBounds;
+    }
+
+    public int getClickedItemIndex(Point p) {
+        if (itemBounds == null) return -1;
+        for (int i = 0; i < itemBounds.length; i++) {
+            if (itemBounds[i] != null && itemBounds[i].contains(p)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public ChestInventoryManager.ItemData takeItem(int idx) {
+        if (activeChest == null || idx < 0 || idx >= activeChest.getItems().size()) {
+            return null;
+        }
+        ChestInventoryManager.ItemData item = activeChest.getItems().get(idx);
+        if (item.getQuantity() > 1) {
+            item.setQuantity(item.getQuantity() - 1);
+        } else {
+            activeChest.getItems().remove(idx);
+        }
+        gp.repaint();
+        return new ChestInventoryManager.ItemData(item.getName(), 1);
     }
 }

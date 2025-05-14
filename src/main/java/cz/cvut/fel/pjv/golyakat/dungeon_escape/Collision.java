@@ -1,12 +1,11 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
+
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
-
-import java.awt.*;
 
 /**
  * The {@code Collision} class handles collision detection between entities, tiles, and objects in the game.
@@ -20,7 +19,7 @@ public class Collision {
     /**
      * Reference to the main game panel {@link gamePanel}, from which we obtain the map, objects, and tiles.
      */
-    gamePanel gp;
+    final gamePanel gp;
 
     /**
      * Creates a new instance of the collision manager for the given game panel.
@@ -101,7 +100,7 @@ public class Collision {
 
         // For non-player entities, also detect collisions with objects
         if (!entity.getClass().getSimpleName().equals("Player")) {
-            checkObject(entity, false);
+            checkObject(entity);
         }
     }
 
@@ -113,10 +112,8 @@ public class Collision {
      * </p>
      *
      * @param entity the entity for which we are detecting collisions
-     * @param player whether this is the player (used for interactions)
-     * @return the index of the object collided with, or 999 if no collision occurred
      */
-    public int checkObject(Entity entity, boolean player) {
+    public void checkObject(Entity entity) {
         int index = 999;
 
         for (int i = 0; i < gp.obj[gp.currentMap].length; i++) {
@@ -149,9 +146,6 @@ public class Collision {
                     if (obj.Collision) {
                         entity.collisionOn = true;
                     }
-                    if (player) {
-                        index = i;
-                    }
                 }
 
                 // Reset positions
@@ -161,7 +155,6 @@ public class Collision {
                 obj.solidArea.y = obj.solidAreaDefaultY;
             }
         }
-        return index;
     }
 
     /**

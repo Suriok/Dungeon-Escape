@@ -40,11 +40,11 @@ public class Boss_Eye extends Monster {
     protected void onDeath() {
         if (keyDropped) return;
 
-        // 1× предмет "Key" сразу содержит правильный GameObject
+
         ChestInventoryManager.ItemData key =
                 new ChestInventoryManager.ItemData("Key", 1);
 
-        gp.player.addItem(key);   // Player.addItem() принимает KEY без ограничений
+        gp.player.addItem(key);
         keyDropped = true;
 
         GameLogger.info(name + " dropped a key!");

@@ -1,8 +1,8 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Eye;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Boss.Boss_Goblin;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.sprite.Entity;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.boss.Boss_Eye;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.boss.Boss_Goblin;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Slime;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Zombie;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster_Skeleton;
@@ -20,22 +20,15 @@ import java.util.List;
  * in the game world during initialization or level loading.
  */
 public class AssetSetter {
-
-    /**
-     * Instance of the chest inventory manager {@link ChestInventoryManager}, used
-     * to populate the contents of individual chests.
-     */
-    public ChestInventoryManager chestInventoryManager;
-
     /**
      * Reference to the main game panel, which contains the map, objects, monsters, etc.
      */
-    gamePanel gp;
+    final gamePanel gp;
 
     /**
      * Random number generator for selecting random monsters or positions.
      */
-    Random random;
+    final Random random;
 
     /**
      * Creates a new {@code AssetSetter} for the given game panel.
@@ -45,7 +38,6 @@ public class AssetSetter {
     public AssetSetter(gamePanel gp) {
         this.gp = gp;
         this.random = new Random();
-        this.chestInventoryManager = gp.chestInventoryManager;
     }
 
     /**
@@ -58,59 +50,65 @@ public class AssetSetter {
         // ————— LEVEL 1 —————
 
         // Adding doors to map 0
-        gp.obj[0][1] = new Object_DoorSide();
+        gp.obj[0][1] = new Object_DoorSide(gp, false);
         gp.obj[0][1].worldX = 20 * gp.tileSize;
         gp.obj[0][1].worldY = 22 * gp.tileSize;
 
-        gp.obj[0][2] = new Object_DoorFront();
+        gp.obj[0][2] = new Object_DoorFront(gp, false);
         gp.obj[0][2].worldX = 32 * gp.tileSize;
         gp.obj[0][2].worldY = 24 * gp.tileSize;
 
-        gp.obj[0][3] = new Object_DoorFront();
+        gp.obj[0][3] = new Object_DoorFront(gp, false);
         gp.obj[0][3].worldX = 28 * gp.tileSize;
         gp.obj[0][3].worldY = 20 * gp.tileSize;
 
-        gp.obj[0][4] = new Object_DoorFront();
+        gp.obj[0][4] = new Object_DoorFront(gp, false);
         gp.obj[0][4].worldX = 38 * gp.tileSize;
         gp.obj[0][4].worldY = 20 * gp.tileSize;
 
-        gp.obj[0][5] = new Object_DoorFront();
+        gp.obj[0][5] = new Object_DoorFront(gp, true);
         gp.obj[0][5].worldX = 41 * gp.tileSize;
         gp.obj[0][5].worldY = 10 * gp.tileSize;
-        ((Object_DoorFront) gp.obj[0][5]).requiresKey = true;
 
-        gp.obj[0][6] = new Object_DoorSide();
+        gp.obj[0][6] = new Object_DoorSide(gp, true);
         gp.obj[0][6].worldX = 31 * gp.tileSize;
         gp.obj[0][6].worldY = 7 * gp.tileSize;
-        ((Object_DoorSide) gp.obj[0][6]).requiresKey = true;
 
         // Adding chests with contents (manually)
         Map<String, Integer> chest0Items = new HashMap<>();
         chest0Items.put("leather_pants", 1);
         chest0Items.put("leather_helmet", 1);
         chest0Items.put("iron_sword", 1);
-        gp.obj[0][0] = new Object_Small_Chest(this, 0, chest0Items);
+        chest0Items.put("Apple", 3);
+        chest0Items.put("blubbery", 2);
+        gp.obj[0][0] = new Object_Small_Chest(gp, 0, chest0Items);
         gp.obj[0][0].worldX = 15 * gp.tileSize;
         gp.obj[0][0].worldY = 21 * gp.tileSize;
 
         // Additional chests with key parts
         Map<String, Integer> chest7Items = new HashMap<>();
         chest7Items.put("Key1", 1);
-        gp.obj[0][7] = new Object_Small_Chest(this, 7, chest7Items);
+        chest7Items.put("blubbery", 2);
+        chest7Items.put("potion", 2);
+        gp.obj[0][7] = new Object_Small_Chest(gp, 7, chest7Items);
         gp.obj[0][7].worldX = 40 * gp.tileSize;
         gp.obj[0][7].worldY = 30 * gp.tileSize;
 
         Map<String, Integer> chest8Items = new HashMap<>();
         chest8Items.put("Key2", 1);
         chest8Items.put("leather_bib", 1);
-        gp.obj[0][8] = new Object_Small_Chest(this, 8, chest8Items);
+        chest8Items.put("potion", 4);
+        chest8Items.put("Apple", 2);
+        gp.obj[0][8] = new Object_Small_Chest(gp, 8, chest8Items);
         gp.obj[0][8].worldX = 25 * gp.tileSize;
         gp.obj[0][8].worldY = 13 * gp.tileSize;
 
         Map<String, Integer> chest9Items = new HashMap<>();
         chest9Items.put("Key3", 1);
         chest9Items.put("leather_boots", 1);
-        gp.obj[0][9] = new Object_Small_Chest(this, 9, chest9Items);
+        chest9Items.put("potion", 2);
+        chest9Items.put("blubbery", 5);
+        gp.obj[0][9] = new Object_Small_Chest(gp, 9, chest9Items);
         gp.obj[0][9].worldX = 50 * gp.tileSize;
         gp.obj[0][9].worldY = 21 * gp.tileSize;
 
@@ -122,25 +120,23 @@ public class AssetSetter {
         // ————— LEVEL 2 —————
 
         // Doors
-        gp.obj[1][1] = new Object_DoorSide();
+        gp.obj[1][1] = new Object_DoorSide(gp, false);
         gp.obj[1][1].worldX = 15 * gp.tileSize;
         gp.obj[1][1].worldY = 19 * gp.tileSize;
 
-        gp.obj[1][2] = new Object_DoorFront();
+        gp.obj[1][2] = new Object_DoorFront(gp, false);
         gp.obj[1][2].worldX = 27 * gp.tileSize;
         gp.obj[1][2].worldY = 21 * gp.tileSize;
 
-        gp.obj[1][3] = new Object_DoorSide();
+        gp.obj[1][3] = new Object_DoorSide(gp, true);
         gp.obj[1][3].worldX = 39 * gp.tileSize;
         gp.obj[1][3].worldY = 29 * gp.tileSize;
-        ((Object_DoorSide) gp.obj[1][3]).requiresKey = true;
 
-        gp.obj[1][4] = new Object_DoorFront();
+        gp.obj[1][4] = new Object_DoorFront(gp, true);
         gp.obj[1][4].worldX = 44 * gp.tileSize;
         gp.obj[1][4].worldY = 21 * gp.tileSize;
-        ((Object_DoorFront) gp.obj[1][4]).requiresKey = true;
 
-        gp.obj[1][5] = new Object_DoorFront();
+        gp.obj[1][5] = new Object_DoorFront(gp, true);
         gp.obj[1][5].worldX = 34 * gp.tileSize;
         gp.obj[1][5].worldY = 17 * gp.tileSize;
 
@@ -149,27 +145,27 @@ public class AssetSetter {
         chest10Items.put("iron_bib", 1);
         chest10Items.put("iron_pants", 1);
         chest10Items.put("emerald_sword", 1);
-        gp.obj[1][0] = new Object_Small_Chest(this, 0, chest10Items);
+        gp.obj[1][0] = new Object_Small_Chest(gp, 0, chest10Items);
         gp.obj[1][0].worldX = 13 * gp.tileSize;
         gp.obj[1][0].worldY = 18 * gp.tileSize;
 
         Map<String, Integer> chest17Items = new HashMap<>();
         chest17Items.put("Key1", 1);
-        gp.obj[1][7] = new Object_Small_Chest(this, 7, chest17Items);
+        gp.obj[1][7] = new Object_Small_Chest(gp, 7, chest17Items);
         gp.obj[1][7].worldX = 30 * gp.tileSize;
         gp.obj[1][7].worldY = 18 * gp.tileSize;
 
         Map<String, Integer> chest18Items = new HashMap<>();
         chest18Items.put("Key2", 1);
         chest18Items.put("iron_helmet", 1);
-        gp.obj[1][8] = new Object_Small_Chest(this, 8, chest18Items);
+        gp.obj[1][8] = new Object_Small_Chest(gp, 8, chest18Items);
         gp.obj[1][8].worldX = 32 * gp.tileSize;
         gp.obj[1][8].worldY = 27 * gp.tileSize;
 
         Map<String, Integer> chest19Items = new HashMap<>();
         chest19Items.put("Key3", 1);
         chest19Items.put("iron_boots", 1);
-        gp.obj[1][9] = new Object_Small_Chest(this, 9, chest19Items);
+        gp.obj[1][9] = new Object_Small_Chest(gp, 9, chest19Items);
         gp.obj[1][9].worldX = 35 * gp.tileSize;
         gp.obj[1][9].worldY = 12 * gp.tileSize;
 

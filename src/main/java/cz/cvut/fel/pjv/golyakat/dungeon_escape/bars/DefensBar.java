@@ -16,7 +16,7 @@ public class DefensBar {
     /**
      * Reference to the main game panel, from which dimensions and state are obtained.
      */
-    private gamePanel gp;
+
 
     /**
      * Current player's defense value (0-10).
@@ -26,22 +26,22 @@ public class DefensBar {
     /**
      * X coordinate of the top-left corner of the defense indicator.
      */
-    private int x;
+    final private int x;
 
     /**
      * Y coordinate of the top-left corner of the defense indicator.
      */
-    private int y;
+    final private int y;
 
     /**
      * Width of the defense indicator.
      */
-    private int barWidth;
+    final private int barWidth;
 
     /**
      * Height of the defense indicator.
      */
-    private int barHeight;
+    final private int barHeight;
 
     /**
      * Constructor initializes the defense indicator with default coordinates and dimensions.
@@ -49,7 +49,6 @@ public class DefensBar {
      * @param gp main game panel
      */
     public DefensBar(gamePanel gp) {
-        this.gp = gp;
         this.x = 10;
         this.y = 80;
         this.barWidth = 200;

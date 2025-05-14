@@ -21,22 +21,22 @@ import java.util.Objects;
 public class TileManger {
 
     /** Reference to the main game panel */
-    gamePanel gp;
+    final gamePanel gp;
 
     /** Array defining properties of individual tile types */
-    public Tile[] tiles;
+    public final Tile[] tiles;
 
     /**
      * A three-dimensional array containing tile numbers for each map.
      * Structure: [map][row][column]
      */
-    public int[][][] mapTileNum;
+    public final int[][][] mapTileNum;
 
     /**
      * A list of all walkable regions consisting of multiple adjacent tiles.
      * Each region is a list of {@link Point} objects.
      */
-    public List<List<Point>> walkableRegions;
+    public final List<List<Point>> walkableRegions;
 
     /**
      * A list of coordinates of the region the player is in at the beginning of the game.
@@ -119,10 +119,15 @@ public class TileManger {
             tiles[10].image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/ledde.png")));
 
+            GameLogger.info("Tile images successfully loaded");
+
         } catch (IOException e) {
-            e.printStackTrace();
+            GameLogger.error("Error loading tile images: " + e.getMessage());
+        } catch (NullPointerException e) {
+            GameLogger.error("One or more tile image resources not found: " + e.getMessage());
         }
     }
+
 
     /**
      * Finds and stores all walkable regions (floors) in the world using the DFS algorithm.
@@ -215,7 +220,6 @@ public class TileManger {
 
             br.close();
         } catch (Exception e) {
-            e.printStackTrace();
             for (int row = 0; row < gp.maxWorldRow; row++) {
                 for (int col = 0; col < gp.maxWorldCol; col++) {
                     mapTileNum[map][row][col] = 0;

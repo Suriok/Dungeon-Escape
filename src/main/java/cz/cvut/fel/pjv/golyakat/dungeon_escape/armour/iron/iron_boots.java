@@ -5,7 +5,6 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 
 import javax.imageio.ImageIO;
-import java.util.Objects;
 
 /**
  * The {@code iron_boots} class represents iron boots that provide basic protection for the feet.
@@ -35,7 +34,6 @@ public class iron_boots extends GameObject implements Armor {
             }
         } catch (Exception e) {
             GameLogger.error("Error loading leather_pants image: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 

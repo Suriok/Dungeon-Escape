@@ -1,6 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.ItemType;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import javax.imageio.ImageIO;
@@ -50,5 +51,9 @@ public class Iron_sword extends GameObject implements Weapon {
     @Override
     public int getAttack() {
         return attack;
+    }
+
+    public ItemType getType() {
+        return ItemType.WEAPON;
     }
 }

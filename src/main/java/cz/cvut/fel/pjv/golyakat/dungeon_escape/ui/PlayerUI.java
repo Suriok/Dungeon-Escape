@@ -18,42 +18,22 @@ import java.util.Objects;
  */
 public class PlayerUI {
 
-    /** Reference to the main game panel, from which player data is retrieved. */
-    final private gamePanel gp;
-
-    /** Image of the player's main inventory. */
+    private final gamePanel gp;
     private BufferedImage playerInventory;
-
-    /** Image of the side panel for equipped armor. */
     private BufferedImage sideArmor;
-
-    /** Image of the panel for the equipped weapon. */
     private BufferedImage weaponInventory;
-
-    /** Bounding rectangle of the inventory for selection or collision detection. */
     private Rectangle playerInventoryBounds;
-
-    /** Bounding areas of individual armor slots (4 slots: helmet, bib, pants, boots). */
-    final private Rectangle[] armorSlotBounds;
-
-    /** Bounding area for the single equipped weapon slot. */
+    private final Rectangle[] armorSlotBounds;
     private Rectangle weaponSlotBounds;
+    private Rectangle[] inventoryItemBounds;
 
-    /**
-     * Initializes the player's UI, including loading graphics.
-     *
-     * @param gp the main instance of the game panel
-     */
     public PlayerUI(gamePanel gp) {
         this.gp = gp;
         armorSlotBounds = new Rectangle[4];
-        weaponSlotBounds = null;
+        inventoryItemBounds = new Rectangle[8];
         loadImages();
     }
 
-    /**
-     * Loads all images used for rendering the inventory.
-     */
     private void loadImages() {
         try {
             playerInventory = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
@@ -67,19 +47,12 @@ public class PlayerUI {
         }
     }
 
-    /**
-     * Renders the complete player UI, including the item panel, armor, and weapon.
-     *
-     * @param g2d the graphics context for rendering
-     */
     public void draw(Graphics2D g2d) {
         if (playerInventory == null || sideArmor == null || weaponInventory == null) {
             GameLogger.info("PlayerUI: Some images are not loaded");
             return;
         }
 
-        // Calculate dimensions and positions of all panels
-        /** Scale factor for enlarging UI elements during rendering. */
         float scaleFactor = 3.0f;
         int playerInvWidth = (int)(playerInventory.getWidth() * scaleFactor);
         int playerInvHeight = (int)(playerInventory.getHeight() * scaleFactor);
@@ -94,14 +67,13 @@ public class PlayerUI {
         int sideX = 10;
         int startY = gp.defensBar.getY() + gp.defensBar.getBarHeight() + 15;
 
-        // Render the three main panels
         g2d.drawImage(playerInventory, playerInvX, playerInvY, playerInvWidth, playerInvHeight, null);
         g2d.drawImage(sideArmor, sideX, startY, sideArmorWidth, sideArmorHeight, null);
         g2d.drawImage(weaponInventory, sideX, startY + sideArmorHeight + 15, weaponInvWidth, weaponInvHeight, null);
 
         playerInventoryBounds = new Rectangle(playerInvX, playerInvY, playerInvWidth, playerInvHeight);
 
-        // --- Player Inventory ---
+        // Player Inventory
         int gridCols = 8;
         int gridRows = 1;
         int cellWidth = playerInvWidth / gridCols;
@@ -136,15 +108,11 @@ public class PlayerUI {
                 }
 
                 g2d.drawImage(itemImage, x, y, drawSize, drawSize, null);
-
-                g2d.setFont(new Font("Arial", Font.PLAIN, 12));
-                g2d.setColor(Color.WHITE);
-                String quantityText = "x" + item.getQuantity();
-                g2d.drawString(quantityText, x + drawSize - g2d.getFontMetrics().stringWidth(quantityText) - 2, y + drawSize - 2);
+                inventoryItemBounds[i] = new Rectangle(x, y, drawSize, drawSize);
             }
         }
 
-        // --- Armor ---
+        // Armor
         int armorGridCols = 1;
         int armorGridRows = 4;
         int armorCellWidth = sideArmorWidth / armorGridCols;
@@ -161,13 +129,10 @@ public class PlayerUI {
             GameObject armor = equippedArmor[i];
             if (armor != null && armor.image != null) {
                 g2d.drawImage(armor.image, armorOffsetX, slotY, armorItemSize, armorItemSize, null);
-                g2d.setFont(new Font("Arial", Font.PLAIN, 12));
-                g2d.setColor(Color.WHITE);
-                g2d.drawString("x1", armorOffsetX + armorItemSize - g2d.getFontMetrics().stringWidth("x1") - 2, slotY + armorItemSize - 2);
             }
         }
 
-        // --- Weapon ---
+        // Weapon
         int weaponItemSize = Math.min(weaponInvWidth, weaponInvHeight);
         int weaponX = sideX + 5;
         int weaponY = startY + sideArmorHeight + 20;
@@ -176,46 +141,30 @@ public class PlayerUI {
         GameObject weapon = gp.player.getEquippedWeapon();
         if (weapon != null && weapon.image != null) {
             g2d.drawImage(weapon.image, weaponX, weaponY, weaponItemSize, weaponItemSize, null);
-            g2d.setFont(new Font("Arial", Font.PLAIN, 12));
-            g2d.setColor(Color.WHITE);
-            g2d.drawString("x1", weaponX + weaponItemSize - g2d.getFontMetrics().stringWidth("x1") - 2, weaponY + weaponItemSize - 2);
         }
     }
 
-    /** @return the bounds of the main inventory */
     public Rectangle getPlayerInventoryBounds() {
         return playerInventoryBounds;
     }
 
-    /** @return an array of rectangles representing the armor slots */
     public Rectangle[] getArmorSlotBounds() {
         return armorSlotBounds;
     }
 
-    /** @return the rectangle for the weapon slot */
     public Rectangle getWeaponSlotBounds() {
         return weaponSlotBounds;
     }
 
-    /**
-     * Determines whether the given item is part of armor.
-     *
-     * @param item the item to evaluate
-     * @return {@code true} if it is armor
-     */
-    public boolean isArmor(ChestInventoryManager.ItemData item) {
-        String itemName = item.getName();
-        return (itemName.endsWith("_helmet") || itemName.endsWith("_bib") ||
-                itemName.endsWith("_pants") || itemName.endsWith("_boots")) &&
-                !itemName.equals("Key1") && !itemName.equals("Key2") && !itemName.equals("Key3");
+    public int getClickedInventoryIndex(Point p) {
+        for (int i = 0; i < inventoryItemBounds.length; i++) {
+            if (inventoryItemBounds[i] != null && inventoryItemBounds[i].contains(p)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
-    /**
-     * Determines the slot index for the given armor item.
-     *
-     * @param item the armor item
-     * @return the slot index (0–3) or -1 if unknown
-     */
     public int getArmorSlotIndex(ChestInventoryManager.ItemData item) {
         String itemName = item.getName();
         if (itemName.endsWith("_helmet")) {
@@ -228,17 +177,5 @@ public class PlayerUI {
             return 3;
         }
         return -1;
-    }
-
-    /**
-     * Determines whether the given item is a weapon (sword).
-     *
-     * @param item the item to evaluate
-     * @return {@code true} if it is a weapon
-     */
-    public boolean isWeapon(ChestInventoryManager.ItemData item) {
-        String itemName = item.getName();
-        return itemName.endsWith("_sword") &&
-                !itemName.equals("Key1") && !itemName.equals("Key2") && !itemName.equals("Key3");
     }
 }

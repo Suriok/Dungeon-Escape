@@ -1,6 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -14,7 +15,7 @@ import java.util.Objects;
  * </p>
  */
 public class Object_DoorFront extends GameObject {
-
+    private final gamePanel gp;
     /**
      * Determines whether the door requires a key (e.g., SilverKey) to open.
      */
@@ -33,7 +34,8 @@ public class Object_DoorFront extends GameObject {
     /**
      * Creates a new door instance, loads images and sets the default state (closed).
      */
-    public Object_DoorFront() {
+    public Object_DoorFront(gamePanel gp, boolean requiresKey) {
+        this.gp = gp;
         name = "DoorFront";
         Collision = true; // Collision enabled when closed
         solidArea = new java.awt.Rectangle(0, 0, 48, 48); // Assumption: tileSize = 48
@@ -80,15 +82,16 @@ public class Object_DoorFront extends GameObject {
      * </ul>
      */
     public void interact() {
-        if (!requiresKey && !isOpen) {
-            isOpen = true;
-            image = openImage;
-            Collision = false;
-            GameLogger.info("DoorFront otevřen!");
-        } else if (requiresKey && !isOpen) {
-            GameLogger.info("Tyto dveře vyžadují Silver Key.");
+        if (isOpen) return;                         // isOpen — поле класса
+
+        boolean hasKey = gp.player.hasItem("Key")
+                || gp.player.hasItem("SilverKey");
+
+        if (!requiresKey || hasKey) {
+            unlock();                                 // теперь метод найден
         }
     }
+
 
     /**
      * Returns whether the door is open.

@@ -1,6 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.ItemType;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import javax.imageio.ImageIO;
@@ -26,7 +27,10 @@ public class Item_Key extends GameObject {
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/golden_key.png")));
         } catch (Exception e) {
             GameLogger.error("Error loading image for Key: " + e.getMessage());
-            e.printStackTrace();
         }
+    }
+
+    public ItemType getType() {
+        return ItemType.KEY;
     }
 }

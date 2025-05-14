@@ -257,7 +257,7 @@ public class TitleScreenUI {
             if (click) {
                 switch (b.text) {
                     case "Start Game" -> gp.startNewGame();
-                    case "Start Saved Game" -> gp.loadSavedGame();
+                    case "Start Saved Game" -> gp.loadGame();
                     case "Exit" -> {
                         gp.saveGame();
                         Window w = SwingUtilities.getWindowAncestor(gp);

@@ -5,7 +5,6 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 
 import javax.imageio.ImageIO;
-import java.util.Objects;
 
 /**
  * The {@code iron_helmet} class represents an iron helmet that provides medium level protection for the player's head.
@@ -40,7 +39,6 @@ public class iron_helmet extends GameObject implements Armor {
             }
         } catch (Exception e) {
             GameLogger.error("Error loading leather_pants image: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 

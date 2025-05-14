@@ -5,7 +5,6 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 
 import javax.imageio.ImageIO;
-import java.util.Objects;
 
 /**
  * The {@code iron_bib} class represents an iron chest piece – the most important part of the armor,
@@ -31,14 +30,13 @@ public class iron_bib extends GameObject implements Armor {
             java.io.InputStream stream = getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/armour/iron_bib.png");
             if (stream == null) {
-                GameLogger.error("Error: leather_pants.png not found in resources.");
+                GameLogger.error("Error: iron_bib.png not found in resources.");
             } else {
                 image = ImageIO.read(stream);
-                GameLogger.info("Successfully loaded leather_pants.png");
+                GameLogger.info("Successfully loaded iron_bib.png");
             }
         } catch (Exception e) {
-            GameLogger.error("Error loading leather_pants image: " + e.getMessage());
-            e.printStackTrace();
+            GameLogger.error("Error loading iron_bib image: " + e.getMessage());
         }
     }
 

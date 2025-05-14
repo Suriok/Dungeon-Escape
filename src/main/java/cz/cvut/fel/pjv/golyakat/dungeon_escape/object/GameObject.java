@@ -92,8 +92,6 @@ public abstract class GameObject {
             } else {
                 GameLogger.error("Nelze vykreslit objekt '" + name + "': obrázek je null");
             }
-        } else {
-            GameLogger.info(name + " se nachází mimo viditelnou oblast.");
         }
     }
 

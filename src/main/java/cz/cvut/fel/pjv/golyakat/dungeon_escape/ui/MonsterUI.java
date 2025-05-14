@@ -89,7 +89,7 @@ public class MonsterUI {
                 g2.setColor(Color.GRAY);
                 /** Vertical offset of the health bar relative to the monster. */
                 int offsetY = -10;
-                /** Height of the health bar for a regular monster. */
+                /**  Height of the health bar for a regular monster. */
                 int regularBarHeight = 5;
                 /** Width of the health bar for a regular monster. */
                 int regularBarWidth = 30;
