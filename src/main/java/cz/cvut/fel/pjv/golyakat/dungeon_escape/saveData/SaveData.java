@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SaveData {
-    public PlayerData player = new PlayerData();
+    final public PlayerData player = new PlayerData();
     public int currentMap;
     public boolean[] levelSpawned;
-    public List<MonsterData> monsters = new ArrayList<>();
+    final public List<MonsterData> monsters = new ArrayList<>();
 
     public static class PlayerData {
         public int worldX;
         public int worldY;
         public int life;
-        public List<ItemData> backpack = new ArrayList<>();
-        public List<ItemData> armor = new ArrayList<>();
+        final public List<ItemData> backpack = new ArrayList<>();
+        final public List<ItemData> armor = new ArrayList<>();
         public ItemData weapon;
         public ItemData grade;
     }

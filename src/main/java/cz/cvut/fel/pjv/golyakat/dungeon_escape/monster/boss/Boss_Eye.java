@@ -14,8 +14,7 @@ public class Boss_Eye extends Monster {
     private boolean keyDropped = false;
 
     public Boss_Eye(gamePanel gp) {
-        super(gp, "Boss_Eye", 2, 15,5 * 48,
-                5,
+        super(gp, "Boss_Eye", 2, 15,7,
                 new Rectangle(3, 10, 20, 50));// collision box
     }
 

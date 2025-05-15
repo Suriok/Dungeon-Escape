@@ -39,11 +39,6 @@ public class TileManger {
     public final List<List<Point>> walkableRegions;
 
     /**
-     * A list of coordinates of the region the player is in at the beginning of the game.
-     */
-    public List<Point> playerRegion;
-
-    /**
      * Creates the tile manager and initializes the map,
      * including image loading and walkable region detection.
      *
@@ -55,7 +50,6 @@ public class TileManger {
         tiles = new Tile[15];
         mapTileNum = new int[gp.maxMap][gp.maxWorldCol][gp.maxWorldRow];
         walkableRegions = new ArrayList<>();
-        playerRegion = new ArrayList<>();
 
         getTileImage();
         loadMap("/cz/cvut/fel/pjv/golyakat/dungeon_escape/maps/level1.txt", 0);
@@ -148,11 +142,6 @@ public class TileManger {
                     List<Point> region = new ArrayList<>();
                     dfs(row, col, visited, region);
                     walkableRegions.add(region);
-
-                    boolean playerInRegion = region.stream().anyMatch(p -> p.x == playerStartRow && p.y == playerStartCol);
-                    if (playerInRegion) {
-                        playerRegion = region;
-                    }
                 }
             }
         }

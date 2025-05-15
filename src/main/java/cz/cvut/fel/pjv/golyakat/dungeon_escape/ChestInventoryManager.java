@@ -2,11 +2,6 @@
         package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.*;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key.*;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.*;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.*;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.*;
 
 import java.util.*;
 
@@ -52,27 +47,7 @@ public class ChestInventoryManager {
     }
 
     private static GameObject createItemFromName(String name) {
-        return switch (name) {
-            case "Apple" -> new Item_Apple();
-            case "blubbery" -> new Item_Blubbery();
-            case "potion" -> new Item_HealthePotion();
-            case "leather_pants" -> new leather_pants();
-            case "leather_bib" -> new leather_bib();
-            case "leather_helmet" -> new leather_helmet();
-            case "leather_boots" -> new leather_boots();
-            case "iron_pants" -> new iron_pants();
-            case "iron_helmet" -> new iron_helmet();
-            case "iron_boots" -> new iron_boots();
-            case "iron_bib" -> new iron_bib();
-            case "iron_sword" -> new Iron_sword(2);
-            case "emerald_sword" -> new Emerald_sword(3);
-            case "Key" -> new Item_Key();
-            case "Key1" -> new Item_partKey1();
-            case "Key2" -> new Item_partKey2();
-            case "Key3" -> new Item_partKey3();
-            case "SilverKey" -> new Item_SilverKey();
-            default -> null;
-        };
+        return ItemFactory.makeItem(name);
     }
 
     public List<ItemData> getChestData(int id, Map<String, Integer> defaultItems) {

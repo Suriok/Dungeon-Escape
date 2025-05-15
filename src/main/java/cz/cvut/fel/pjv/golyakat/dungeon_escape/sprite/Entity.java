@@ -139,4 +139,20 @@ public class Entity extends GameObject {
     public void draw(Graphics2D g2d) {
         super.draw(g2d, gp);
     }
+
+    /**
+     * Vrátí aktuální snímek sprite podle směru a čísla snímku.
+     *
+     * @return příslušný obrázek animace
+     */
+    public BufferedImage getCurrentSprite() {
+        return switch (direction) {
+            case "up"    -> (spriteNum == 1) ? up1 : up2;
+            case "down"  -> (spriteNum == 1) ? down1 : down2;
+            case "left"  -> (spriteNum == 1) ? left1 : left2;
+            case "right" -> (spriteNum == 1) ? right1 : right2;
+            default      -> null;
+        };
+    }
+
 }

@@ -18,8 +18,8 @@ public class Boss_Goblin extends Monster {
     private boolean keyDropped = false;
 
     public Boss_Goblin(gamePanel gp) {
-        super(gp, "Boss Goblin", 2, 6, 5 * 48,
-                5,
+        super(gp, "Boss Goblin", 2, 6, 6,
+
                 new Rectangle(3, 10, 20, 50));// collision box
     }
 

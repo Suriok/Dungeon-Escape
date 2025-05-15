@@ -35,79 +35,60 @@ public class MonsterUI {
      * @param monster the entity (monster) to be rendered
      */
     public void draw(Graphics2D g2, Entity monster) {
-        // If the monster is dead and has fully faded, do nothing
         if (monster.isDead && monster.fadeAlpha <= 0) return;
 
-        // Convert the monster's position to screen coordinates
         int screenX = monster.worldX - gp.player.worldX + gp.player.screenX;
         int screenY = monster.worldY - gp.player.worldY + gp.player.screenY;
 
-        // Check if the monster is a boss
         boolean isBossGoblin = monster instanceof Boss_Goblin;
         boolean isBossEye = monster instanceof Boss_Eye;
+        boolean isBoss = isBossGoblin || isBossEye;
 
         if (!monster.isDead) {
-            if (isBossGoblin || isBossEye) {
-                // === Boss health bar ===
-                /** Width of the health bar for bosses. */
-                int bossBarWidth = 300;
-                int bossBarX = (gp.screenWidth - bossBarWidth) / 2;
+            float healthPercentage = (float) monster.life / monster.maxLife;
+            int redValue = (int) (255 * healthPercentage);
+            int grayValue = (int) (128 * (1 - healthPercentage));
+            Color healthColor = new Color(redValue, grayValue, grayValue);
 
-                // Background
-                g2.setColor(Color.GRAY);
-                /** Distance of the boss health bar from the top edge of the screen. */
-                int bossBarY = 20;
-                /** Height of the health bar for bosses. */
-                int bossBarHeight = 10;
-                g2.fillRect(bossBarX, bossBarY, bossBarWidth, bossBarHeight);
+            int barWidth, barHeight, barX, barY;
 
-                // Calculate health percentage
-                float healthPercentage = (float) monster.life / monster.maxLife;
-                int redValue = (int) (255 * healthPercentage);
-                int grayValue = (int) (128 * (1 - healthPercentage));
+            if (isBoss) {
+                // Boss bar dimensions and position
+                barWidth = 300;
+                barHeight = 10;
+                barX = (gp.screenWidth - barWidth) / 2;
+                barY = 20;
+            } else {
+                // Regular monster bar dimensions and position
+                barWidth = 30;
+                barHeight = 5;
+                int offsetY = -10;
+                barX = screenX + (gp.tileSize - barWidth) / 2;
+                barY = screenY + offsetY;
+            }
 
-                // Fill based on health
-                g2.setColor(new Color(redValue, grayValue, grayValue));
-                int healthWidth = (int) (bossBarWidth * healthPercentage);
-                g2.fillRect(bossBarX, bossBarY, healthWidth, bossBarHeight);
+            // === Background ===
+            g2.setColor(Color.GRAY);
+            g2.fillRect(barX, barY, barWidth, barHeight);
 
-                // Border
-                g2.setColor(Color.WHITE);
-                g2.drawRect(bossBarX, bossBarY, bossBarWidth, bossBarHeight);
+            // === Health fill ===
+            g2.setColor(healthColor);
+            int healthWidth = (int) (barWidth * healthPercentage);
+            g2.fillRect(barX, barY, healthWidth, barHeight);
 
-                // Boss name
+            // === Border ===
+            g2.setColor(Color.WHITE);
+            g2.drawRect(barX, barY, barWidth, barHeight);
+
+            // === Boss name ===
+            if (isBoss) {
                 String bossName = isBossGoblin ? "Goblin" : "Eye";
                 g2.setFont(new Font("Arial", Font.BOLD, 20));
                 g2.setColor(Color.WHITE);
                 int textWidth = g2.getFontMetrics().stringWidth(bossName);
                 int textX = (gp.screenWidth - textWidth) / 2;
-                int textY = bossBarY + bossBarHeight + 25;
+                int textY = barY + barHeight + 25;
                 g2.drawString(bossName, textX, textY);
-
-            } else {
-                // === Regular monster ===
-                g2.setColor(Color.GRAY);
-                /** Vertical offset of the health bar relative to the monster. */
-                int offsetY = -10;
-                /**  Height of the health bar for a regular monster. */
-                int regularBarHeight = 5;
-                /** Width of the health bar for a regular monster. */
-                int regularBarWidth = 30;
-                g2.fillRect(screenX + (gp.tileSize - regularBarWidth) / 2, screenY + offsetY,
-                        regularBarWidth, regularBarHeight);
-
-                float healthPercentage = (float) monster.life / monster.maxLife;
-                int redValue = (int) (255 * healthPercentage);
-                int grayValue = (int) (128 * (1 - healthPercentage));
-
-                g2.setColor(new Color(redValue, grayValue, grayValue));
-                int healthWidth = (int) (regularBarWidth * healthPercentage);
-                g2.fillRect(screenX + (gp.tileSize - regularBarWidth) / 2, screenY + offsetY,
-                        healthWidth, regularBarHeight);
-
-                g2.setColor(Color.WHITE);
-                g2.drawRect(screenX + (gp.tileSize - regularBarWidth) / 2, screenY + offsetY,
-                        regularBarWidth, regularBarHeight);
             }
         }
 
