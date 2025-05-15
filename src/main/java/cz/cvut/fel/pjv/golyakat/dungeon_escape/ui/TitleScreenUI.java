@@ -69,7 +69,7 @@ public class TitleScreenUI {
         buttons.add(new UIButton(new Rectangle(centerX, firstY + (btnHeight + gap), btnWidth, btnHeight), "Start Saved Game"));
         buttons.add(new UIButton(new Rectangle(centerX, firstY + 2 * (btnHeight + gap), btnWidth, btnHeight), "Exit"));
 
-        // Game Over buttons (coordinates calculated in draw)
+        // === Game Over buttons (coordinates calculated in draw) ===
         gameOverButtons.add(new UIButton(new Rectangle(), "Try Again"));
         gameOverButtons.add(new UIButton(new Rectangle(), "Exit"));
 
@@ -97,10 +97,10 @@ public class TitleScreenUI {
      * @param g2 the Graphics2D context to draw on
      */
     public void draw(Graphics2D g2) {
-        // draw background, title text, main buttons, and logging toggle
+        // === draw background, title text, main buttons, and logging toggle ===
         g2.drawImage(background, 0, 0, gp.screenWidth, gp.screenHeight, null);
 
-        // Title
+        // === Title ===
         g2.setFont(TITLE_FONT);
         g2.setColor(Color.WHITE);
         String title = "Dungeon Escape";
@@ -109,7 +109,7 @@ public class TitleScreenUI {
         int titleY = gp.tileSize * 3;
         g2.drawString(title, titleX, titleY);
 
-        // Main menu buttons
+        // === Main menu buttons ===
         g2.setFont(BTN_FONT);
         for (UIButton btn : buttons) {
             float scale = btn.hovered ? 1.05f : 1.0f;
@@ -131,7 +131,7 @@ public class TitleScreenUI {
             g2.drawString(btn.text, tx, ty);
         }
 
-        // Logging toggle in the bottom left
+        // === Logging toggle in the bottom left ===
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
         g2.setColor(new Color(0, 0, 0, 150));
         g2.fillRect(loggingToggleBounds.x, loggingToggleBounds.y, loggingToggleBounds.width, loggingToggleBounds.height);
@@ -172,7 +172,7 @@ public class TitleScreenUI {
         int titleY = boxY + titleFM.getAscent() + 30;
         g2.drawString(title, titleX, titleY);
 
-        // Draw individual options
+        // === Draw individual options ===
         g2.setFont(new Font("Arial", Font.PLAIN, 28));
         FontMetrics optionFM = g2.getFontMetrics();
         int spacing = 20;

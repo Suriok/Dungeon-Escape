@@ -19,6 +19,16 @@ public class MonsterUI {
     /** Reference to the main game panel, which contains information about the player and the map. */
     final private gamePanel gp;
 
+    // === Health bar constants ===
+    private static final int BOSS_BAR_WIDTH = 300;
+    private static final int BOSS_BAR_HEIGHT = 10;
+    private static final int BOSS_BAR_Y = 20;
+    private static final int REGULAR_BAR_WIDTH = 30;
+    private static final int REGULAR_BAR_HEIGHT = 5;
+    private static final int REGULAR_BAR_OFFSET_Y = -10;
+    private static final int BOSS_NAME_FONT_SIZE = 20;
+    private static final int BOSS_NAME_Y_OFFSET = 25;
+
     /**
      * Constructor creates an instance of {@code MonsterUI} for the given {@link gamePanel}.
      *
@@ -35,7 +45,7 @@ public class MonsterUI {
      * @param monster the entity (monster) to be rendered
      */
     public void draw(Graphics2D g2, Entity monster) {
-        if (monster.isDead && monster.fadeAlpha <= 0) return;
+        if (monster.isDead) return;
 
         int screenX = monster.worldX - gp.player.worldX + gp.player.screenX;
         int screenY = monster.worldY - gp.player.worldY + gp.player.screenY;
@@ -44,59 +54,49 @@ public class MonsterUI {
         boolean isBossEye = monster instanceof Boss_Eye;
         boolean isBoss = isBossGoblin || isBossEye;
 
-        if (!monster.isDead) {
-            float healthPercentage = (float) monster.life / monster.maxLife;
-            int redValue = (int) (255 * healthPercentage);
-            int grayValue = (int) (128 * (1 - healthPercentage));
-            Color healthColor = new Color(redValue, grayValue, grayValue);
+        float healthPercentage = (float) monster.life / monster.maxLife;
+        int redValue = (int) (255 * healthPercentage);
+        int grayValue = (int) (128 * (1 - healthPercentage));
+        Color healthColor = new Color(redValue, grayValue, grayValue);
 
-            int barWidth, barHeight, barX, barY;
+        int barWidth, barHeight, barX, barY;
 
-            if (isBoss) {
-                // Boss bar dimensions and position
-                barWidth = 300;
-                barHeight = 10;
-                barX = (gp.screenWidth - barWidth) / 2;
-                barY = 20;
-            } else {
-                // Regular monster bar dimensions and position
-                barWidth = 30;
-                barHeight = 5;
-                int offsetY = -10;
-                barX = screenX + (gp.tileSize - barWidth) / 2;
-                barY = screenY + offsetY;
-            }
-
-            // === Background ===
-            g2.setColor(Color.GRAY);
-            g2.fillRect(barX, barY, barWidth, barHeight);
-
-            // === Health fill ===
-            g2.setColor(healthColor);
-            int healthWidth = (int) (barWidth * healthPercentage);
-            g2.fillRect(barX, barY, healthWidth, barHeight);
-
-            // === Border ===
-            g2.setColor(Color.WHITE);
-            g2.drawRect(barX, barY, barWidth, barHeight);
-
-            // === Boss name ===
-            if (isBoss) {
-                String bossName = isBossGoblin ? "Goblin" : "Eye";
-                g2.setFont(new Font("Arial", Font.BOLD, 20));
-                g2.setColor(Color.WHITE);
-                int textWidth = g2.getFontMetrics().stringWidth(bossName);
-                int textX = (gp.screenWidth - textWidth) / 2;
-                int textY = barY + barHeight + 25;
-                g2.drawString(bossName, textX, textY);
-            }
+        if (isBoss) {
+            // === Use boss-specific constants for bar dimensions and position ===
+            barWidth = BOSS_BAR_WIDTH;
+            barHeight = BOSS_BAR_HEIGHT;
+            barX = (gp.screenWidth - barWidth) / 2;
+            barY = BOSS_BAR_Y;
+        } else {
+            // === Use regular monster-specific constants for bar dimensions and position ===
+            barWidth = REGULAR_BAR_WIDTH;
+            barHeight = REGULAR_BAR_HEIGHT;
+            barX = screenX + (gp.tileSize - barWidth) / 2;
+            barY = screenY + REGULAR_BAR_OFFSET_Y;
         }
 
-        // === Fade-out effect after death ===
-        if (monster.isDead && monster.fadeAlpha > 0) {
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, monster.fadeAlpha));
-            g2.drawImage(monster.image, screenX, screenY, gp.tileSize, gp.tileSize, null);
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+        // === Background ===
+        g2.setColor(Color.GRAY);
+        g2.fillRect(barX, barY, barWidth, barHeight);
+
+        // === Health fill ===
+        g2.setColor(healthColor);
+        int healthWidth = (int) (barWidth * healthPercentage);
+        g2.fillRect(barX, barY, healthWidth, barHeight);
+
+        // === Border ===
+        g2.setColor(Color.WHITE);
+        g2.drawRect(barX, barY, barWidth, barHeight);
+
+        // === Boss name ===
+        if (isBoss) {
+            String bossName = isBossGoblin ? "Goblin" : "Eye";
+            g2.setFont(new Font("Arial", Font.BOLD, BOSS_NAME_FONT_SIZE));
+            g2.setColor(Color.WHITE);
+            int textWidth = g2.getFontMetrics().stringWidth(bossName);
+            int textX = (gp.screenWidth - textWidth) / 2;
+            int textY = barY + barHeight + BOSS_NAME_Y_OFFSET;
+            g2.drawString(bossName, textX, textY);
         }
     }
 }

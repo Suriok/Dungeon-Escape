@@ -7,42 +7,76 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import java.awt.*;
 import java.util.Random;
 
+/**
+ * Abstract base class for all monster types in the game.
+ * <p>
+ * Defines common behavior such as movement, AI decision-making,
+ * combat interactions, and rendering logic.
+ * </p>
+ */
 public abstract class Monster extends Entity {
-    protected int actionLockCounter = 0;
-    protected int attackCounter     = 0;
 
+    /** Counter used to time direction changes for movement AI. */
+    protected int actionLockCounter = 0;
+
+    /** Counter used to control attack cooldown intervals. */
+    protected int attackCounter = 0;
+
+    /** Random number generator used for AI movement decisions. */
     protected final Random rng = new Random();
 
+    /** Amount of damage the monster deals per attack. */
     protected final int ATTACK_DAMAGE;
+
+    /** Range within which the monster detects the player (in pixels). */
     protected final int DETECTION_RANGE = 5 * 48;
+
+    /** Cooldown time (in frames) between monster attacks. */
     protected final int ATTACK_COOLDOWN = 60;
 
+    /**
+     * Constructs a monster with basic properties.
+     *
+     * @param gp           reference to the game panel
+     * @param name         the name of the monster
+     * @param speed        the movement speed
+     * @param maxLife      maximum health
+     * @param attackDamage damage dealt to the player
+     * @param solid        rectangle used for collision detection
+     */
     protected Monster(gamePanel gp, String name, int speed, int maxLife, int attackDamage,
                       Rectangle solid) {
 
         super(gp);
-        this.name  = name;
+        this.name = name;
         this.speed = speed;
         this.maxLife = maxLife;
-        this.life    = maxLife;
-
-        this.ATTACK_DAMAGE    = attackDamage;
-
+        this.life = maxLife;
+        this.ATTACK_DAMAGE = attackDamage;
         this.direction = "down";
+
         this.solidArea = solid;
         this.solidAreaDefaultX = solid.x;
         this.solidAreaDefaultY = solid.y;
 
-        loadImages();                // реализует подкласс
+        loadImages(); // Subclass must implement sprite loading
     }
 
-    /* Подкласс подгружает спрайты */
+    /**
+     * Subclasses must load directional sprites in this method.
+     */
     protected abstract void loadImages();
 
-    /* Подкласс может переопределить дроп/лут */
-    protected void onDeath() { }
+    /**
+     * Called once when the monster dies.
+     * <p>
+     * Can be overridden to drop loot or trigger effects.
+     * </p>
+     */
+    protected void onDeath() {
+    }
 
-    /* ------ AI: выбор направления ------ */
+    // === AI: Determines movement direction based on player proximity or randomly ===
     protected void setAction() {
         actionLockCounter++;
 
@@ -65,9 +99,13 @@ public abstract class Monster extends Entity {
         }
     }
 
-    /* ------ главный update ------ */
+    /**
+     * Main update loop for monster behavior.
+     * Handles movement, collision, combat, animation, and death.
+     */
     public void update() {
-        if (isDead) {                   // fade
+        if (isDead) {
+            // === Handle fade-out animation for dead monster ===
             super.update();
             return;
         }
@@ -77,22 +115,22 @@ public abstract class Monster extends Entity {
 
         int oldX = worldX, oldY = worldY;
         switch (direction) {
-            case "up"    -> worldY -= speed;
-            case "down"  -> worldY += speed;
-            case "left"  -> worldX -= speed;
+            case "up" -> worldY -= speed;
+            case "down" -> worldY += speed;
+            case "left" -> worldX -= speed;
             case "right" -> worldX += speed;
         }
 
         collisionOn = false;
         gp.collisionChecker.checkTiles(this);
-        if (collisionOn) {              // откат при стене
+        if (collisionOn) {
+            // === Rollback movement if collision occurred ===
             worldX = oldX;
             worldY = oldY;
-            actionLockCounter = 120;
+            actionLockCounter = 120; // force direction change
         }
 
-
-        // === Player attack ===
+        // === Player attack check ===
         attackCounter++;
         int playerCenterX = gp.player.worldX + gp.player.solidArea.x + gp.player.solidArea.width / 2;
         int playerCenterY = gp.player.worldY + gp.player.solidArea.y + gp.player.solidArea.height / 2;
@@ -107,17 +145,20 @@ public abstract class Monster extends Entity {
             GameLogger.info(name + " hits player (" + ATTACK_DAMAGE + " dmg)");
         }
 
-        /* --- анимация шага --- */
+        // === Walking animation: switch sprite every 15 frames ===
         spriteCounter = (spriteCounter + 1) % 30;
-        spriteNum     = (spriteCounter < 15) ? 1 : 2;
+        spriteNum = (spriteCounter < 15) ? 1 : 2;
 
-        /* --- смерть --- */
+        // === Death handling ===
         if (life <= 0 && !isDead) {
-            onDeath();
-            removeSelf();             // единственный вызов
+            onDeath();       // call loot drop or effects
+            removeSelf();    // remove from monster array
         }
     }
 
+    /**
+     * Removes this monster instance from the game world.
+     */
     private void removeSelf() {
         for (int i = 0; i < gp.monster[gp.currentMap].length; i++) {
             if (gp.monster[gp.currentMap][i] == this) {
@@ -127,13 +168,12 @@ public abstract class Monster extends Entity {
         }
     }
 
+    /**
+     * Draws the current sprite of the monster on the screen relative to the player's position.
+     *
+     * @param g2d the graphics context
+     */
     public void draw(Graphics2D g2d) {
-        this.image = getCurrentSprite();
-        if (image == null) return;
-
-        int screenX = worldX - gp.player.worldX + gp.player.screenX;
-        int screenY = worldY - gp.player.worldY + gp.player.screenY;
-        g2d.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+        super.draw(g2d);
     }
-
 }

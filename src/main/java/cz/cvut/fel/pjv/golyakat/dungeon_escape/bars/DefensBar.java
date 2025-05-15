@@ -11,12 +11,6 @@ import java.awt.*;
  * </p>
  */
 public class DefensBar {
-
-    /**
-     * Reference to the main game panel, from which dimensions and state are obtained.
-     */
-
-
     /**
      * Current player's defense value (0-10).
      */
@@ -44,7 +38,6 @@ public class DefensBar {
 
     /**
      * Constructor initializes the defense indicator with default coordinates and dimensions.
-     *
      */
     public DefensBar() {
         this.x = 10;

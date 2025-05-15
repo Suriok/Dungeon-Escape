@@ -49,7 +49,7 @@ public class AssetSetter {
     public void setObg() {
         // ————— LEVEL 1 —————
 
-        // Adding doors to map 0
+        // === Adding doors to map 0 ===
         gp.obj[0][1] = new Object_DoorSide(gp, false);
         gp.obj[0][1].worldX = 20 * gp.tileSize;
         gp.obj[0][1].worldY = 22 * gp.tileSize;
@@ -74,7 +74,7 @@ public class AssetSetter {
         gp.obj[0][6].worldX = 31 * gp.tileSize;
         gp.obj[0][6].worldY = 7 * gp.tileSize;
 
-        // Adding chests with contents (manually)
+        // === Adding chests with contents ===
         Map<String, Integer> chest0Items = new HashMap<>();
         chest0Items.put("leather_pants", 1);
         chest0Items.put("leather_helmet", 1);
@@ -85,7 +85,7 @@ public class AssetSetter {
         gp.obj[0][0].worldX = 15 * gp.tileSize;
         gp.obj[0][0].worldY = 21 * gp.tileSize;
 
-        // Additional chests with key parts
+        // === Additional chests with key parts ===
         Map<String, Integer> chest7Items = new HashMap<>();
         chest7Items.put("Key1", 1);
         chest7Items.put("blubbery", 2);
@@ -112,14 +112,14 @@ public class AssetSetter {
         gp.obj[0][9].worldX = 50 * gp.tileSize;
         gp.obj[0][9].worldY = 21 * gp.tileSize;
 
-        // Crafting table
+        // === Crafting table ===
         gp.obj[0][10] = new Object_CraftingTable();
         gp.obj[0][10].worldX = 38 * gp.tileSize;
         gp.obj[0][10].worldY = 14 * gp.tileSize;
 
         // ————— LEVEL 2 —————
 
-        // Doors
+        // === Doors ===
         gp.obj[1][1] = new Object_DoorSide(gp, false);
         gp.obj[1][1].worldX = 15 * gp.tileSize;
         gp.obj[1][1].worldY = 19 * gp.tileSize;
@@ -140,7 +140,7 @@ public class AssetSetter {
         gp.obj[1][5].worldX = 34 * gp.tileSize;
         gp.obj[1][5].worldY = 17 * gp.tileSize;
 
-        // Chests
+        // === Chests ===
         Map<String, Integer> chest10Items = new HashMap<>();
         chest10Items.put("iron_bib", 1);
         chest10Items.put("iron_pants", 1);
@@ -202,7 +202,7 @@ public class AssetSetter {
             gp.monster[1][0].worldY = 25 * gp.tileSize;
         }
 
-        // Spawn other monsters
+        // === Spawn other monsters ===
         for (int i = 1; i < monstersToSpawn; i++) {
             List<Point> region = availableRegions.get(i % availableRegions.size());
 
@@ -221,7 +221,7 @@ public class AssetSetter {
                 int spawnX = col * gp.tileSize;
                 int spawnY = row * gp.tileSize;
 
-                // Do not spawn in a 5x5 tile rectangle around the player
+                // === Do not spawn in a 5x5 tile rectangle around the player ===
                 Rectangle monsterRect = new Rectangle(spawnX, spawnY, gp.tileSize, gp.tileSize);
                 Rectangle safeZone = new Rectangle(
                         gp.player.worldX - gp.tileSize * 2,

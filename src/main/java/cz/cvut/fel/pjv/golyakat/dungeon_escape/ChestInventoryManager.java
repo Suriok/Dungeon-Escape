@@ -1,5 +1,4 @@
-
-        package cz.cvut.fel.pjv.golyakat.dungeon_escape;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 

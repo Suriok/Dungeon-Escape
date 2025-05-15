@@ -20,6 +20,14 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Emerald_sword;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Iron_sword;
 
+/**
+ * The {@code ItemFactory} class is responsible for creating instances of in-game items
+ * based on their string identifiers (names).
+ * <p>
+ * It acts as a central point for instantiating consumables, armor, weapons, and key items
+ * used in chests, inventory, and crafting.
+ * </p>
+ */
 public class ItemFactory {
     public static GameObject makeItem(String name) {
         if (name == null) return null;

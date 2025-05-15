@@ -34,7 +34,7 @@ public class Item_partKey3 extends GameObject {
                 // Create a 1x1 transparent pixel as fallback
                 tempImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             }
-            image = tempImage; // Assign to the image field
+            image = tempImage;
         } catch (Exception e) {
             GameLogger.error("Error loading Item_partKey1 image: " + e.getMessage());
         }

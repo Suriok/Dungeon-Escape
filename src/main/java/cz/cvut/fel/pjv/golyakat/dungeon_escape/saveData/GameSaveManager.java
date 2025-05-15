@@ -12,15 +12,40 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+/**
+ * Manages saving and loading of game state using XML serialization.
+ * <p>
+ * Utilizes Jackson's {@link XmlMapper} to convert Java objects to and from XML.
+ * Game state is saved to a file {@code saved_game.xml} in the project root.
+ * </p>
+ */
 public class GameSaveManager {
+
+    /** File path where the game is saved. */
     private static final Path SAVE_PATH = Path.of("saved_game.xml");
+
+    /** Jackson XML mapper used for (de)serialization. */
     private static final XmlMapper xml = new XmlMapper();
+
+    /** Reference to the main game panel, used for accessing runtime state. */
     private final gamePanel gp;
 
+    /**
+     * Constructs a new game save manager.
+     *
+     * @param gp reference to the main game panel
+     */
     public GameSaveManager(gamePanel gp) {
         this.gp = gp;
     }
 
+    /**
+     * Saves the current game state to an XML file.
+     * <p>
+     * If the target directory doesn't exist, it will be created.
+     * All player stats, inventory, equipped items, and monsters are stored.
+     * </p>
+     */
     public void saveGame() {
         try {
             SaveData d = buildSaveData();
@@ -33,6 +58,12 @@ public class GameSaveManager {
         }
     }
 
+    /**
+     * Loads the game state from an XML file if available.
+     * <p>
+     * If no save file exists, starts a new game instead.
+     * </p>
+     */
     public void loadGame() {
         if (!Files.exists(SAVE_PATH)) {
             gp.doorHintMessage.show("No saved game found. Starting a new game.", 120);
@@ -51,6 +82,7 @@ public class GameSaveManager {
         }
     }
 
+    // === Internal method to collect data to be saved ===
     private SaveData buildSaveData() {
         SaveData data = new SaveData();
         data.player.worldX = gp.player.worldX;
@@ -88,6 +120,7 @@ public class GameSaveManager {
         return data;
     }
 
+    // === Internal method to restore the game state from SaveData ===
     private void restoreFromSave(SaveData d) {
         gp.currentMap = d.currentMap;
         gp.levelSpawned = (d.levelSpawned != null) ? d.levelSpawned.clone() : new boolean[2];

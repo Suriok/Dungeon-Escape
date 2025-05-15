@@ -60,12 +60,6 @@ public class Entity extends GameObject {
     /** Flag indicating whether the entity is dead. */
     public boolean isDead = false;
 
-    /** Entity transparency during fade-out (0.0 to 1.0). */
-    public float fadeAlpha = 1.0f;
-
-    /** Counter for fade effect duration. */
-    public int fadeCounter = 0;
-
     /** Maximum number of frames for fade effect. */
     public static final int FADE_DURATION = 60;
 
@@ -100,7 +94,7 @@ public class Entity extends GameObject {
         if (!isDead) {
             attackCounter++;
 
-            // Attempt to attack the player
+            // === Attempt to attack the player ===
             if (attackCounter >= attackCooldown) {
                 double distance = Math.sqrt(Math.pow(gp.player.worldX - worldX, 2)
                         + Math.pow(gp.player.worldY - worldY, 2));
@@ -108,17 +102,6 @@ public class Entity extends GameObject {
                     attack();
                     attackCounter = 0;
                 }
-            }
-
-            // (Monster AI movement could be here)
-        }
-
-        // Fade effect after death
-        if (isDead && fadeAlpha > 0) {
-            fadeCounter++;
-            fadeAlpha = 1.0f - ((float) fadeCounter / FADE_DURATION);
-            if (fadeAlpha < 0) {
-                fadeAlpha = 0;
             }
         }
     }
@@ -137,7 +120,12 @@ public class Entity extends GameObject {
      * @param g2d graphics context
      */
     public void draw(Graphics2D g2d) {
-        super.draw(g2d, gp);
+        this.image = getCurrentSprite();
+        if (image == null) return;
+
+        int screenX = worldX - gp.player.worldX + gp.player.screenX;
+        int screenY = worldY - gp.player.worldY + gp.player.screenY;
+        g2d.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
     }
 
     /**

@@ -50,8 +50,7 @@ public class Boss_Goblin extends Monster {
     protected void onDeath() {
         if (keyDropped) return;
 
-        ChestInventoryManager.ItemData key =
-                new ChestInventoryManager.ItemData("Key", 1);
+        ChestInventoryManager.ItemData key = new ChestInventoryManager.ItemData("Key", 1);
 
         gp.player.addItem(key);
         keyDropped = true;

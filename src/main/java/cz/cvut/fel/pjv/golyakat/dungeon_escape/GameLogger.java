@@ -28,15 +28,15 @@ public class GameLogger {
     private static boolean enabled = false;
 
     static {
-        // Disable use of parent handlers to avoid duplicate logs
+        // === Disable use of parent handlers to avoid duplicate logs ===
         LOGGER.setUseParentHandlers(false);
 
-        // Create and attach a console handler that logs all levels
+        // === Create and attach a console handler that logs all levels ===
         ConsoleHandler handler = new ConsoleHandler();
         handler.setLevel(Level.ALL);
         LOGGER.addHandler(handler);
 
-        // Set logger to log all levels by default
+        // === Set logger to log all levels by default ===
         LOGGER.setLevel(Level.ALL);
     }
 

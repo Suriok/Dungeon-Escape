@@ -45,12 +45,9 @@ public class Object_DoorSide extends GameObject {
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
 
-        /**
-         * Image of the closed door.
-         */
         BufferedImage closedImage;
         try {
-            // Loading the closed door image
+            // === Loading the closed door image ===
             BufferedImage tempClosed = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side.png")));
             if (tempClosed == null) {
@@ -59,7 +56,7 @@ public class Object_DoorSide extends GameObject {
             }
             closedImage = tempClosed;
 
-            // Loading the open door image
+            // === Loading the open door image ===
             BufferedImage tempOpen = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
                     "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/door_side_open.png")));
             if (tempOpen == null) {
@@ -68,7 +65,7 @@ public class Object_DoorSide extends GameObject {
             }
             openImage = tempOpen;
 
-            // Default state - door closed
+            // === Default state - door closed ===
             image = closedImage;
 
         } catch (Exception e) {

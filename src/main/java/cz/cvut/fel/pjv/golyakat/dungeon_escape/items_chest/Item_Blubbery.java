@@ -33,7 +33,6 @@ public class Item_Blubbery extends GameObject {
 
         try {
             image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(path)));
-            GameLogger.info("Successfully loaded bluberry.png");
         } catch (IOException e) {
             GameLogger.error("Error loading blubbery image: " + e.getMessage());
         } catch (NullPointerException e) {
