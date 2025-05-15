@@ -3,7 +3,13 @@ package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-/** Обработчик клавиатуры. */
+/**
+ * The {@code KeyHandler} class handles keyboard input for the game.
+ * <p>
+ * It captures directional movement (WASD) and interaction keys (E and Q),
+ * storing their states in public booleans used by the main game loop.
+ * </p>
+ */
 public class KeyHandler implements KeyListener {
 
     public boolean upPressed, downPressed, leftPressed, rightPressed;

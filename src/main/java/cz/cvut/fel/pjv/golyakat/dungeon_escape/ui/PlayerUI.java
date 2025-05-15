@@ -13,23 +13,42 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The {@code PlayerUI} class handles the rendering of the player's inventory,
- * including weapons, armor, and items in the graphical user interface.
+ * The {@code PlayerUI} class handles the graphical user interface
+ * related to the player's inventory, equipped armor, and weapon.
+ * <p>
+ * It displays items visually and provides utility methods
+ * for detecting item clicks and categorizing armor slots.
+ * </p>
  */
 public class PlayerUI {
 
+    /** Reference to the main game panel. */
     private final gamePanel gp;
-    private BufferedImage playerInventory;
-    private BufferedImage sideArmor;
-    private BufferedImage weaponInventory;
-    final private Rectangle[] inventoryItemBounds;
 
+    /** Background image for the inventory grid. */
+    private BufferedImage playerInventory;
+
+    /** Background image for the equipped armor display. */
+    private BufferedImage sideArmor;
+
+    /** Background image for the weapon slot. */
+    private BufferedImage weaponInventory;
+
+    /** Screen bounding boxes for inventory items (used for click detection). */
+    private final Rectangle[] inventoryItemBounds;
+
+    /**
+     * Constructs a new {@code PlayerUI} instance tied to a {@link gamePanel}.
+     *
+     * @param gp the game panel reference
+     */
     public PlayerUI(gamePanel gp) {
         this.gp = gp;
         inventoryItemBounds = new Rectangle[8];
         loadImages();
     }
 
+    // === Loads UI background images ===
     private void loadImages() {
         try {
             playerInventory = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
@@ -43,12 +62,19 @@ public class PlayerUI {
         }
     }
 
+    /**
+     * Draws the player's inventory, equipped armor, and weapon to the screen.
+     *
+     * @param g2d the graphics context used for rendering
+     */
     public void draw(Graphics2D g2d) {
+        // === Check if UI components are loaded ===
         if (playerInventory == null || sideArmor == null || weaponInventory == null) {
             GameLogger.info("PlayerUI: Some images are not loaded");
             return;
         }
 
+        // === Calculate positions and sizes ===
         float scaleFactor = 3.0f;
         int playerInvWidth = (int)(playerInventory.getWidth() * scaleFactor);
         int playerInvHeight = (int)(playerInventory.getHeight() * scaleFactor);
@@ -57,25 +83,25 @@ public class PlayerUI {
         int weaponInvWidth = (int)(weaponInventory.getWidth() * scaleFactor);
         int weaponInvHeight = (int)(weaponInventory.getHeight() * scaleFactor);
 
-        int playerInvX = gp.screenWidth/2 - playerInvWidth/2;
+        int playerInvX = gp.screenWidth / 2 - playerInvWidth / 2;
         int playerInvY = gp.screenHeight - playerInvHeight - 10;
 
         int sideX = 10;
         int startY = gp.defensBar.getY() + gp.defensBar.getBarHeight() + 15;
 
+        // === Draw inventory background and side panels ===
         g2d.drawImage(playerInventory, playerInvX, playerInvY, playerInvWidth, playerInvHeight, null);
         g2d.drawImage(sideArmor, sideX, startY, sideArmorWidth, sideArmorHeight, null);
         g2d.drawImage(weaponInventory, sideX, startY + sideArmorHeight + 15, weaponInvWidth, weaponInvHeight, null);
 
-
-        // Player Inventory
+        // === Draw player inventory items ===
         int gridCols = 8;
         int gridRows = 1;
         int cellWidth = playerInvWidth / gridCols;
         int cellHeight = playerInvHeight / gridRows;
         int itemSize = Math.min(cellWidth, cellHeight);
         int offsetX = playerInvX + 30;
-        int offsetY = playerInvY - 3;
+        int offsetY = playerInvY + 5;
 
         List<ChestInventoryManager.ItemData> expandedItems = new ArrayList<>();
         for (ChestInventoryManager.ItemData item : gp.player.getInventory()) {
@@ -91,11 +117,14 @@ public class PlayerUI {
 
             ChestInventoryManager.ItemData item = expandedItems.get(i);
             BufferedImage itemImage = item.getItem().image;
+
             if (itemImage != null) {
                 int x = offsetX + col * cellWidth + (cellWidth - itemSize) / 2;
-                int y = offsetY + cellHeight + (cellHeight - itemSize) / 2;
+                int y = offsetY + (cellHeight - itemSize) / 2;
 
                 int drawSize = itemSize;
+
+                // === Resize key fragments to be smaller ===
                 if (item.getName().equals("Key1") || item.getName().equals("Key2") || item.getName().equals("Key3")) {
                     drawSize = (int)(itemSize * 0.6667f);
                     x += (itemSize - drawSize) / 2;
@@ -107,7 +136,7 @@ public class PlayerUI {
             }
         }
 
-        // Armor
+        // === Draw equipped armor ===
         int armorGridCols = 1;
         int armorGridRows = 4;
         int armorCellWidth = sideArmorWidth / armorGridCols;
@@ -126,7 +155,7 @@ public class PlayerUI {
             }
         }
 
-        // Weapon
+        // === Draw equipped weapon ===
         int weaponItemSize = Math.min(weaponInvWidth, weaponInvHeight);
         int weaponX = sideX + 5;
         int weaponY = startY + sideArmorHeight + 20;
@@ -137,6 +166,12 @@ public class PlayerUI {
         }
     }
 
+    /**
+     * Returns the index of the inventory item that was clicked.
+     *
+     * @param p screen point of the mouse click
+     * @return item index, or -1 if none was clicked
+     */
     public int getClickedInventoryIndex(Point p) {
         for (int i = 0; i < inventoryItemBounds.length; i++) {
             if (inventoryItemBounds[i] != null && inventoryItemBounds[i].contains(p)) {
@@ -146,6 +181,12 @@ public class PlayerUI {
         return -1;
     }
 
+    /**
+     * Determines which armor slot corresponds to a given item.
+     *
+     * @param item item to evaluate
+     * @return index of armor slot (0–3), or -1 if not armor
+     */
     public int getArmorSlotIndex(ChestInventoryManager.ItemData item) {
         String itemName = item.getName();
         if (itemName.endsWith("_helmet")) {

@@ -54,6 +54,8 @@ public abstract class GameObject {
      */
     public int solidAreaDefaultY = 0;
 
+    protected final boolean isOpen = false;
+
     /**
      * Renders the object on screen if it's within the visible area relative to the player.
      *
@@ -98,8 +100,6 @@ public abstract class GameObject {
         }
     }
 
-    protected final boolean isOpen = false;
-
     /**
      * Возвращает, открыт ли объект.
      *
@@ -108,7 +108,5 @@ public abstract class GameObject {
     public boolean isOpen() {
         return isOpen;
     }
-
-
 
 }

@@ -49,38 +49,62 @@ public class gamePanel extends JPanel implements Runnable {
     public final MonsterUI monsterUi;
     public boolean[] levelSpawned = new boolean[maxMap];
     public int gameState;
+    // === UI States ===
     public final int titleState = 0;
     public final int playerState = 1;
     public final int gameOverState = 2;
     public final ChestUI chestUI;
     public final CraftingTableUI craftingTableUI;
     public final PlayerUI playerUI;
+    // === Inventory & Save Management ===
     public final ChestInventoryManager chestInventoryManager;
     public final GameSaveManager saveManager;
+    // === UI Message Overlay ===
     public final HintMessage doorHintMessage = new HintMessage();
     public final HintMessage chestMessage = new HintMessage();
     public final HintMessage healingHintMessage = new HintMessage();
     public final HintMessage craftingHintMessage = new HintMessage();
 
+    /**
+     * Represents a short-duration on-screen hint message.
+     * Used to guide the player with interaction prompts (e.g. "Press E to open").
+     */
     static public class HintMessage {
         public String text = "";
         public int counter = 0;
 
+        /**
+         * Displays a hint message for a specified duration.
+         *
+         * @param message  the text to display
+         * @param duration the number of frames the message will be visible
+         */
         public void show(String message, int duration) {
             this.text = message;
             this.counter = duration;
         }
 
+        /**
+         * Updates the visibility counter of the hint message.
+         */
         public void update() {
             if (counter > 0) counter--;
             if (counter <= 0) text = "";
         }
 
+        /**
+         * Checks if the hint message is currently visible.
+         *
+         * @return true if the message is visible, false otherwise
+         */
         public boolean isVisible() {
             return !text.isEmpty();
         }
     }
 
+    /**
+     * Initializes the game panel with UI components and event listeners.
+     */
     public gamePanel() {
         setPreferredSize(new Dimension(screenWidth, screenHeight));
         setBackground(Color.BLACK);
@@ -99,7 +123,6 @@ public class gamePanel extends JPanel implements Runnable {
             }
         });
 
-
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -117,7 +140,7 @@ public class gamePanel extends JPanel implements Runnable {
             public void mousePressed(MouseEvent e) {
                 requestFocusInWindow();
 
-                // === УДАР (ПКМ) ===
+                // === Attack (Right Click) ===
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     boolean clickedOnInventory =
                             chestUI.isShowingInventory() && chestUI.getClickedItemIndex(e.getPoint()) != -1 ||
@@ -131,7 +154,7 @@ public class gamePanel extends JPanel implements Runnable {
                     return;
                 }
 
-                // === Взаимодействие (ЛКМ) ===
+                // === Interaction (Left Click) ===
                 if (e.getButton() != MouseEvent.BUTTON1) return;
 
                 if (gameState == titleState || gameState == gameOverState) {
@@ -217,6 +240,11 @@ public class gamePanel extends JPanel implements Runnable {
         gameState = titleState;
     }
 
+    /**
+     * Places an item in the appropriate location based on its type.
+     *
+     * @param item the item to place
+     */
     private void putItemToRightPlace(ChestInventoryManager.ItemData item) {
         if (item == null) return;
         switch (item.getType()) {
@@ -226,35 +254,51 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Sets up game objects and monsters for the current state.
+     */
     public void setUpObjects() {
         assetSetter.setObg();
         assetSetter.setMonster();
         gameState = titleState;
     }
 
+    /**
+     * Starts the game thread to run the game loop.
+     */
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
     }
 
+    /**
+     * Saves the current game state to a file.
+     */
     public void saveGame() {
         saveManager.saveGame();
     }
 
+    /**
+     * Loads the saved game state from a file.
+     */
     public void loadGame() {
         saveManager.loadGame();
         gameState = playerState;
         repaint();
     }
 
-
+    /**
+     * Runs the game loop to update and render the game at a fixed FPS.
+     */
     @Override
     public void run() {
         double drawInterval = 1_000_000_000.0 / FPS;
         double nextDrawTime = System.nanoTime() + drawInterval;
 
         while (gameThread != null) {
+            // === Game Logic Update ===
             update();
+            // === Rendering ===
             repaint();
 
             try {
@@ -268,6 +312,9 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Updates the game state, including player, monsters, and UI elements.
+     */
     public void update() {
         if (gameState != playerState) return;
 
@@ -344,7 +391,7 @@ public class gamePanel extends JPanel implements Runnable {
             for (Entity monster : monster[currentMap]) {
                 if (monster != null) {
                     monster.update();
-                    if (monster.isDead && monster.fadeAlpha <= 0) {
+                    if (monster.isDead) {
                         return;
                     }
                 }
@@ -361,6 +408,11 @@ public class gamePanel extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Renders the game components on the screen.
+     *
+     * @param g the Graphics context used for drawing
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -413,6 +465,9 @@ public class gamePanel extends JPanel implements Runnable {
         g2d.dispose();
     }
 
+    /**
+     * Starts a new game by resetting the game state and initializing objects.
+     */
     public void startNewGame() {
         currentMap = 0;
         Arrays.fill(levelSpawned, false);
@@ -425,6 +480,12 @@ public class gamePanel extends JPanel implements Runnable {
         repaint();
     }
 
+    /**
+     * Creates a game item based on its name.
+     *
+     * @param name the name of the item to create
+     * @return the created GameObject or null if creation fails
+     */
     public GameObject makeItem(String name) {
         return ItemFactory.makeItem(name);
     }

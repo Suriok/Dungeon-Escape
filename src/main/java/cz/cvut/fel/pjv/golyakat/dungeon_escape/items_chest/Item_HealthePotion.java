@@ -32,7 +32,6 @@ public class Item_HealthePotion extends GameObject {
 
         try {
             image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(path)));
-            GameLogger.info("Successfully loaded healing.png");
         } catch (IOException e) {
             GameLogger.error("Error loading healing potion image: " + e.getMessage());
         } catch (NullPointerException e) {

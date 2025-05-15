@@ -68,7 +68,6 @@ public class Object_CraftingTable extends GameObject {
         int screenX = worldX - gp.player.worldX + gp.player.screenX;
         int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-        // Render only if visible on screen
         if (screenX + gp.tileSize > 0 && screenX < gp.screenWidth &&
                 screenY + gp.tileSize > 0 && screenY < gp.screenHeight) {
 

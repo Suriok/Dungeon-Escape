@@ -39,13 +39,13 @@ public class Collision {
      * @param entity the entity for which we are detecting collisions with tiles
      */
     public void checkTiles(Entity entity) {
-        // Calculate the boundary points of the entity's solid area
+        // === Calculate the boundary points of the entity's solid area ===
         int entityLeftWorldX = entity.worldX + entity.solidArea.x;
         int entityRightWorldX = entity.worldX + entity.solidArea.x + entity.solidArea.width;
         int entityTopWorldY = entity.worldY + entity.solidArea.y;
         int entityBottomWorldY = entity.worldY + entity.solidArea.y + entity.solidArea.height;
 
-        // Convert to map columns and rows
+        // === Convert to map columns and rows ===
         int entityLeftCol = entityLeftWorldX / gp.tileSize;
         int entityRightCol = entityRightWorldX / gp.tileSize;
         int entityTopRow = entityTopWorldY / gp.tileSize;
@@ -54,8 +54,7 @@ public class Collision {
         String direction = (entity.direction != null) ? entity.direction : "down";
         entity.collisionOn = false;
 
-        // Collision logic based on movement direction
-        // Collision logic based on movement direction
+        // === Collision logic based on movement direction ===
         int checkRow1 = -1, checkRow2 = -1, checkCol1 = -1, checkCol2 = -1;
 
         switch (direction) {
@@ -93,7 +92,7 @@ public class Collision {
             }
         }
 
-        // Check tile collisions if valid positions were set
+        // === Check tile collisions if valid positions were set ===
         if (checkRow1 >= 0 && checkCol1 >= 0) {
             int tileNum1 = gp.tileH.mapTileNum[gp.currentMap][checkRow1][checkCol1];
             int tileNum2 = gp.tileH.mapTileNum[gp.currentMap][checkRow2][checkCol2];
@@ -102,7 +101,7 @@ public class Collision {
             }
         }
 
-        // For non-player entities, also detect collisions with objects
+        // === For non-player entities, also detect collisions with objects ===
         if (!entity.getClass().getSimpleName().equals("Player")) {
             checkObject(entity);
         }
@@ -123,13 +122,13 @@ public class Collision {
             if (gp.obj[gp.currentMap][i] != null) {
                 GameObject obj = gp.obj[gp.currentMap][i];
 
-                // Set current positions
+                // === Set current positions ===
                 entity.solidArea.x = entity.worldX + entity.solidArea.x;
                 entity.solidArea.y = entity.worldY + entity.solidArea.y;
                 obj.solidArea.x = obj.worldX + obj.solidArea.x;
                 obj.solidArea.y = obj.worldY + obj.solidArea.y;
 
-                // Simulate movement
+                // === Simulate movement ===
                 switch (entity.direction) {
                     case "up":
                         entity.solidArea.y -= entity.speed;
@@ -151,7 +150,7 @@ public class Collision {
                     }
                 }
 
-                // Reset positions
+                // === Reset positions ===
                 entity.solidArea.x = entity.solidAreaDefaultX;
                 entity.solidArea.y = entity.solidAreaDefaultY;
                 obj.solidArea.x = obj.solidAreaDefaultX;
@@ -193,7 +192,7 @@ public class Collision {
                     }
                 }
 
-                // Reset collision area
+                // === Reset collision area ===
                 entity.solidArea.x = entity.solidAreaDefaultX;
                 entity.solidArea.y = entity.solidAreaDefaultY;
                 obj.solidArea.x = obj.solidAreaDefaultX;
