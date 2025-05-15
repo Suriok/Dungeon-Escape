@@ -14,8 +14,8 @@ import java.util.Objects;
 public class Monster_Slime extends Monster {
 
     public Monster_Slime(gamePanel gp) {
-        super(gp, "Slime", 1, 2, 5 * 48,
-                4,
+        super(gp, "Slime", 1, 2, 3,
+
                 new Rectangle(3, 10, 20, 30)); // collision box
     }
 

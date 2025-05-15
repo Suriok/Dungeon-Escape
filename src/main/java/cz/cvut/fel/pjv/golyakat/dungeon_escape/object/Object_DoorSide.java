@@ -21,7 +21,7 @@ public class Object_DoorSide extends GameObject {
     /**
      * Flag indicating whether this door requires a key to open.
      */
-    public boolean requiresKey = false;
+    public final boolean requiresKey;
 
     /**
      * Flag indicating whether the door is currently open.
@@ -39,6 +39,7 @@ public class Object_DoorSide extends GameObject {
     public Object_DoorSide(gamePanel gp, boolean requiresKey) {
         this.gp = gp;
         name = "DoorSide";
+        this.requiresKey = requiresKey;
         Collision = true;
         solidArea = new java.awt.Rectangle(0, 0, 48, 48); // Velikost tile
         solidAreaDefaultX = solidArea.x;
@@ -88,12 +89,9 @@ public class Object_DoorSide extends GameObject {
      * </p>
      */
     public void interact() {
-        if (isOpen()) return;
+        if (isOpen) return;
 
-        boolean hasKey = gp.player.hasItem("Key") || gp.player.hasItem("SilverKey");
-        if (!requiresKey || hasKey) {
-            unlock();
-        }
+        tryUnlockWithKey(gp, requiresKey, this::unlock);
     }
 
     /**
@@ -104,14 +102,5 @@ public class Object_DoorSide extends GameObject {
         image = openImage;
         Collision = false;
         GameLogger.info("DoorSide byl odemčen pomocí klíče!");
-    }
-
-    /**
-     * Whether the door is currently open.
-     *
-     * @return {@code true} if the door is open
-     */
-    public boolean isOpen() {
-        return isOpen;
     }
 }

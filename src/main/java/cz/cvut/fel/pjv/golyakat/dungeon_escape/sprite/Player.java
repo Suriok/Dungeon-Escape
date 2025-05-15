@@ -33,7 +33,6 @@ public class Player extends Entity {
     private final GameObject[] equippedArmor;
     private GameObject equippedWeapon;
     private GameObject equippedGrade;
-    private static final int ATTACK_RANGE = 96;
     public boolean isHit = false;
     private int hitEffectCounter = 0;
     private static final int LADDER_TILE = 10;
@@ -144,7 +143,7 @@ public class Player extends Entity {
             keyH.ePressed = false;
             int i = gp.collisionChecker.checkObjectForInteraction(this, true);
             if (i != 999 && gp.obj[gp.currentMap][i] != null) {
-                gp.collisionChecker.handleObjectInteraction(this, i);
+                gp.collisionChecker.handleObjectInteraction( i);
             }
         }
 
@@ -201,6 +200,22 @@ public class Player extends Entity {
         }
     }
 
+    public boolean removeItemByName(String name) {
+        for (int i = 0; i < inventory.size(); i++) {
+            ChestInventoryManager.ItemData item = inventory.get(i);
+            if (item.getName().equals(name)) {
+                if (item.getQuantity() > 1) {
+                    item.setQuantity(item.getQuantity() - 1);
+                } else {
+                    inventory.remove(i);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     public void consumeHealingItem(ChestInventoryManager.ItemData item) {
         float healAmountFloat;
         switch (item.getName()) {
@@ -217,15 +232,8 @@ public class Player extends Entity {
 
     @Override
     public void draw(Graphics2D g2d) {
-        BufferedImage imageToDraw = switch (direction) {
-            case "up" -> (spriteNum == 1) ? up1 : up2;
-            case "down" -> (spriteNum == 1) ? down1 : down2;
-            case "left" -> (spriteNum == 1) ? left1 : left2;
-            case "right" -> (spriteNum == 1) ? right1 : right2;
-            default -> null;
-        };
+        this.image = getCurrentSprite();
 
-        this.image = imageToDraw;
         int screenX = worldX - gp.player.worldX + gp.player.screenX;
         int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
@@ -242,12 +250,6 @@ public class Player extends Entity {
     public void equipArmor(GameObject armor, int slot) {
         if (slot >= 0 && slot < equippedArmor.length) {
             equippedArmor[slot] = armor;
-        }
-    }
-
-    public void unequipArmor(int slot) {
-        if (slot >= 0 && slot < equippedArmor.length) {
-            equippedArmor[slot] = null;
         }
     }
 
@@ -269,20 +271,12 @@ public class Player extends Entity {
         this.equippedWeapon = weapon;
     }
 
-    public void unequipWeapon() {
-        this.equippedWeapon = null;
-    }
-
     public GameObject getEquippedWeapon() {
         return equippedWeapon;
     }
 
     public void equipGrade(GameObject grade) {
         this.equippedGrade = grade;
-    }
-
-    public void unequipGrade() {
-        this.equippedGrade = null;
     }
 
     public GameObject getEquippedGrade() {
@@ -304,11 +298,6 @@ public class Player extends Entity {
             inventory.add(new ChestInventoryManager.ItemData(item.getName(), 1));
         }
     }
-
-    public boolean hasItem(String name) {
-        return inventory.stream().anyMatch(i -> i.getName().equals(name));
-    }
-
     public List<ChestInventoryManager.ItemData> getInventory() {
         return inventory;
     }

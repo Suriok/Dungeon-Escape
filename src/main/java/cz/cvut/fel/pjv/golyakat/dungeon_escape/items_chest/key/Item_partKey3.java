@@ -1,7 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.ItemType;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import javax.imageio.ImageIO;

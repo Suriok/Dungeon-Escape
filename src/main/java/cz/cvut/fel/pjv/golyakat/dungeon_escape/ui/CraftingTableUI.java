@@ -6,6 +6,7 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import java.awt.*;
+import java.util.Arrays;
 
 /**
  * The {@code CraftingTableUI} class represents the graphical interface for crafting items.
@@ -26,16 +27,6 @@ public class CraftingTableUI {
         this.craftButtonBounds = null;
     }
 
-    public static void addOrIncrement(java.util.List<ChestInventoryManager.ItemData> list,
-                                      ChestInventoryManager.ItemData item) {
-        for (ChestInventoryManager.ItemData d : list) {
-            if (d.getName().equals(item.getName())) {
-                d.setQuantity(d.getQuantity() + item.getQuantity());
-                return;
-            }
-        }
-        list.add(item);
-    }
 
     public void open() {
         isShowing = true;
@@ -51,37 +42,10 @@ public class CraftingTableUI {
         return isShowing;
     }
 
-    public Rectangle[] getSlotBounds() {
-        return slotBounds;
-    }
 
     public Rectangle getCraftButtonBounds() {
         return craftButtonBounds;
     }
-
-    public ChestInventoryManager.ItemData getCraftingSlot(int index) {
-        if (index >= 0 && index < craftingSlots.length) {
-            return craftingSlots[index];
-        }
-        return null;
-    }
-
-    public void setCraftingSlot(int index, ChestInventoryManager.ItemData item) {
-        if (index >= 0 && index < craftingSlots.length) {
-            craftingSlots[index] = item;
-        }
-    }
-
-    public boolean isKeyPart(String name) {
-        return "Key1".equals(name) || "Key2".equals(name) || "Key3".equals(name);
-    }
-
-    public boolean containsPart(String name) {
-        for (ChestInventoryManager.ItemData d : craftingSlots)
-            if (d != null && d.getName().equals(name)) return true;
-        return false;
-    }
-
     public void craftSilverKey() {
         boolean hasKey1 = false, hasKey2 = false, hasKey3 = false;
 
@@ -102,9 +66,7 @@ public class CraftingTableUI {
         gp.player.addItem(new ChestInventoryManager.ItemData("SilverKey", 1));
         GameLogger.info("CraftingTableUI: Crafted SilverKey and added to player inventory");
 
-        for (int i = 0; i < craftingSlots.length; i++) {
-            craftingSlots[i] = null;
-        }
+        Arrays.fill(craftingSlots, null);
 
         String[] parts = {"Key1", "Key2", "Key3"};
         for (String part : parts) {

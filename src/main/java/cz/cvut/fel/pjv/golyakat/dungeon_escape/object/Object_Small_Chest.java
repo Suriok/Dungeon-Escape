@@ -7,12 +7,12 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** Interaktivní malá truhla. */
 public class Object_Small_Chest extends GameObject {
 
     private final List<ChestInventoryManager.ItemData> items;   // ← seznam předmětů
-    private final int id;
     private boolean showInventory = false;
 
     private BufferedImage inventoryImage;
@@ -21,17 +21,16 @@ public class Object_Small_Chest extends GameObject {
                               int id,
                               Map<String, Integer> defaultItems) {
 
-        this.id = id;
         this.items = gp.chestInventoryManager.getChestData(id, defaultItems); // ← získáme z manageru
 
         name = "small_chest";
         Collision = true;
 
         try {
-            image = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/small_chest.png"));
-            inventoryImage = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/inventory/case_inventory.png"));
+            image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/small_chest.png")));
+            inventoryImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/inventory/case_inventory.png")));
         } catch (Exception ignored) {}
     }
 
@@ -45,7 +44,6 @@ public class Object_Small_Chest extends GameObject {
     public void close() { showInventory = false; }
     public boolean isShowingInventory() { return showInventory; }
     public BufferedImage getInventoryImage() { return inventoryImage; }
-    public int getId() { return id; }
 
     /* ---------- vykreslení truhly ---------- */
     @Override

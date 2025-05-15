@@ -22,14 +22,10 @@ public class PlayerUI {
     private BufferedImage playerInventory;
     private BufferedImage sideArmor;
     private BufferedImage weaponInventory;
-    private Rectangle playerInventoryBounds;
-    private final Rectangle[] armorSlotBounds;
-    private Rectangle weaponSlotBounds;
-    private Rectangle[] inventoryItemBounds;
+    final private Rectangle[] inventoryItemBounds;
 
     public PlayerUI(gamePanel gp) {
         this.gp = gp;
-        armorSlotBounds = new Rectangle[4];
         inventoryItemBounds = new Rectangle[8];
         loadImages();
     }
@@ -71,7 +67,6 @@ public class PlayerUI {
         g2d.drawImage(sideArmor, sideX, startY, sideArmorWidth, sideArmorHeight, null);
         g2d.drawImage(weaponInventory, sideX, startY + sideArmorHeight + 15, weaponInvWidth, weaponInvHeight, null);
 
-        playerInventoryBounds = new Rectangle(playerInvX, playerInvY, playerInvWidth, playerInvHeight);
 
         // Player Inventory
         int gridCols = 8;
@@ -98,7 +93,7 @@ public class PlayerUI {
             BufferedImage itemImage = item.getItem().image;
             if (itemImage != null) {
                 int x = offsetX + col * cellWidth + (cellWidth - itemSize) / 2;
-                int y = offsetY + row * cellHeight + (cellHeight - itemSize) / 2;
+                int y = offsetY + cellHeight + (cellHeight - itemSize) / 2;
 
                 int drawSize = itemSize;
                 if (item.getName().equals("Key1") || item.getName().equals("Key2") || item.getName().equals("Key3")) {
@@ -124,7 +119,6 @@ public class PlayerUI {
         GameObject[] equippedArmor = gp.player.getEquippedArmor();
         for (int i = 0; i < equippedArmor.length; i++) {
             int slotY = armorOffsetY + i * armorCellHeight + (armorCellHeight - armorItemSize) / 2;
-            armorSlotBounds[i] = new Rectangle(armorOffsetX, slotY, armorItemSize, armorItemSize);
 
             GameObject armor = equippedArmor[i];
             if (armor != null && armor.image != null) {
@@ -136,24 +130,11 @@ public class PlayerUI {
         int weaponItemSize = Math.min(weaponInvWidth, weaponInvHeight);
         int weaponX = sideX + 5;
         int weaponY = startY + sideArmorHeight + 20;
-        weaponSlotBounds = new Rectangle(weaponX, weaponY, weaponItemSize, weaponItemSize);
 
         GameObject weapon = gp.player.getEquippedWeapon();
         if (weapon != null && weapon.image != null) {
             g2d.drawImage(weapon.image, weaponX, weaponY, weaponItemSize, weaponItemSize, null);
         }
-    }
-
-    public Rectangle getPlayerInventoryBounds() {
-        return playerInventoryBounds;
-    }
-
-    public Rectangle[] getArmorSlotBounds() {
-        return armorSlotBounds;
-    }
-
-    public Rectangle getWeaponSlotBounds() {
-        return weaponSlotBounds;
     }
 
     public int getClickedInventoryIndex(Point p) {

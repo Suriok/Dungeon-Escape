@@ -16,8 +16,7 @@ import java.util.Objects;
 public class Monster_Zombie extends Monster {
 
     public Monster_Zombie(gamePanel gp) {
-        super(gp, "Zombie", 2, 5, 5 * 48,
-                4,
+        super(gp, "Zombie", 2, 5, 4,
                 new Rectangle(3, 10, 20, 30)); // collision box
     }
 

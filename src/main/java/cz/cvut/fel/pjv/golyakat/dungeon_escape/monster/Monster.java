@@ -8,20 +8,16 @@ import java.awt.*;
 import java.util.Random;
 
 public abstract class Monster extends Entity {
-
-    protected final int ATTACK_RANGE;
-    protected final int ATTACK_DAMAGE;
-
     protected int actionLockCounter = 0;
     protected int attackCounter     = 0;
 
     protected final Random rng = new Random();
 
+    protected final int ATTACK_DAMAGE;
     protected final int DETECTION_RANGE = 5 * 48;
     protected final int ATTACK_COOLDOWN = 60;
 
-    protected Monster(gamePanel gp, String name, int speed, int maxLife,
-                      int attackRange, int attackDamage,
+    protected Monster(gamePanel gp, String name, int speed, int maxLife, int attackDamage,
                       Rectangle solid) {
 
         super(gp);
@@ -30,7 +26,6 @@ public abstract class Monster extends Entity {
         this.maxLife = maxLife;
         this.life    = maxLife;
 
-        this.ATTACK_RANGE     = attackRange;
         this.ATTACK_DAMAGE    = attackDamage;
 
         this.direction = "down";
@@ -96,10 +91,8 @@ public abstract class Monster extends Entity {
             actionLockCounter = 120;
         }
 
-        int dxTiles = Math.abs((gp.player.worldX - worldX) / gp.tileSize);
-        int dyTiles = Math.abs((gp.player.worldY - worldY) / gp.tileSize);
 
-        /* --- атака игрока --- */
+        // === Player attack ===
         attackCounter++;
         int playerCenterX = gp.player.worldX + gp.player.solidArea.x + gp.player.solidArea.width / 2;
         int playerCenterY = gp.player.worldY + gp.player.solidArea.y + gp.player.solidArea.height / 2;
@@ -120,26 +113,22 @@ public abstract class Monster extends Entity {
 
         /* --- смерть --- */
         if (life <= 0 && !isDead) {
-            isDead      = true;
-            fadeAlpha   = 1.0f;
-            fadeCounter = 0;
-            onDeath();                  // единственный вызов
+            onDeath();
+            removeSelf();             // единственный вызов
         }
     }
 
-    /* Стандартная отрисовка */
-    @Override
-    public void draw(Graphics2D g2d) {
-        if (isDead && fadeAlpha <= 0) return;
-
-        this.image = switch (direction) {
-            case "up"    -> (spriteNum == 1) ? up1 : up2;
-            case "down"  -> (spriteNum == 1) ? down1 : down2;
-            case "left"  -> (spriteNum == 1) ? left1 : left2;
-            case "right" -> (spriteNum == 1) ? right1 : right2;
-            default      -> down1;
-        };
-
-        super.draw(g2d);                // Entity.draw() учитывает fade
+    private void removeSelf() {
+        for (int i = 0; i < gp.monster[gp.currentMap].length; i++) {
+            if (gp.monster[gp.currentMap][i] == this) {
+                gp.monster[gp.currentMap][i] = null;
+                break;
+            }
+        }
     }
+
+    public void draw(Graphics2D g2d) {
+        this.image = getCurrentSprite();
+    }
+
 }

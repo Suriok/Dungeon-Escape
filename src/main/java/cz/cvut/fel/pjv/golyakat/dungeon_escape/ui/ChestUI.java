@@ -17,12 +17,10 @@ public class ChestUI {
     private final gamePanel gp;
     private Object_Small_Chest activeChest;
     private Rectangle[] itemBounds;
-    private Rectangle chestBounds;
 
     public ChestUI(gamePanel gp) {
         this.gp = gp;
         this.activeChest = null;
-        this.chestBounds = null;
     }
 
     public void openChest(Object_Small_Chest chest) {
@@ -46,7 +44,6 @@ public class ChestUI {
         if (activeChest != null) {
             activeChest.close();
             activeChest = null;
-            chestBounds = null;
             gp.repaint();
         }
     }
@@ -68,9 +65,7 @@ public class ChestUI {
         int windowX = gp.screenWidth / 2 - imageWidth / 2;
         int windowY = gp.screenHeight / 2 - imageHeight / 2;
         int windowWidth = imageWidth + 20;
-        int windowHeight = imageHeight + 20;
 
-        chestBounds = new Rectangle(windowX - 10, windowY - 10, windowWidth, windowHeight);
 
         g2d.drawImage(inventoryImage, windowX, windowY, imageWidth, imageHeight, null);
 
@@ -112,18 +107,6 @@ public class ChestUI {
                 itemBounds[i] = new Rectangle(x, y, drawSize, drawSize);
             }
         }
-    }
-
-    public Rectangle[] getItemBounds() {
-        return itemBounds != null ? itemBounds : new Rectangle[0];
-    }
-
-    public Object_Small_Chest getActiveChest() {
-        return activeChest;
-    }
-
-    public Rectangle getChestBounds() {
-        return chestBounds;
     }
 
     public int getClickedItemIndex(Point p) {

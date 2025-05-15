@@ -1,7 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.saveData.GameSaveManager;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.saveData.SaveData;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.sprite.Player;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.ui.*;
@@ -9,11 +8,6 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.DefensBar;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.bars.HealthBar;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.*;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.tile.TileManger;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.Iron_sword;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.*;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.items_chest.key.*;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather.*;
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.iron.*;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.weapon.*;
 
 import javax.swing.*;
@@ -21,9 +15,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static cz.cvut.fel.pjv.golyakat.dungeon_escape.ItemType.*;
 
@@ -123,12 +115,28 @@ public class gamePanel extends JPanel implements Runnable {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (e.getButton() != MouseEvent.BUTTON1) return;
                 requestFocusInWindow();
+
+                // === УДАР (ПКМ) ===
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    boolean clickedOnInventory =
+                            chestUI.isShowingInventory() && chestUI.getClickedItemIndex(e.getPoint()) != -1 ||
+                                    playerUI.getClickedInventoryIndex(e.getPoint()) != -1 ||
+                                    craftingTableUI.isShowing() && craftingTableUI.getSlotAt(e.getPoint()) != -1;
+
+                    if (!clickedOnInventory) {
+                        player.attack();
+                        repaint();
+                    }
+                    return;
+                }
+
+                // === Взаимодействие (ЛКМ) ===
+                if (e.getButton() != MouseEvent.BUTTON1) return;
 
                 if (gameState == titleState || gameState == gameOverState) {
                     titleUi.mousePressed(e.getPoint());
-                    return;                    // dál už nic
+                    return;
                 }
 
                 boolean needsRepaint = false;
@@ -183,7 +191,7 @@ public class gamePanel extends JPanel implements Runnable {
                             }
                         } else if (idx != -1) {
                             ChestInventoryManager.ItemData item = player.getInventory().get(idx);
-                            if (item != null && item.getType() == KEY_PART) {
+                            if (item != null && item.getType() == ItemType.KEY_PART) {
                                 craftingTableUI.putToFirstEmpty(item);
                                 player.removeItem(idx);
                                 needsRepaint = true;
@@ -200,7 +208,7 @@ public class gamePanel extends JPanel implements Runnable {
         saveManager = new GameSaveManager(this);
         assetSetter = new AssetSetter(this);
         healthBar = new HealthBar(this);
-        defensBar = new DefensBar(this);
+        defensBar = new DefensBar();
         chestUI = new ChestUI(this);
         craftingTableUI = new CraftingTableUI(this);
         playerUI = new PlayerUI(this);
@@ -337,7 +345,7 @@ public class gamePanel extends JPanel implements Runnable {
                 if (monster != null) {
                     monster.update();
                     if (monster.isDead && monster.fadeAlpha <= 0) {
-                        monster = null;
+                        return;
                     }
                 }
             }
@@ -418,34 +426,6 @@ public class gamePanel extends JPanel implements Runnable {
     }
 
     public GameObject makeItem(String name) {
-        return switch (name) {
-            case "Apple" -> new Item_Apple();
-            case "blubbery" -> new Item_Blubbery();
-            case "potion" -> new Item_HealthePotion();
-            case "leather_pants" -> new leather_pants();
-            case "leather_bib" -> new leather_bib();
-            case "leather_helmet" -> new leather_helmet();
-            case "leather_boots" -> new leather_boots();
-            case "iron_pants" -> new iron_pants();
-            case "iron_helmet" -> new iron_helmet();
-            case "iron_boots" -> new iron_boots();
-            case "iron_bib" -> new iron_bib();
-            case "iron_sword" -> new Iron_sword(2);
-            case "emerald_sword" -> new Emerald_sword(3);
-            case "Key" -> new Item_Key();
-            case "Key1" -> new Item_partKey1();
-            case "Key2" -> new Item_partKey2();
-            case "Key3" -> new Item_partKey3();
-            case "SilverKey" -> new Item_SilverKey();
-            default -> null;
-        };
-    }
-
-    public List<ChestInventoryManager.ItemData> toItemList(List<SaveData.ItemData> items) {
-        List<ChestInventoryManager.ItemData> result = new ArrayList<>();
-        for (SaveData.ItemData item : items) {
-            result.add(new ChestInventoryManager.ItemData(item.name, item.qty));
-        }
-        return result;
+        return ItemFactory.makeItem(name);
     }
 }
