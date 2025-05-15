@@ -151,7 +151,7 @@ public class Entity extends GameObject {
             case "down"  -> (spriteNum == 1) ? down1 : down2;
             case "left"  -> (spriteNum == 1) ? left1 : left2;
             case "right" -> (spriteNum == 1) ? right1 : right2;
-            default      -> null;
+            default      -> down1;
         };
     }
 

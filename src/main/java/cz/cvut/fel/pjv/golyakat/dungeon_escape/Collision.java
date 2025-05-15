@@ -214,19 +214,17 @@ public class Collision {
      *
      * @param objectIndex the index of the object in the {@code gp.obj} array with which interaction occurs
      */
-    public void handleObjectInteraction( int objectIndex) {
+    public void handleObjectInteraction(int objectIndex) {
         if (objectIndex != 999 && gp.obj[gp.currentMap][objectIndex] != null) {
             GameObject obj = gp.obj[gp.currentMap][objectIndex];
-            String objName = obj.name;
 
-            if (objName.equals("DoorFront") && !((Object_DoorFront) obj).isOpen()) {
-                ((Object_DoorFront) obj).interact();
+            if (obj instanceof Object_DoorFront door && !door.isOpen()) {
+                door.interact();
                 GameLogger.info("Interacting with front door");
-            } else if (objName.equals("DoorSide") && !((Object_DoorSide) obj).isOpen()) {
-                ((Object_DoorSide) obj).interact();
+            } else if (obj instanceof Object_DoorSide door && !door.isOpen()) {
+                door.interact();
                 GameLogger.info("Interacting with side door");
-            } else if (objName.equals("small_chest")) {
-                Object_Small_Chest chest = (Object_Small_Chest) obj;
+            } else if (obj instanceof Object_Small_Chest chest) {
                 gp.chestUI.openChest(chest);
                 GameLogger.info("Interacting with chest");
             }

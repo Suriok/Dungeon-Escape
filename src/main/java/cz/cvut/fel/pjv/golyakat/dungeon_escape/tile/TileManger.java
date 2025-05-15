@@ -133,9 +133,6 @@ public class TileManger {
         boolean[][] visited = new boolean[gp.maxWorldRow][gp.maxWorldCol];
         walkableRegions.clear();
 
-        int playerStartCol = 15;
-        int playerStartRow = 22;
-
         for (int row = 0; row < gp.maxWorldRow; row++) {
             for (int col = 0; col < gp.maxWorldCol; col++) {
                 if (!visited[row][col] && mapTileNum[gp.currentMap][row][col] == 5) {

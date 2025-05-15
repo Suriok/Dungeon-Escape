@@ -90,6 +90,16 @@ public class Object_DoorFront extends GameObject {
     }
 
 
+
+    /**
+     * Returns whether the door is open.
+     *
+     * @return {@code true} if the door is open
+     */
+    public boolean isOpen() {
+        return isOpen;
+    }
+
     /**
      * Unlocks the door if it requires a key and is closed.
      * <p>

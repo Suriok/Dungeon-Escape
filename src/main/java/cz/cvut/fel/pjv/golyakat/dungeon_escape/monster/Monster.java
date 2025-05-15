@@ -129,6 +129,11 @@ public abstract class Monster extends Entity {
 
     public void draw(Graphics2D g2d) {
         this.image = getCurrentSprite();
+        if (image == null) return;
+
+        int screenX = worldX - gp.player.worldX + gp.player.screenX;
+        int screenY = worldY - gp.player.worldY + gp.player.screenY;
+        g2d.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
     }
 
 }

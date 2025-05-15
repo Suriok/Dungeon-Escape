@@ -94,13 +94,6 @@ public class CraftingTableUI {
         int windowWidth = 400;
         int windowHeight = 200;
 
-        g2d.setColor(new Color(0, 0, 0, 200));
-        g2d.fillRoundRect(windowX, windowY, windowWidth, windowHeight, 25, 25);
-
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.drawRoundRect(windowX, windowY, windowWidth, windowHeight, 25, 25);
-
         int slotSize = 48;
         int offsetX = windowX + 50;
         int offsetY = windowY + 50;
