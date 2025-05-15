@@ -1,6 +1,7 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.object;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -14,11 +15,11 @@ import java.util.Objects;
  * </p>
  */
 public class Object_DoorFront extends GameObject {
-
+    private final gamePanel gp;
     /**
      * Determines whether the door requires a key (e.g., SilverKey) to open.
      */
-    public boolean requiresKey = false;
+    public final boolean requiresKey;
 
     /**
      * Flag indicating whether the door is open.
@@ -33,8 +34,10 @@ public class Object_DoorFront extends GameObject {
     /**
      * Creates a new door instance, loads images and sets the default state (closed).
      */
-    public Object_DoorFront() {
+    public Object_DoorFront(gamePanel gp, boolean requiresKey) {
+        this.gp = gp;
         name = "DoorFront";
+        this.requiresKey = requiresKey;
         Collision = true; // Collision enabled when closed
         solidArea = new java.awt.Rectangle(0, 0, 48, 48); // Assumption: tileSize = 48
         solidAreaDefaultX = solidArea.x;
@@ -72,6 +75,7 @@ public class Object_DoorFront extends GameObject {
         }
     }
 
+
     /**
      * Handles player interaction with the door.
      * <ul>
@@ -80,15 +84,12 @@ public class Object_DoorFront extends GameObject {
      * </ul>
      */
     public void interact() {
-        if (!requiresKey && !isOpen) {
-            isOpen = true;
-            image = openImage;
-            Collision = false;
-            GameLogger.info("DoorFront otevřen!");
-        } else if (requiresKey && !isOpen) {
-            GameLogger.info("Tyto dveře vyžadují Silver Key.");
-        }
+        if (isOpen) return;
+
+        tryUnlockWithKey(gp, requiresKey, this::unlock);
     }
+
+
 
     /**
      * Returns whether the door is open.
@@ -106,11 +107,10 @@ public class Object_DoorFront extends GameObject {
      * </p>
      */
     public void unlock() {
-        if (requiresKey && !isOpen) {
-            isOpen = true;
-            image = openImage;
-            Collision = false;
-            GameLogger.info("DoorFront byl odemčen pomocí Silver Key.");
-        }
+        isOpen = true;
+        image = openImage;
+        Collision = false;
+        GameLogger.info("DoorFront byl odemčen pomocí klíče!");
+
     }
 }

@@ -19,27 +19,6 @@ public abstract class GameObject {
      * Object's image (main appearance).
      */
     public BufferedImage image;
-
-    /**
-     * Second image – can be used for animation or alternative state.
-     */
-    public BufferedImage image2;
-
-    /**
-     * Third image – extended appearance (e.g., open version).
-     */
-    public BufferedImage image3;
-
-    /**
-     * Fourth image (optional).
-     */
-    public BufferedImage image4;
-
-    /**
-     * Fifth image (optional).
-     */
-    public BufferedImage image5;
-
     /**
      * Object's name (used for identification).
      */
@@ -92,18 +71,44 @@ public abstract class GameObject {
             } else {
                 GameLogger.error("Nelze vykreslit objekt '" + name + "': obrázek je null");
             }
-        } else {
-            GameLogger.info(name + " se nachází mimo viditelnou oblast.");
         }
     }
 
     /**
-     * Method for object interaction – meant to be overridden in subclasses.
-     * <p>
-     * E.g., opening doors, opening chests, starting crafting, etc.
-     * </p>
+     * Pokusí se odemknout objekt pomocí klíče nebo stříbrného klíče z inventáře hráče.
+     *
+     * @param gp          instance hlavního panelu hry (kvůli přístupu k hráči a loggeru)
+     * @param requiresKey zda objekt vyžaduje klíč
+     * @param unlockLogic kód pro odemknutí objektu, pokud je klíč úspěšně použit
      */
-    public void interact() {
-        // Overridden in subclasses as needed
+    public void tryUnlockWithKey(gamePanel gp, boolean requiresKey, Runnable unlockLogic) {
+        if (!requiresKey) {
+            unlockLogic.run();
+            return;
+        }
+
+        boolean usedKey = gp.player.removeItemByName("Key");
+        boolean usedSilver = !usedKey && gp.player.removeItemByName("SilverKey");
+
+        if (usedKey || usedSilver) {
+            GameLogger.info(name + " otevřen pomocí " + (usedKey ? "Key." : "SilverKey."));
+            unlockLogic.run();
+        } else {
+            GameLogger.info("Dveře vyžadují klíč, ale žádný není v inventáři.");
+        }
     }
+
+    protected final boolean isOpen = false;
+
+    /**
+     * Возвращает, открыт ли объект.
+     *
+     * @return {@code true}, если объект открыт
+     */
+    public boolean isOpen() {
+        return isOpen;
+    }
+
+
+
 }

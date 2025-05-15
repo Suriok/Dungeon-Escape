@@ -1,11 +1,11 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.leather;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.ItemType;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 
 import javax.imageio.ImageIO;
-import java.util.Objects;
 
 /**
  * The {@code leather_pants} class represents leather pants,
@@ -39,7 +39,6 @@ public class leather_pants extends GameObject implements Armor {
             }
         } catch (Exception e) {
             GameLogger.error("Error loading leather_pants image: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -51,5 +50,9 @@ public class leather_pants extends GameObject implements Armor {
     @Override
     public float getDefensAmount() {
         return defensAmount;
+    }
+
+    public ItemType getType() {
+        return ItemType.ARMOR;
     }
 }

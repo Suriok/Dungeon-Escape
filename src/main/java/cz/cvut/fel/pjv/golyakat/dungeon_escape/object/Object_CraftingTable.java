@@ -6,6 +6,7 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 
 /**
  * The {@code Object_CraftingTable} class represents a crafting table object,
@@ -28,8 +29,8 @@ public class Object_CraftingTable extends GameObject {
         Collision = true;
 
         try {
-            image = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/crafting_tabel.png"));
+            image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/crafting_tabel.png")));
 
             if (image == null) {
                 GameLogger.error("Nepodařilo se načíst crafting_tabel.png pro Object_CraftingTable");
@@ -38,7 +39,6 @@ public class Object_CraftingTable extends GameObject {
 
         } catch (Exception e) {
             GameLogger.error("Chyba při načítání obrázku CraftingTable: " + e.getMessage());
-            e.printStackTrace();
             image = createFallbackImage();
         }
     }

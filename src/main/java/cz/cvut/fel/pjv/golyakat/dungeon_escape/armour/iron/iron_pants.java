@@ -5,7 +5,6 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.armour.Armor;
 
 import javax.imageio.ImageIO;
-import java.util.Objects;
 
 /**
  * The {@code iron_pants} class represents iron pants that protect the lower half of the player's body.
@@ -39,7 +38,6 @@ public class iron_pants extends GameObject implements Armor {
             }
         } catch (Exception e) {
             GameLogger.error("Error loading leather_pants image: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 

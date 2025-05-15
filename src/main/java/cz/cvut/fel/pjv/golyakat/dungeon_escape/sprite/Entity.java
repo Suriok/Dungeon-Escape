@@ -1,4 +1,4 @@
-package cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.sprite;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
@@ -17,7 +17,7 @@ import java.awt.image.BufferedImage;
 public class Entity extends GameObject {
 
     /** Reference to the main game panel. */
-    protected gamePanel gp;
+    protected final gamePanel gp;
 
     /** Movement speed of the entity (in pixels per update). */
     public int speed;
@@ -72,13 +72,13 @@ public class Entity extends GameObject {
     // === Monster attack parameters ===
 
     /** Damage dealt by this entity's attack. */
-    protected int attackDamage = 1;
+    protected final int attackDamage = 1;
 
     /** Maximum distance at which the entity can attack. */
-    protected int attackRange = 48;
+    protected final int attackRange = 48;
 
     /** Number of frames before the entity can attack again. */
-    protected int attackCooldown = 60;
+    protected final int attackCooldown = 60;
 
     /** Counter since the last attack. */
     protected int attackCounter = 0;
@@ -139,4 +139,20 @@ public class Entity extends GameObject {
     public void draw(Graphics2D g2d) {
         super.draw(g2d, gp);
     }
+
+    /**
+     * Vrátí aktuální snímek sprite podle směru a čísla snímku.
+     *
+     * @return příslušný obrázek animace
+     */
+    public BufferedImage getCurrentSprite() {
+        return switch (direction) {
+            case "up"    -> (spriteNum == 1) ? up1 : up2;
+            case "down"  -> (spriteNum == 1) ? down1 : down2;
+            case "left"  -> (spriteNum == 1) ? left1 : left2;
+            case "right" -> (spriteNum == 1) ? right1 : right2;
+            default      -> down1;
+        };
+    }
+
 }

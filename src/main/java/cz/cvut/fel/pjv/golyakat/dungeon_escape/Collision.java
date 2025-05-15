@@ -1,12 +1,11 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape;
 
-import cz.cvut.fel.pjv.golyakat.dungeon_escape.Sprite.Entity;
+
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.sprite.Entity;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorFront;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_DoorSide;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
-
-import java.awt.*;
 
 /**
  * The {@code Collision} class handles collision detection between entities, tiles, and objects in the game.
@@ -20,7 +19,7 @@ public class Collision {
     /**
      * Reference to the main game panel {@link gamePanel}, from which we obtain the map, objects, and tiles.
      */
-    gamePanel gp;
+    final gamePanel gp;
 
     /**
      * Creates a new instance of the collision manager for the given game panel.
@@ -56,53 +55,58 @@ public class Collision {
         entity.collisionOn = false;
 
         // Collision logic based on movement direction
+        // Collision logic based on movement direction
+        int checkRow1 = -1, checkRow2 = -1, checkCol1 = -1, checkCol2 = -1;
+
         switch (direction) {
-            case "up":
-                int nextTopRow = (entityTopWorldY - entity.speed) / gp.tileSize;
-                if (nextTopRow >= 0) {
-                    int tileNumLeft = gp.tileH.mapTileNum[gp.currentMap][nextTopRow][entityLeftCol];
-                    int tileNumRight = gp.tileH.mapTileNum[gp.currentMap][nextTopRow][entityRightCol];
-                    if (gp.tileH.tiles[tileNumLeft].collision || gp.tileH.tiles[tileNumRight].collision) {
-                        entity.collisionOn = true;
-                    }
+            case "up" -> {
+                int nextRow = (entityTopWorldY - entity.speed) / gp.tileSize;
+                if (nextRow >= 0) {
+                    checkRow1 = checkRow2 = nextRow;
+                    checkCol1 = entityLeftCol;
+                    checkCol2 = entityRightCol;
                 }
-                break;
-            case "down":
-                int nextBottomRow = (entityBottomWorldY + entity.speed) / gp.tileSize;
-                if (nextBottomRow < gp.maxWorldRow) {
-                    int tileNumLeft = gp.tileH.mapTileNum[gp.currentMap][nextBottomRow][entityLeftCol];
-                    int tileNumRight = gp.tileH.mapTileNum[gp.currentMap][nextBottomRow][entityRightCol];
-                    if (gp.tileH.tiles[tileNumLeft].collision || gp.tileH.tiles[tileNumRight].collision) {
-                        entity.collisionOn = true;
-                    }
+            }
+            case "down" -> {
+                int nextRow = (entityBottomWorldY + entity.speed) / gp.tileSize;
+                if (nextRow < gp.maxWorldRow) {
+                    checkRow1 = checkRow2 = nextRow;
+                    checkCol1 = entityLeftCol;
+                    checkCol2 = entityRightCol;
                 }
-                break;
-            case "left":
-                int nextLeftCol = (entityLeftWorldX - entity.speed) / gp.tileSize;
-                if (nextLeftCol >= 0) {
-                    int tileNumTop = gp.tileH.mapTileNum[gp.currentMap][entityTopRow][nextLeftCol];
-                    int tileNumBottom = gp.tileH.mapTileNum[gp.currentMap][entityBottomRow][nextLeftCol];
-                    if (gp.tileH.tiles[tileNumTop].collision || gp.tileH.tiles[tileNumBottom].collision) {
-                        entity.collisionOn = true;
-                    }
+            }
+            case "left" -> {
+                int nextCol = (entityLeftWorldX - entity.speed) / gp.tileSize;
+                if (nextCol >= 0) {
+                    checkCol1 = checkCol2 = nextCol;
+                    checkRow1 = entityTopRow;
+                    checkRow2 = entityBottomRow;
                 }
-                break;
-            case "right":
-                int nextRightCol = (entityRightWorldX + entity.speed) / gp.tileSize;
-                if (nextRightCol < gp.maxWorldCol) {
-                    int tileNumTop = gp.tileH.mapTileNum[gp.currentMap][entityTopRow][nextRightCol];
-                    int tileNumBottom = gp.tileH.mapTileNum[gp.currentMap][entityBottomRow][nextRightCol];
-                    if (gp.tileH.tiles[tileNumTop].collision || gp.tileH.tiles[tileNumBottom].collision) {
-                        entity.collisionOn = true;
-                    }
+            }
+            case "right" -> {
+                int nextCol = (entityRightWorldX + entity.speed) / gp.tileSize;
+                if (nextCol < gp.maxWorldCol) {
+                    checkCol1 = checkCol2 = nextCol;
+                    checkRow1 = entityTopRow;
+                    checkRow2 = entityBottomRow;
                 }
-                break;
+            }
+        }
+
+        // Check tile collisions if valid positions were set
+        if (checkRow1 >= 0 && checkCol1 >= 0) {
+            int tileNum1 = gp.tileH.mapTileNum[gp.currentMap][checkRow1][checkCol1];
+            int tileNum2 = gp.tileH.mapTileNum[gp.currentMap][checkRow2][checkCol2];
+            if (gp.tileH.tiles[tileNum1].collision || gp.tileH.tiles[tileNum2].collision) {
+                entity.collisionOn = true;
+            }
         }
 
         // For non-player entities, also detect collisions with objects
         if (!entity.getClass().getSimpleName().equals("Player")) {
-            checkObject(entity, false);
+            checkObject(entity);
         }
+
     }
 
     /**
@@ -113,12 +117,8 @@ public class Collision {
      * </p>
      *
      * @param entity the entity for which we are detecting collisions
-     * @param player whether this is the player (used for interactions)
-     * @return the index of the object collided with, or 999 if no collision occurred
      */
-    public int checkObject(Entity entity, boolean player) {
-        int index = 999;
-
+    public void checkObject(Entity entity) {
         for (int i = 0; i < gp.obj[gp.currentMap].length; i++) {
             if (gp.obj[gp.currentMap][i] != null) {
                 GameObject obj = gp.obj[gp.currentMap][i];
@@ -149,9 +149,6 @@ public class Collision {
                     if (obj.Collision) {
                         entity.collisionOn = true;
                     }
-                    if (player) {
-                        index = i;
-                    }
                 }
 
                 // Reset positions
@@ -161,7 +158,6 @@ public class Collision {
                 obj.solidArea.y = obj.solidAreaDefaultY;
             }
         }
-        return index;
     }
 
     /**
@@ -216,22 +212,19 @@ public class Collision {
      * For example, opening doors, opening chests, etc.
      * </p>
      *
-     * @param entity the entity (player) that is interacting
      * @param objectIndex the index of the object in the {@code gp.obj} array with which interaction occurs
      */
-    public void handleObjectInteraction(Entity entity, int objectIndex) {
+    public void handleObjectInteraction(int objectIndex) {
         if (objectIndex != 999 && gp.obj[gp.currentMap][objectIndex] != null) {
             GameObject obj = gp.obj[gp.currentMap][objectIndex];
-            String objName = obj.name;
 
-            if (objName.equals("DoorFront") && !((Object_DoorFront) obj).isOpen()) {
-                ((Object_DoorFront) obj).interact();
+            if (obj instanceof Object_DoorFront door && !door.isOpen()) {
+                door.interact();
                 GameLogger.info("Interacting with front door");
-            } else if (objName.equals("DoorSide") && !((Object_DoorSide) obj).isOpen()) {
-                ((Object_DoorSide) obj).interact();
+            } else if (obj instanceof Object_DoorSide door && !door.isOpen()) {
+                door.interact();
                 GameLogger.info("Interacting with side door");
-            } else if (objName.equals("small_chest")) {
-                Object_Small_Chest chest = (Object_Small_Chest) obj;
+            } else if (obj instanceof Object_Small_Chest chest) {
                 gp.chestUI.openChest(chest);
                 GameLogger.info("Interacting with chest");
             }

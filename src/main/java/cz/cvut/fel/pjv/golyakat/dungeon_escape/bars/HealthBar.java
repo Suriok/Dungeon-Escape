@@ -1,5 +1,6 @@
 package cz.cvut.fel.pjv.golyakat.dungeon_escape.bars;
 
+import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
@@ -7,6 +8,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * The {@code HealthBar} class serves to visually display the player's health
@@ -46,7 +48,7 @@ public class HealthBar extends GameObject {
     /**
      * Reference to the main game panel, used for obtaining tile size etc.
      */
-    private gamePanel gp;
+    private final gamePanel gp;
 
     /**
      * Maximum number of health units (e.g., 8 = 4 hearts).
@@ -74,20 +76,23 @@ public class HealthBar extends GameObject {
      */
     private void loadImages() {
         try {
-            fullHp = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/heath_bar/Full_Hp.jpg"));
-            hit1 = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/heath_bar/1_hit.jpg"));
-            hit2 = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/heath_bar/2_hit.jpg"));
-            hit3 = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/heath_bar/3_hit.jpg"));
-            die = ImageIO.read(getClass().getResourceAsStream(
-                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/heath_bar/die.jpg"));
+            fullHp = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/heath_bar/Full_Hp.jpg")));
+            hit1 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/heath_bar/1_hit.jpg")));
+            hit2 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/heath_bar/2_hit.jpg")));
+            hit3 = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/heath_bar/3_hit.jpg")));
+            die = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(
+                    "/cz/cvut/fel/pjv/golyakat/dungeon_escape/objects/heath_bar/die.jpg")));
         } catch (IOException e) {
-            e.printStackTrace();
+            GameLogger.error("Failed to load health bar images");
+        } catch (NullPointerException e) {
+            GameLogger.error("One of the health bar image paths is incorrect or missing in resources");
         }
     }
+
 
     /**
      * Updates the value of current health that will be visually rendered.
@@ -121,7 +126,7 @@ public class HealthBar extends GameObject {
      * @param heartHp health within one heart (e.g., 1 = half)
      * @return image corresponding to the given heart state
      */
-    private BufferedImage getHeartImage(int heartHp) {
+    private BufferedImage getHeartImage(float heartHp) {
         if (heartHp >= 2) {
             return fullHp;
         } else if (heartHp >= 1.5) {

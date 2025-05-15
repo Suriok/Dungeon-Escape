@@ -1,4 +1,4 @@
-package cz.cvut.fel.pjv.golyakat.dungeon_escape.UI;
+package cz.cvut.fel.pjv.golyakat.dungeon_escape.ui;
 
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
@@ -31,7 +31,7 @@ public class TitleScreenUI {
      */
     private static class UIButton {
         Rectangle bounds;
-        String text;
+        final String text;
         boolean hovered = false;
         boolean pressed = false;
 
@@ -257,7 +257,7 @@ public class TitleScreenUI {
             if (click) {
                 switch (b.text) {
                     case "Start Game" -> gp.startNewGame();
-                    case "Start Saved Game" -> gp.loadSavedGame();
+                    case "Start Saved Game" -> gp.loadGame();
                     case "Exit" -> {
                         gp.saveGame();
                         Window w = SwingUtilities.getWindowAncestor(gp);
