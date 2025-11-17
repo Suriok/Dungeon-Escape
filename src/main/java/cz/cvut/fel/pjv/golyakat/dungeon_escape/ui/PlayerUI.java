@@ -8,7 +8,6 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -76,96 +75,108 @@ public class PlayerUI {
 
         // === Calculate positions and sizes ===
         float scaleFactor = 3.0f;
-        int playerInvWidth = (int)(playerInventory.getWidth() * scaleFactor);
-        int playerInvHeight = (int)(playerInventory.getHeight() * scaleFactor);
-        int sideArmorWidth = (int)(sideArmor.getWidth() * scaleFactor);
-        int sideArmorHeight = (int)(sideArmor.getHeight() * scaleFactor);
-        int weaponInvWidth = (int)(weaponInventory.getWidth() * scaleFactor);
-        int weaponInvHeight = (int)(weaponInventory.getHeight() * scaleFactor);
+        int playerInvWidth = (int) (playerInventory.getWidth() * scaleFactor);
+        int playerInvHeight = (int) (playerInventory.getHeight() * scaleFactor);
+        int sideArmorWidth = (int) (sideArmor.getWidth() * scaleFactor);
+        int sideArmorHeight = (int) (sideArmor.getHeight() * scaleFactor);
+        int weaponInvWidth = (int) (weaponInventory.getWidth() * scaleFactor);
+        int weaponInvHeight = (int) (weaponInventory.getHeight() * scaleFactor);
 
         int playerInvX = gp.screenWidth / 2 - playerInvWidth / 2;
         int playerInvY = gp.screenHeight - playerInvHeight - 10;
 
         int sideX = 10;
-        int startY = gp.defensBar.getY() + gp.defensBar.getBarHeight() + 15;
+        int startYdefBar = gp.defensBar.getY() + gp.defensBar.getBarHeight() + 15;
 
         // === Draw inventory background and side panels ===
         g2d.drawImage(playerInventory, playerInvX, playerInvY, playerInvWidth, playerInvHeight, null);
-        g2d.drawImage(sideArmor, sideX, startY, sideArmorWidth, sideArmorHeight, null);
-        g2d.drawImage(weaponInventory, sideX, startY + sideArmorHeight + 15, weaponInvWidth, weaponInvHeight, null);
+        g2d.drawImage(sideArmor, sideX, startYdefBar, sideArmorWidth, sideArmorHeight, null);
+        g2d.drawImage(weaponInventory, sideX, startYdefBar + sideArmorHeight + 15, weaponInvWidth, weaponInvHeight, null);
 
         // === Draw player inventory items ===
-        int gridCols = 8;
-        int gridRows = 1;
-        int cellWidth = playerInvWidth / gridCols;
-        int cellHeight = playerInvHeight / gridRows;
-        int itemSize = Math.min(cellWidth, cellHeight);
-        int offsetX = playerInvX + 30;
-        int offsetY = playerInvY + 5;
+        int columns = 8;
+        int cellWidth = 55;
+        int cellHeight = 55;
+        int startX = 300;
+        int startY = 470;
 
-        List<ChestInventoryManager.ItemData> expandedItems = new ArrayList<>();
-        for (ChestInventoryManager.ItemData item : gp.player.getInventory()) {
-            for (int i = 0; i < item.getQuantity(); i++) {
-                expandedItems.add(new ChestInventoryManager.ItemData(item.getName(), 1));
-            }
-        }
 
-        for (int i = 0; i < expandedItems.size(); i++) {
-            int row = i / gridCols;
-            int col = i % gridCols;
-            if (row >= gridRows) break;
+        List<ChestInventoryManager.ItemData> items = gp.player.getInventory();
 
-            ChestInventoryManager.ItemData item = expandedItems.get(i);
+        // === Loop through the first 8 items ===
+        for (int i = 0; i < columns && i < items.size(); i++) {
+            // === Get one item ===
+            ChestInventoryManager.ItemData item = items.get(i);
             BufferedImage itemImage = item.getItem().image;
 
+            // === If the image exists, draw it ===
             if (itemImage != null) {
-                int x = offsetX + col * cellWidth + (cellWidth - itemSize) / 2;
-                int y = offsetY + (cellHeight - itemSize) / 2;
+                // === Рассчитываем позицию слота ===
+                int slotX = startX + i * cellWidth - 30;
+                int slotY = startY;
 
-                int drawSize = itemSize;
+                // --- [НАЧАЛО ИЗМЕНЕНИЯ] ---
+                String itemName = item.getName();
+                // Проверяем, является ли это частью ключа (Key1, Key2 и т.д.), но не "Key"
+                boolean isKeyPart = itemName.startsWith("Key") && itemName.length() > 3;
 
-                // === Resize key fragments to be smaller ===
-                if (item.getName().equals("Key1") || item.getName().equals("Key2") || item.getName().equals("Key3")) {
-                    drawSize = (int)(itemSize * 0.6667f);
-                    x += (itemSize - drawSize) / 2;
-                    y += (itemSize - drawSize) / 2;
+                if (isKeyPart) {
+                    // --- Рисуем ЧАСТЬ КЛЮЧА (маленьким, по центру) ---
+                    int imageWidth = itemImage.getWidth();  // Будет 48
+                    int imageHeight = itemImage.getHeight(); // Будет 48
+
+                    // Центрируем 48x48 внутри ячейки 55x55
+                    int paddingX = (cellWidth - imageWidth) / 2; // (55 - 48) / 2 = 3
+                    int paddingY = (cellHeight - imageHeight) / 2; // (55 - 48) / 2 = 3
+                    int drawX = slotX + paddingX;
+                    int drawY = slotY + paddingY;
+
+                    g2d.drawImage(itemImage, drawX, drawY, null); // Рисуем без растягивания
+
+                } else {
+                    // --- Рисуем ОБЫЧНЫЙ ПРЕДМЕТ (растягиваем, как и раньше) ---
+                    g2d.drawImage(itemImage, slotX, slotY, cellWidth, cellHeight, null);
                 }
-
-                g2d.drawImage(itemImage, x, y, drawSize, drawSize, null);
-                inventoryItemBounds[i] = new Rectangle(x, y, drawSize, drawSize);
+                inventoryItemBounds[i] = new Rectangle(slotX, slotY, cellWidth, cellHeight);
             }
         }
 
-        // === Draw equipped armor ===
-        int armorGridCols = 1;
-        int armorGridRows = 4;
-        int armorCellWidth = sideArmorWidth / armorGridCols;
-        int armorCellHeight = sideArmorHeight / armorGridRows;
-        int armorItemSize = Math.min(armorCellWidth, armorCellHeight);
-        int armorOffsetX = sideX + 5;
-        int armorOffsetY = startY + 5;
+        // === Draw the player's equipped armor ===
+        int armorRows = 4;
+        int armorCellHeight = 50;
+        int armorItemSize = 48;
+        int armorStartX = 26;
+        int armorStartY = 120;
 
         GameObject[] equippedArmor = gp.player.getEquippedArmor();
-        for (int i = 0; i < equippedArmor.length; i++) {
-            int slotY = armorOffsetY + i * armorCellHeight + (armorCellHeight - armorItemSize) / 2;
 
+        // === Loop through all 4 armor slots ===
+        for (int i = 0; i < armorRows; i++) {
+            // === Calculate the Y position for this armor slot ===
+            int y = armorStartY + i * armorCellHeight + (armorCellHeight - armorItemSize) / 2;
+
+            // === Get the armor piece for this slot ===
             GameObject armor = equippedArmor[i];
+
+            // === If there is armor and it has an image, draw it ===
             if (armor != null && armor.image != null) {
-                g2d.drawImage(armor.image, armorOffsetX, slotY, armorItemSize, armorItemSize, null);
+                g2d.drawImage(armor.image, armorStartX, y, armorItemSize, armorItemSize, null);
             }
         }
 
-        // === Draw equipped weapon ===
-        int weaponItemSize = Math.min(weaponInvWidth, weaponInvHeight);
-        int weaponX = sideX + 5;
-        int weaponY = startY + sideArmorHeight + 20;
+        // === Draw the player's equipped weapon ===
+        int weaponX = 30;
+        int weaponY = 360;
+        int weaponSize = 70;
 
+        // === Get the player's equipped weapon ===
         GameObject weapon = gp.player.getEquippedWeapon();
+
+        // === If there is a weapon and it has an image, draw it ===
         if (weapon != null && weapon.image != null) {
-            g2d.drawImage(weapon.image, weaponX, weaponY, weaponItemSize, weaponItemSize, null);
+            g2d.drawImage(weapon.image, weaponX, weaponY, weaponSize, weaponSize, null);
         }
     }
-
     /**
      * Returns the index of the inventory item that was clicked.
      *

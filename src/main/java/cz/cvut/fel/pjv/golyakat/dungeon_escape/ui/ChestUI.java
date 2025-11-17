@@ -4,6 +4,8 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.ChestInventoryManager;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.gamePanel;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.Object_Small_Chest;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -121,7 +123,10 @@ public class ChestUI {
         int offsetX = windowX + 20;
         int offsetY = windowY + 10;
 
-        // === Render each item in the grid ===
+        Font originalFont = g2d.getFont();
+        Font quantityFont = new Font("Arial", Font.BOLD, 20);
+
+        // === Render each item ===
         for (int row = 0; row < 4; row++) {
             for (int col = 0; col < 4; col++) {
                 int index = row * 4 + col;
@@ -131,15 +136,56 @@ public class ChestUI {
                     BufferedImage itemImage = item.getItem().image;
 
                     if (itemImage != null) {
-                        int x = offsetX + col * cellWidth;
-                        int y = offsetY + row * cellHeight;
+                        int slotX = offsetX + col * cellWidth;
+                        int slotY = offsetY + row * cellHeight;
 
-                        g2d.drawImage(itemImage, x, y, cellWidth, cellHeight, null);
-                        itemBounds[index] = new Rectangle(x, y, cellWidth, cellHeight);
+                        String itemName = item.getName();
+                        boolean isKeyPart = itemName.startsWith("Key") && itemName.length() > 3;
+
+                        if (isKeyPart) {
+
+                            int newKeyWidth = 48;
+                            int newKeyHeight = 48;
+
+                            int paddingX = (cellWidth - newKeyWidth) / 2;
+                            int paddingY = (cellHeight - newKeyHeight) / 2;
+                            int drawX = slotX + paddingX;
+                            int drawY = slotY + paddingY;
+
+                            g2d.drawImage(itemImage, drawX, drawY, null);
+                        } else {
+
+                            g2d.drawImage(itemImage, slotX, slotY, cellWidth, cellHeight, null);
+                        }
+
+
+                        itemBounds[index] = new Rectangle(slotX, slotY, cellWidth, cellHeight);
+
+
+                        if (item.getQuantity() > 1) {
+                            String quantityText = "x" + item.getQuantity();
+
+                            g2d.setFont(quantityFont);
+                            g2d.setColor(Color.WHITE);
+
+                            FontMetrics fm = g2d.getFontMetrics();
+                            Rectangle2D textBounds = fm.getStringBounds(quantityText, g2d);
+
+                            int textPadding = 5;
+                            int textX = (slotX + cellWidth) - (int) textBounds.getWidth() - textPadding;
+                            int textY = (slotY + cellHeight) - textPadding;
+
+                            g2d.setColor(Color.BLACK);
+                            g2d.drawString(quantityText, textX + 1, textY + 1);
+
+                            g2d.setColor(Color.WHITE);
+                            g2d.drawString(quantityText, textX, textY);
+                        }
                     }
                 }
             }
         }
+        g2d.setFont(originalFont);
     }
 
     /**

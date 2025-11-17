@@ -4,6 +4,7 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.GameLogger;
 import cz.cvut.fel.pjv.golyakat.dungeon_escape.object.GameObject;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 
@@ -32,12 +33,24 @@ public class Item_partKey1 extends GameObject {
             BufferedImage tempImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/items_in_chest/key_part/silver_key_1.png")));
             if (tempImage == null) {
                 GameLogger.error("Failed to load silver_key_1.png for Item_partKey1");
-                // Create a 1x1 transparent pixel as fallback
-                tempImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+                image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+
+            } else {
+                int newWidth = 48;
+                int newHeight = 48;
+
+                BufferedImage scaledImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2d = scaledImage.createGraphics();
+                g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g2d.drawImage(tempImage, 0, 0, newWidth, newHeight, null);
+                g2d.dispose();
+
+                image = scaledImage;
+
             }
-            image = tempImage;
         } catch (Exception e) {
             GameLogger.error("Error loading Item_partKey1 image: " + e.getMessage());
+            image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         }
     }
 
