@@ -7,6 +7,10 @@ import cz.cvut.fel.pjv.golyakat.dungeon_escape.monster.Monster;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.util.Objects;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.awt.Color;
+import java.awt.AlphaComposite;
 
 /**
  * Represents the boss monster "Eye" in the dungeon.
@@ -76,4 +80,29 @@ public class Boss_Eye extends Monster {
         GameLogger.info(name + " dropped a key!");
     }
 
+    @Override
+    public void draw(Graphics2D g2d) {
+
+        BufferedImage image = null;
+
+        if (spriteNum == 1) {
+            image = up1;
+        } else {
+            image = up2;
+        }
+
+        int screenX = worldX - gp.player.worldX + gp.player.screenX;
+        int screenY = worldY - gp.player.worldY + gp.player.screenY;
+
+        int drawWidth = gp.tileSize + 24;
+        int drawHeight = gp.tileSize + 24;
+
+        int drawX = screenX - 1;
+        int drawY = screenY - 1;
+
+
+        if (image != null) {
+            g2d.drawImage(image, drawX, drawY, drawWidth, drawHeight, null);
+        }
+    }
 }

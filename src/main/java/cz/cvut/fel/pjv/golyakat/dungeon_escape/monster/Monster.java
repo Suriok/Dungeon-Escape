@@ -76,6 +76,72 @@ public abstract class Monster extends Entity {
     protected void onDeath() {
     }
 
+    /**
+     * Helper method to check if a tile is a wall (has collision).
+     * @param row The tile's row
+     * @param col The tile's column
+     * @return true if the tile is a wall or out of bounds
+     */
+    private boolean isWall(int row, int col) {
+        // Считаем границы карты "стеной"
+        if (row < 0 || row >= gp.maxWorldRow || col < 0 || col >= gp.maxWorldCol) {
+            return true;
+        }
+        // Проверяем коллизию тайла
+        int tileNum = gp.tileH.mapTileNum[gp.currentMap][row][col];
+        // Убедимся, что такой тайл существует в массиве tiles
+        if (tileNum < 0 || tileNum >= gp.tileH.tiles.length || gp.tileH.tiles[tileNum] == null) {
+            return false; // Безопасная обработка, если тайла нет
+        }
+        return gp.tileH.tiles[tileNum].collision;
+    }
+
+    /**
+     * Checks if there is a direct line of sight (no walls) between the monster and the player.
+     * Uses a simplified "line traversal" algorithm.
+     * @return true if the line of sight is clear, false if it is blocked.
+     */
+    protected boolean hasLineOfSight() {
+        // Получаем тайловые координаты
+        int monsterCol = worldX / gp.tileSize;
+        int monsterRow = worldY / gp.tileSize;
+        int playerCol = gp.player.worldX / gp.tileSize;
+        int playerRow = gp.player.worldY / gp.tileSize;
+
+        int dx = playerCol - monsterCol;
+        int dy = playerRow - monsterRow;
+
+        int steps = Math.max(Math.abs(dx), Math.abs(dy));
+        if (steps == 0) return true; // На том же тайле
+
+        float x_inc = (float)dx / steps;
+        float y_inc = (float)dy / steps;
+
+        float x = monsterCol;
+        float y = monsterRow;
+
+        // Проверяем каждый тайл на пути к игроку
+        for (int i = 0; i < steps; i++) {
+            x += x_inc;
+            y += y_inc;
+
+            int currentCol = Math.round(x);
+            int currentRow = Math.round(y);
+
+            // Если текущий проверяемый тайл - это тайл, где стоит сам игрок, то все в порядке
+            if (currentCol == playerCol && currentRow == playerRow) {
+                return true;
+            }
+
+            // Если мы попали в стену до того, как достигли игрока
+            if (isWall(currentRow, currentCol)) {
+                return false; // Путь заблокирован
+            }
+        }
+
+        return true; // Препятствий не найдено
+    }
+
     // === AI: Determines movement direction based on player proximity or randomly ===
     protected void setAction() {
         actionLockCounter++;
@@ -84,7 +150,7 @@ public abstract class Monster extends Entity {
         int dy = gp.player.worldY - worldY;
         double dist = Math.hypot(dx, dy);
 
-        if (dist <= DETECTION_RANGE && !isDead) {
+        if (dist <= DETECTION_RANGE && !isDead && hasLineOfSight()) {
             direction = (Math.abs(dx) > Math.abs(dy))
                     ? (dx > 0 ? "right" : "left")
                     : (dy > 0 ? "down" : "up");
@@ -139,7 +205,7 @@ public abstract class Monster extends Entity {
 
         double distance = Math.hypot(playerCenterX - monsterCenterX, playerCenterY - monsterCenterY);
 
-        if (attackCounter >= ATTACK_COOLDOWN && distance <= 2 * gp.tileSize) {
+        if (attackCounter >= ATTACK_COOLDOWN && distance <=  gp.tileSize) {
             gp.player.receiveDamage(ATTACK_DAMAGE);
             attackCounter = 0;
             GameLogger.info(name + " hits player (" + ATTACK_DAMAGE + " dmg)");
@@ -155,6 +221,7 @@ public abstract class Monster extends Entity {
             removeSelf();    // remove from monster array
         }
     }
+
 
     /**
      * Removes this monster instance from the game world.
