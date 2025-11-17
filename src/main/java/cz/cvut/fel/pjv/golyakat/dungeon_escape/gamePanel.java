@@ -286,7 +286,6 @@ public class gamePanel extends JPanel implements Runnable {
         gameState = playerState;
         repaint();
     }
-
     /**
      * Runs the game loop to update and render the game at a fixed FPS.
      */
