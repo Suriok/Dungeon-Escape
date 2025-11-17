@@ -47,6 +47,11 @@ public class Player extends Entity {
     public boolean isHit = false;
     private int hitEffectCounter = 0;
 
+    /** Attack wave animation logic. */
+    public boolean isAttacking = false;
+    private int attackEffectCounter = 0;
+    private final int ATTACK_EFFECT_DURATION = 20;
+
     /** Tile ID used for ladder tile (map transition). */
     private static final int LADDER_TILE = 10;
 
@@ -186,34 +191,45 @@ public class Player extends Entity {
                 isHit = false;
             }
         }
+
+        // === Attack effect timer ===
+        if (isAttacking) {
+            attackEffectCounter--;
+            if (attackEffectCounter <= 0) {
+                isAttacking = false;
+            }
+        }
     }
 
     /**
-     * Executes an attack on a monster in front of the player.
+     * Executes an attack on monsters within 1 tile of the player (3x3 area).
      */
     public void attack() {
         if (equippedWeapon == null) return;
+
+
+        isAttacking = true;
+        attackEffectCounter = ATTACK_EFFECT_DURATION;
+
         int attackDamage = (equippedWeapon instanceof Weapon)
                 ? ((Weapon) equippedWeapon).getAttack()
                 : 1;
 
-        int targetX = worldX;
-        int targetY = worldY;
-        switch (direction) {
-            case "up" -> targetY -= gp.tileSize;
-            case "down" -> targetY += gp.tileSize;
-            case "left" -> targetX -= gp.tileSize;
-            case "right" -> targetX += gp.tileSize;
-        }
+        int playerTileX = worldX / gp.tileSize;
+        int playerTileY = worldY / gp.tileSize;
 
         for (Entity monster : gp.monster[gp.currentMap]) {
-            if (monster != null && !monster.isDead &&
-                    monster.worldX / gp.tileSize == targetX / gp.tileSize &&
-                    monster.worldY / gp.tileSize == targetY / gp.tileSize) {
+            if (monster != null && !monster.isDead) {
+                int monsterTileX = monster.worldX / gp.tileSize;
+                int monsterTileY = monster.worldY / gp.tileSize;
 
-                monster.life -= attackDamage;
-                if (monster.life < 0) monster.life = 0;
-                break;
+                boolean inAttackRange = Math.abs(playerTileX - monsterTileX) <= 1 &&
+                        Math.abs(playerTileY - monsterTileY) <= 1;
+
+                if (inAttackRange) {
+                    monster.life -= attackDamage;
+                    if (monster.life < 0) monster.life = 0;
+                }
             }
         }
     }
@@ -300,6 +316,37 @@ public class Player extends Entity {
             g2d.setColor(Color.RED);
             g2d.fillRect(screenX, screenY, gp.tileSize, gp.tileSize);
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+        }
+
+        if (isAttacking) {
+            float progress = 1.0f - ((float) attackEffectCounter / ATTACK_EFFECT_DURATION);
+
+            float opacity = 0.8f * (1.0f - progress);
+            if (opacity < 0) opacity = 0;
+
+            int currentSize = (int) (gp.tileSize * 2.5 * progress);
+
+            int x = screenX + (gp.tileSize / 2) - (currentSize / 2);
+            int y = screenY + (gp.tileSize / 2) - (currentSize / 2);
+
+            int startAngle = 0;
+            int arcAngle = 90;
+
+            switch (direction) {
+                case "up" -> startAngle = 45;
+                case "down" -> startAngle = 225;
+                case "left" -> startAngle = 135;
+                case "right" -> startAngle = 315;
+            }
+
+            g2d.setColor(Color.WHITE);
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+            g2d.setStroke(new BasicStroke(4)); // Толщина волны 4 пикселя
+
+            g2d.drawArc(x, y, currentSize, currentSize, startAngle, arcAngle);
+
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+            g2d.setStroke(new BasicStroke(1));
         }
     }
 
