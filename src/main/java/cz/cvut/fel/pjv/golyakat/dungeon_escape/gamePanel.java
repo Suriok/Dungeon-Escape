@@ -53,6 +53,7 @@ public class gamePanel extends JPanel implements Runnable {
     public final int titleState = 0;
     public final int playerState = 1;
     public final int gameOverState = 2;
+    public final int winState = 3;
     public final ChestUI chestUI;
     public final CraftingTableUI craftingTableUI;
     public final PlayerUI playerUI;
