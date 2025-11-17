@@ -132,11 +132,11 @@ public class AssetSetter {
         gp.obj[1][3].worldX = 39 * gp.tileSize;
         gp.obj[1][3].worldY = 29 * gp.tileSize;
 
-        gp.obj[1][4] = new Object_DoorFront(gp, false);
+        gp.obj[1][4] = new Object_DoorFront(gp, true);
         gp.obj[1][4].worldX = 44 * gp.tileSize;
         gp.obj[1][4].worldY = 21 * gp.tileSize;
 
-        gp.obj[1][5] = new Object_DoorFront(gp, true);
+        gp.obj[1][5] = new Object_DoorFront(gp, false);
         gp.obj[1][5].worldX = 34 * gp.tileSize;
         gp.obj[1][5].worldY = 17 * gp.tileSize;
 
@@ -145,27 +145,27 @@ public class AssetSetter {
         chest10Items.put("iron_bib", 1);
         chest10Items.put("iron_pants", 1);
         chest10Items.put("emerald_sword", 1);
-        gp.obj[1][0] = new Object_Small_Chest(gp, 0, chest10Items);
+        gp.obj[1][0] = new Object_Small_Chest(gp, 10, chest10Items);
         gp.obj[1][0].worldX = 13 * gp.tileSize;
         gp.obj[1][0].worldY = 18 * gp.tileSize;
 
         Map<String, Integer> chest17Items = new HashMap<>();
         chest17Items.put("Key1", 1);
-        gp.obj[1][7] = new Object_Small_Chest(gp, 7, chest17Items);
+        gp.obj[1][7] = new Object_Small_Chest(gp, 11, chest17Items);
         gp.obj[1][7].worldX = 30 * gp.tileSize;
         gp.obj[1][7].worldY = 18 * gp.tileSize;
 
         Map<String, Integer> chest18Items = new HashMap<>();
         chest18Items.put("Key2", 1);
         chest18Items.put("iron_helmet", 1);
-        gp.obj[1][8] = new Object_Small_Chest(gp, 8, chest18Items);
+        gp.obj[1][8] = new Object_Small_Chest(gp, 12, chest18Items);
         gp.obj[1][8].worldX = 32 * gp.tileSize;
         gp.obj[1][8].worldY = 27 * gp.tileSize;
 
         Map<String, Integer> chest19Items = new HashMap<>();
         chest19Items.put("Key3", 1);
         chest19Items.put("iron_boots", 1);
-        gp.obj[1][9] = new Object_Small_Chest(gp, 9, chest19Items);
+        gp.obj[1][9] = new Object_Small_Chest(gp, 13, chest19Items);
         gp.obj[1][9].worldX = 35 * gp.tileSize;
         gp.obj[1][9].worldY = 12 * gp.tileSize;
 
