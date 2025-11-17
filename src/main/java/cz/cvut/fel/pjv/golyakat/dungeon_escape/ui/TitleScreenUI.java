@@ -14,12 +14,13 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Manages and renders the title screen and game-over UI, including buttons and logging toggle.
+ * Manages and renders the title screen, game-over, and game-win UI states.
  */
 public class TitleScreenUI {
 
     private final gamePanel gp;
     private BufferedImage background;
+    private BufferedImage winBackground; // <-- Вот недостающая переменная
     private static final float BTN_ALPHA = 0.60f;
     private static final int BTN_BORDER = 2;
     private static final Font BTN_FONT = new Font("Arial", Font.BOLD, 24);
@@ -35,12 +36,6 @@ public class TitleScreenUI {
         boolean hovered = false;
         boolean pressed = false;
 
-        /**
-         * Creates a new UIButton with the given bounds and label.
-         *
-         * @param b the bounding rectangle for click detection and drawing
-         * @param t the text label for this button
-         */
         UIButton(Rectangle b, String t) {
             this.bounds = b;
             this.text = t;
@@ -49,6 +44,7 @@ public class TitleScreenUI {
 
     private final List<UIButton> buttons = new ArrayList<>();
     private final List<UIButton> gameOverButtons = new ArrayList<>();
+    private final List<UIButton> gameWinButtons = new ArrayList<>(); // <-- Вот недостающий список
 
     /**
      * Constructs the title screen UI, initializes buttons and background.
@@ -73,6 +69,10 @@ public class TitleScreenUI {
         gameOverButtons.add(new UIButton(new Rectangle(), "Try Again"));
         gameOverButtons.add(new UIButton(new Rectangle(), "Exit"));
 
+        // === [НОВОЕ] Инициализация кнопок победы ===
+        gameWinButtons.add(new UIButton(new Rectangle(), "Play Again"));
+        gameWinButtons.add(new UIButton(new Rectangle(), "Exit"));
+
         loggingToggleBounds.y = gp.screenHeight - 45;
     }
 
@@ -88,6 +88,18 @@ public class TitleScreenUI {
             g.setColor(Color.BLACK);
             g.fillRect(0, 0, 2, 2);
             g.dispose();
+            GameLogger.error("Failed to load title background: " + e.getMessage()); // Добавлен лог
+        }
+
+        try {
+            winBackground = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/cz/cvut/fel/pjv/golyakat/dungeon_escape/end_backgroung.png")));
+        } catch (IOException | IllegalArgumentException e) {
+            winBackground = new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = winBackground.createGraphics();
+            g.setColor(new Color(20, 40, 80)); // Темно-синий фон в случае ошибки
+            g.fillRect(0, 0, 2, 2);
+            g.dispose();
+            GameLogger.error("Failed to load win background: " + e.getMessage());
         }
     }
 
@@ -97,6 +109,23 @@ public class TitleScreenUI {
      * @param g2 the Graphics2D context to draw on
      */
     public void draw(Graphics2D g2) {
+
+
+        if (gp.gameState == gp.titleState) {
+            drawTitleScreen(g2);
+        } else if (gp.gameState == gp.gameOverState) {
+            drawTitleScreen(g2);
+            drawGameOverScreen(g2);
+        } else if (gp.gameState == gp.winState) {
+            drawGameWinScreen(g2);
+        }
+    }
+
+    /**
+     * [НОВЫЙ МЕТОД]
+     * Draws the main title screen with menu buttons.
+     */
+    public void drawTitleScreen(Graphics2D g2) {
         // === draw background, title text, main buttons, and logging toggle ===
         g2.drawImage(background, 0, 0, gp.screenWidth, gp.screenHeight, null);
 
@@ -139,11 +168,8 @@ public class TitleScreenUI {
         g2.drawRect(loggingToggleBounds.x, loggingToggleBounds.y, loggingToggleBounds.width, loggingToggleBounds.height);
         String status = "Logging: " + (GameLogger.isEnabled() ? "ON" : "OFF");
         g2.drawString(status, loggingToggleBounds.x + 8, loggingToggleBounds.y + 17);
-
-        if (gp.gameState == gp.gameOverState) {
-            drawGameOverScreen(g2);
-        }
     }
+
 
     /**
      * Draws the game-over overlay with retry and exit options.
@@ -197,6 +223,66 @@ public class TitleScreenUI {
     }
 
     /**
+     * [НОВЫЙ МЕТОД]
+     * Draws the game-win screen with congratulations text and buttons.
+     *
+     * @param g2 the Graphics2D context to draw on
+     */
+    public void drawGameWinScreen(Graphics2D g2) {
+
+        g2.drawImage(winBackground, 0, 0, gp.screenWidth, gp.screenHeight, null);
+
+        int boxWidth = gp.tileSize * 16;
+        int boxHeight = gp.tileSize * 9;
+        int boxX = (gp.screenWidth - boxWidth) / 2;
+        int boxY = (gp.screenHeight - boxHeight) / 2;
+
+        g2.setColor(new Color(0, 0, 0, 180));
+        g2.fillRect(boxX, boxY, boxWidth, boxHeight);
+        g2.setColor(Color.WHITE);
+        g2.setStroke(new BasicStroke(4));
+        g2.drawRect(boxX, boxY, boxWidth, boxHeight);
+
+        String title = "Congratulations!";
+        g2.setFont(new Font("Arial", Font.BOLD, 48));
+        FontMetrics titleFM = g2.getFontMetrics();
+        int titleX = boxX + (boxWidth - titleFM.stringWidth(title)) / 2;
+        int titleY = boxY + titleFM.getAscent() + 30;
+        g2.drawString(title, titleX, titleY);
+
+        String subtitle = "You have completed the game.";
+        g2.setFont(new Font("Arial", Font.PLAIN, 28));
+        FontMetrics subtitleFM = g2.getFontMetrics();
+        int subtitleX = boxX + (boxWidth - subtitleFM.stringWidth(subtitle)) / 2;
+        int subtitleY = titleY + subtitleFM.getAscent() + 10;
+        g2.drawString(subtitle, subtitleX, subtitleY);
+
+
+        g2.setFont(new Font("Arial", Font.PLAIN, 28));
+        FontMetrics optionFM = g2.getFontMetrics();
+        int spacing = 20;
+        int buttonWidth = boxWidth - 60;
+        int buttonHeight = gp.tileSize;
+
+        for (int i = 0; i < gameWinButtons.size(); i++) {
+            UIButton b = gameWinButtons.get(i);
+            int bx = boxX + 30;
+            int by = subtitleY + 60 + i * (buttonHeight + spacing);
+            b.bounds = new Rectangle(bx, by, buttonWidth, buttonHeight);
+
+            g2.setColor(Color.BLACK);
+            g2.fillRect(bx, by, buttonWidth, buttonHeight);
+            g2.setColor(Color.WHITE);
+            g2.drawRect(bx, by, buttonWidth, buttonHeight);
+
+            int tx = bx + (buttonWidth - optionFM.stringWidth(b.text)) / 2;
+            int ty = by + (buttonHeight - optionFM.getHeight()) / 2 + optionFM.getAscent();
+            g2.drawString(b.text, tx, ty);
+        }
+    }
+
+
+    /**
      * Scales a rectangle around its center by a given factor.
      *
      * @param src the original Rectangle
@@ -218,7 +304,10 @@ public class TitleScreenUI {
      * @param p the current mouse position
      */
     public void mouseMoved(Point p) {
-        for (UIButton b : buttons) b.hovered = b.bounds.contains(p);
+        // [ИЗМЕНЕНО] Эта логика должна применяться только в titleState
+        if (gp.gameState == gp.titleState) {
+            for (UIButton b : buttons) b.hovered = b.bounds.contains(p);
+        }
     }
 
     /**
@@ -227,20 +316,26 @@ public class TitleScreenUI {
      * @param p the mouse press position
      */
     public void mousePressed(Point p) {
-        buttons.forEach(b -> b.pressed = b.bounds.contains(p));
+        // [ИЗМЕНЕНО] Эта логика должна применяться только в titleState
+        if (gp.gameState == gp.titleState) {
+            buttons.forEach(b -> b.pressed = b.bounds.contains(p));
+        }
     }
 
     /**
      * Handles mouse release events:
      * <ul>
-     *   <li>Toggles logging when clicking the logging area</li>
-     *   <li>Processes main menu button actions</li>
-     *   <li>Delegates to game-over handler if in game-over state</li>
+     * <li>Toggles logging when clicking the logging area</li>
+     * <li>Processes main menu button actions</li>
+     * <li>Delegates to game-over handler if in game-over state</li>
      * </ul>
      *
      * @param p the mouse release position
      */
     public void mouseReleased(Point p) {
+
+        // [ИЗМЕНЕНО] Добавлена проверка WinState
+
         if (loggingToggleBounds.contains(p)) {
             GameLogger.setEnabled(!GameLogger.isEnabled());
             return;
@@ -250,6 +345,13 @@ public class TitleScreenUI {
             handleGameOverClick(p);
             return;
         }
+
+
+        if (gp.gameState == gp.winState) {
+            handleGameWinClick(p);
+            return;
+        }
+
 
         for (UIButton b : buttons) {
             boolean click = b.pressed && b.bounds.contains(p);
@@ -280,6 +382,23 @@ public class TitleScreenUI {
             if (b.bounds.contains(p)) {
                 switch (b.text) {
                     case "Try Again" -> gp.startNewGame();
+                    case "Exit" -> System.exit(0);
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     * Processes clicks on the game-win screen buttons.
+     *
+     * @param p the mouse click position
+     */
+    public void handleGameWinClick(Point p) {
+        for (UIButton b : gameWinButtons) {
+            if (b.bounds.contains(p)) {
+                switch (b.text) {
+                    case "Play Again" -> gp.startNewGame();
                     case "Exit" -> System.exit(0);
                 }
             }

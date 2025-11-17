@@ -152,11 +152,18 @@ public class Player extends Entity {
             int row = (worldY + solidArea.y) / gp.tileSize;
             int currentTile = gp.tileH.mapTileNum[gp.currentMap][row][col];
             if (currentTile == LADDER_TILE) {
-                gp.currentMap = (gp.currentMap == 0) ? 1 : 0;
-                gp.tileH.findWalkableRegions();
-                if (!gp.levelSpawned[gp.currentMap]) {
-                    gp.assetSetter.setMonster();
-                    gp.levelSpawned[gp.currentMap] = true;
+                if (gp.currentMap == 1) {
+                    gp.gameState = gp.winState;
+
+                } else if (gp.currentMap == 0) {
+                    gp.currentMap = 1;
+                    gp.tileH.findWalkableRegions();
+                    if (!gp.levelSpawned[gp.currentMap]) {
+                        gp.assetSetter.setMonster();
+                        gp.levelSpawned[gp.currentMap] = true;
+                    }
+                    setDefaulteValues();
+                    worldY += gp.tileSize;
                 }
                 setDefaulteValues();
                 worldY += gp.tileSize;

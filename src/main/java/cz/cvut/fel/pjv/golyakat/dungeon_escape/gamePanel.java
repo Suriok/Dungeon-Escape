@@ -117,7 +117,7 @@ public class gamePanel extends JPanel implements Runnable {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                if (gameState == titleState || gameState == gameOverState) {
+                if (gameState == titleState || gameState == gameOverState || gameState == winState) {
                     titleUi.mouseMoved(e.getPoint());
                     repaint();
                 }
@@ -129,7 +129,7 @@ public class gamePanel extends JPanel implements Runnable {
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() != MouseEvent.BUTTON1) return;
 
-                if (gameState == titleState || gameState == gameOverState) {
+                if (gameState == titleState || gameState == gameOverState || gameState == winState) {
                     titleUi.mouseReleased(e.getPoint());
                     repaint();
                 }
@@ -158,7 +158,7 @@ public class gamePanel extends JPanel implements Runnable {
                 // === Interaction (Left Click) ===
                 if (e.getButton() != MouseEvent.BUTTON1) return;
 
-                if (gameState == titleState || gameState == gameOverState) {
+                if (gameState == titleState || gameState == gameOverState || gameState == winState) {
                     titleUi.mousePressed(e.getPoint());
                     return;
                 }
@@ -418,9 +418,11 @@ public class gamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        if (gameState == titleState) {
-            titleUi.draw(g2d);
-        } else {
+        // --- [ИСПРАВЛЕННАЯ ЛОГИКА] ---
+
+        // 1. ЕСЛИ МЫ В ИГРЕ (playerState)
+        if (gameState == playerState) {
+            // Рисуем все игровые элементы
             tileH.draw(g2d);
             for (GameObject object : obj[currentMap]) {
                 if (object != null) object.draw(g2d, this);
@@ -438,6 +440,7 @@ public class gamePanel extends JPanel implements Runnable {
             craftingTableUI.draw(g2d);
             playerUI.draw(g2d);
 
+            // Рисуем подсказки (Hint Messages)
             g2d.setFont(new Font("Arial", Font.PLAIN, 20));
             g2d.setColor(Color.WHITE);
             int messageX = screenWidth - tileSize * 7;
@@ -458,10 +461,13 @@ public class gamePanel extends JPanel implements Runnable {
                 }
             }
 
-            if (gameState == gameOverState) {
-                titleUi.drawGameOverScreen(g2d);
-            }
+            // 2. ЕСЛИ МЫ НЕ В ИГРЕ (titleState, gameOverState, или winState)
+        } else {
+            // Передаем управление titleUi, который сам решит, что рисовать
+            // (на основе кода, который мы в него добавили)
+            titleUi.draw(g2d);
         }
+
         g2d.dispose();
     }
 
